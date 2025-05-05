@@ -1,0 +1,218 @@
+<!--
+Kopieren Sie diesen gesamten Code in einen HTML-Block in WordPress
+-->
+
+<div id="linfunc-container">
+  <h3>Aufgabengenerator: Lineare Funktionen - Schnittpunkte</h3>
+  
+  <div class="linfunc-aufgabe">
+    <p>Berechne den Schnittpunkt der folgenden linearen Funktionen:</p>
+    <p>f(x) = <span id="linfunc-f1-m">3</span>x + <span id="linfunc-f1-t">2</span></p>
+    <p>g(x) = <span id="linfunc-f2-m">1</span>x + <span id="linfunc-f2-t">6</span></p>
+    
+    <div class="linfunc-eingabe">
+      <label>x-Koordinate: <input type="number" id="linfunc-x" step="0.01"></label>
+      <label>y-Koordinate: <input type="number" id="linfunc-y" step="0.01"></label>
+    </div>
+    
+    <div class="linfunc-buttons">
+      <button id="linfunc-pruefen" class="wp-element-button">Lösung prüfen</button>
+      <button id="linfunc-neue" class="wp-element-button">Neue Aufgabe</button>
+      <button id="linfunc-loesung" class="wp-element-button">Musterlösung anzeigen</button>
+    </div>
+    
+    <div id="linfunc-ergebnis" style="display:none;"></div>
+    <div id="linfunc-loesung-container" style="display:none;">
+      <h4>Musterlösung:</h4>
+      <div id="linfunc-loesung-inhalt"></div>
+    </div>
+  </div>
+</div>
+
+<style>
+  #linfunc-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  
+  .linfunc-aufgabe {
+    line-height: 1.5;
+  }
+  
+  .linfunc-eingabe {
+    margin: 15px 0;
+  }
+  
+  .linfunc-eingabe label {
+    display: inline-block;
+    margin-right: 15px;
+    margin-bottom: 10px;
+  }
+  
+  .linfunc-eingabe input {
+    width: 80px;
+    padding: 5px;
+  }
+  
+  .linfunc-buttons {
+    margin: 15px 0;
+  }
+  
+  .linfunc-buttons button {
+    margin-right: 10px;
+    margin-bottom: 10px;
+  }
+  
+  #linfunc-ergebnis {
+    margin: 15px 0;
+    padding: 10px;
+    border-radius: 4px;
+  }
+  
+  #linfunc-ergebnis.linfunc-korrekt {
+    background-color: #d4edda;
+    border-left: 4px solid #28a745;
+  }
+  
+  #linfunc-ergebnis.linfunc-falsch {
+    background-color: #f8d7da;
+    border-left: 4px solid #dc3545;
+  }
+  
+  #linfunc-loesung-container {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-left: 4px solid #ffc107;
+    border-radius: 4px;
+  }
+</style>
+
+<script>//<![CDATA[
+jQuery(document).ready(function($) {
+  // Variablen für die aktuelle Aufgabe
+  var f1m, f1t, f2m, f2t, loesungX, loesungY;
+  
+  // Funktion zur Generierung einer neuen Aufgabe
+  function neueAufgabe() {
+    // Parameter für die erste Funktion
+    f1m = zufallsZahl(-5, 5);
+    if (f1m === 0) f1m = 1; // Vermeidung von horizontalen Linien
+    f1t = zufallsZahl(-10, 10);
+    
+    // Parameter für die zweite Funktion
+    do {
+      f2m = zufallsZahl(-5, 5);
+      if (f2m === 0) f2m = -1; // Vermeidung von horizontalen Linien
+    } while (f2m === f1m); // Sicherstellen, dass die Steigungen unterschiedlich sind
+    
+    f2t = zufallsZahl(-10, 10);
+    
+    // Berechnung des Schnittpunkts
+    loesungX = (f2t - f1t) / (f1m - f2m);
+    loesungY = f1m * loesungX + f1t;
+    
+    // Aktualisieren der Anzeige
+    $('#linfunc-f1-m').text(zeigeZahl(f1m));
+    $('#linfunc-f1-t').text(zeigeZahl(f1t));
+    $('#linfunc-f2-m').text(zeigeZahl(f2m));
+    $('#linfunc-f2-t').text(zeigeZahl(f2t));
+    
+    // Zurücksetzen der Eingabefelder und Ergebnisanzeigen
+    $('#linfunc-x').val('');
+    $('#linfunc-y').val('');
+    $('#linfunc-ergebnis').hide();
+    $('#linfunc-loesung-container').hide();
+    
+    // Lösungsschritte aktualisieren
+    updateLoesungsschritte();
+  }
+  
+  // Funktion zum Überprüfen der Lösung
+  function pruefen() {
+    var x = parseFloat($('#linfunc-x').val());
+    var y = parseFloat($('#linfunc-y').val());
+    
+    // Prüfen, ob die Eingaben numerisch sind
+    if (isNaN(x) || isNaN(y)) {
+      $('#linfunc-ergebnis').html('<p>Bitte gib für beide Koordinaten gültige Zahlen ein.</p>');
+      $('#linfunc-ergebnis').removeClass('linfunc-korrekt').addClass('linfunc-falsch');
+      $('#linfunc-ergebnis').show();
+      return;
+    }
+    
+    // Toleranzbereich für den Vergleich (wegen Rundungsfehlern)
+    var toleranz = 0.01;
+    var korrekteX = Math.abs(x - loesungX) < toleranz;
+    var korrekteY = Math.abs(y - loesungY) < toleranz;
+    
+    if (korrekteX && korrekteY) {
+      $('#linfunc-ergebnis').html('<p>Richtig! Der berechnete Schnittpunkt ist korrekt.</p>');
+      $('#linfunc-ergebnis').removeClass('linfunc-falsch').addClass('linfunc-korrekt');
+    } else {
+      var fehlerText = '<p>Leider nicht richtig:</p>';
+      if (!korrekteX) {
+        fehlerText += '<p>- Die x-Koordinate ist nicht korrekt.</p>';
+      }
+      if (!korrekteY) {
+        fehlerText += '<p>- Die y-Koordinate ist nicht korrekt.</p>';
+      }
+      fehlerText += '<p>Versuch es noch einmal oder schau dir die Musterlösung an.</p>';
+      
+      $('#linfunc-ergebnis').html(fehlerText);
+      $('#linfunc-ergebnis').removeClass('linfunc-korrekt').addClass('linfunc-falsch');
+    }
+    
+    $('#linfunc-ergebnis').show();
+  }
+  
+  // Funktion zum Anzeigen/Verstecken der Musterlösung
+  function loesungZeigen() {
+    $('#linfunc-loesung-container').toggle();
+  }
+  
+  // Funktion zum Aktualisieren der Lösungsschritte
+  function updateLoesungsschritte() {
+    // Formatieren der Lösungsschritte
+    var loesungsText = '';
+    loesungsText += '<p>Um den Schnittpunkt zu berechnen, setzen wir die Funktionen gleich:</p>';
+    loesungsText += '<p>' + zeigeZahl(f1m) + 'x + ' + zeigeZahl(f1t) + ' = ' + zeigeZahl(f2m) + 'x + ' + zeigeZahl(f2t) + '</p>';
+    loesungsText += '<p>Wir bringen alle x-Terme auf die linke und alle anderen Terme auf die rechte Seite:</p>';
+    loesungsText += '<p>' + zeigeZahl(f1m) + 'x - ' + zeigeZahl(f2m) + 'x = ' + zeigeZahl(f2t) + ' - ' + zeigeZahl(f1t) + '</p>';
+    loesungsText += '<p>' + zeigeZahl(f1m - f2m) + 'x = ' + zeigeZahl(f2t - f1t) + '</p>';
+    loesungsText += '<p>x = ' + zeigeZahl((f2t - f1t) / (f1m - f2m)) + '</p>';
+    loesungsText += '<p>Nun setzen wir diesen x-Wert in f(x) ein:</p>';
+    loesungsText += '<p>y = ' + zeigeZahl(f1m) + ' · ' + zeigeZahl(loesungX) + ' + ' + zeigeZahl(f1t) + ' = ' + zeigeZahl(loesungY) + '</p>';
+    loesungsText += '<p>Der Schnittpunkt ist S(' + zeigeZahl(loesungX) + '|' + zeigeZahl(loesungY) + ').</p>';
+    
+    $('#linfunc-loesung-inhalt').html(loesungsText);
+  }
+  
+  // Hilfsfunktion: Zufallszahl zwischen min und max (inklusive)
+  function zufallsZahl(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+  
+  // Hilfsfunktion: Zahlen formatieren (für bessere Lesbarkeit)
+  function zeigeZahl(zahl) {
+    if (Number.isInteger(zahl)) {
+      return zahl.toString();
+    }
+    
+    // Runden auf 2 Dezimalstellen und führende/nachfolgende Nullen entfernen
+    return parseFloat(zahl.toFixed(2)).toString();
+  }
+  
+  // Event-Listener für Buttons
+  $('#linfunc-pruefen').on('click', pruefen);
+  $('#linfunc-neue').on('click', neueAufgabe);
+  $('#linfunc-loesung').on('click', loesungZeigen);
+  
+  // Erste Aufgabe generieren
+  neueAufgabe();
+});
+//]]></script>
