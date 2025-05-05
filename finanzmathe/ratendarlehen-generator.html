@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ratendarlehen-Aufgabengenerator</title>
+    <style>
+        .ratendarlehen-container {
+            font-family: inherit;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: inherit;
+        }
+        .ratendarlehen-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .ratendarlehen-button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin: 0 auto;
+            display: block;
+        }
+        .ratendarlehen-button:hover {
+            background-color: #45a049;
+        }
+        .ratendarlehen-task {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            background-color: #f9f9f9;
+        }
+        .ratendarlehen-solution {
+            margin-top: 15px;
+            display: none;
+        }
+        .solution-box {
+            border-left: 4px solid #4CAF50;
+            padding-left: 15px;
+            margin-top: 15px;
+            background-color: #f0f8f0;
+            padding: 10px;
+        }
+        .ratendarlehen-info {
+            font-style: italic;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .tilgungsplan-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .tilgungsplan-table th, .tilgungsplan-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: right;
+        }
+        .tilgungsplan-table th {
+            background-color: #f2f2f2;
+            text-align: center;
+        }
+        .tilgungsplan-table input {
+            width: 100px;
+            padding: 5px;
+            text-align: right;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .feedback-row td {
+            font-weight: bold;
+            padding: 5px;
+            text-align: center;
+        }
+        .correct {
+            color: #4CAF50;
+        }
+        .incorrect {
+            color: #f44336;
+        }
+        .user-input-cell {
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="ratendarlehen-generator" class="ratendarlehen-container">
+        <div class="ratendarlehen-header">
+            <h2>Ratendarlehen-Aufgabengenerator</h2>
+            <p>Übe die Berechnung eines Tilgungsplans für ein Ratendarlehen</p>
+            <p class="ratendarlehen-info">Hinweis: Alle Beträge werden auf 2 Nachkommastellen gerundet.</p>
+        </div>
+        
+        <button id="generate-task" class="ratendarlehen-button">Neue Aufgabe generieren</button>
+        
+        <div id="task-container" class="ratendarlehen-task">
+            <div id="task-text"></div>
+            
+            <div id="tilgungsplan-container">
+                <h3>Tilgungsplan</h3>
+                <table class="tilgungsplan-table" id="tilgungsplan-table">
+                    <thead>
+                        <tr>
+                            <th>Jahr (v)</th>
+                            <th>Schulden zu Jahresbeginn (K<sub>v-1</sub>) in €</th>
+                            <th>Zinsen (Z<sub>v</sub>) in €</th>
+                            <th>Tilgung (T) in €</th>
+                            <th>Annuität (Z<sub>v</sub> + T) in €</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tilgungsplan-body">
+                        <!-- Hier werden die Zeilen dynamisch eingefügt -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <button id="check-answers" class="ratendarlehen-button" style="margin-top: 20px;">Antworten überprüfen</button>
+            
+            <button id="show-solution" class="ratendarlehen-button" style="margin-top: 15px;">Musterlösung anzeigen</button>
+            
+            <div id="solution" class="ratendarlehen-solution solution-box"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const taskContainer = document.getElementById('task-container');
+            const taskText = document.getElementById('task-text');
+            const tilgungsplanBody = document.getElementById('tilgungsplan-body');
+            const checkAnswersBtn = document.getElementById('check-answers');
+            const showSolutionBtn = document.getElementById('show-solution');
+            const solution = document.getElementById('solution');
+            const generateTaskBtn = document.getElementById('generate-task');
+            
+            let currentTask = {
+                k0: 0,
+                p: 0,
+                n: 0,
+                t: 0,
+                rowsToFill: 0,
+                solution: []
+            };
+            
+            // Funktion zum Formatieren von Zahlen mit 2 Nachkommastellen in kaufmännischer Schreibweise
+            function formatEuro(num) {
+                return Number(num).toFixed(2).replace('.', ',') + ' €';
+            }
+            
+            // Funktion zum Formatieren von Zahlen mit angegebenen Nachkommastellen
+            function formatNumber(num, decimals = 2) {
+                return Number(num).toFixed(decimals).replace('.', ',');
+            }
+            
+            // Funktion zum Umwandeln eines formatierten Euro-Strings in eine Zahl
+            function parseEuroInput(str) {
+                return parseFloat(str.replace(/[^\d,.-]/g, '').replace(',', '.'));
+            }
+            
+            // Funktion zum Zufallszahlen generieren
+            function getRandomNumber(min, max, decimals = 0) {
+                const factor = Math.pow(10, decimals);
+                return Math.round((Math.random() * (max - min) + min) * factor) / factor;
+            }
+            
+            // Funktion zum Generieren einer Aufgabe
+            function generateTask() {
+                // Parameter generieren
+                const k0 = getRandomNumber(10000, 300000, 0); // Anfangsschulden zwischen 10.000 und 300.000 €
+                const p = getRandomNumber(2, 8, 2); // Zinssatz zwischen 2% und 8%
+                const n = getRandomNumber(5, 25, 0); // Laufzeit zwischen 5 und 25 Jahren
+                const t = k0 / n; // Konstante jährliche Tilgung berechnen
+                
+                // Anzahl der auszufüllenden Zeilen bestimmen (maximal 4, aber nicht mehr als n)
+                const rowsToFill = Math.min(4, n);
+                
+                // Lösungen berechnen
+                const solution = [];
+                let currentK = k0;
+                
+                for (let v = 1; v <= n; v++) {
+                    const zinsen = currentK * (p / 100);
+                    const annuitaet = zinsen + t;
+                    const newK = currentK - t;
+                    
+                    solution.push({
+                        v: v,
+                        k: currentK,
+                        z: zinsen,
+                        t: t,
+                        a: annuitaet,
+                        newK: newK
+                    });
+                    
+                    currentK = newK;
+                }
+                
+                // Aktuelle Aufgabe speichern
+                currentTask = {
+                    k0: k0,
+                    p: p,
+                    n: n,
+                    t: t,
+                    rowsToFill: rowsToFill,
+                    solution: solution
+                };
+                
+                // Aufgabentext erstellen
+                taskText.innerHTML = `
+                    <p>Ein Ratendarlehen in Höhe von <strong>${formatEuro(k0)}</strong> wird über eine Laufzeit von <strong>${n} Jahren</strong> 
+                    mit einem Zinssatz von <strong>${formatNumber(p, 2)} %</strong> aufgenommen.</p>
+                    <p><strong>Aufgabe:</strong> Berechne die konstante jährliche Tilgungsrate und fülle den Tilgungsplan für die ersten ${rowsToFill} Jahre aus.</p>
+                `;
+                
+                // Tilgungsplan-Tabelle erstellen
+                createTilgungsplanTable(rowsToFill);
+                
+                // Lösung erstellen
+                createSolutionTable();
+            }
+            
+            // Tilgungsplan-Tabelle erstellen
+            function createTilgungsplanTable(rowsToFill) {
+                tilgungsplanBody.innerHTML = '';
+                
+                // Erste Zeile mit den Anfangsschulden ist vorgegeben
+                const firstRow = document.createElement('tr');
+                firstRow.innerHTML = `
+                    <td>1</td>
+                    <td>${formatEuro(currentTask.k0)}</td>
+                    <td class="user-input-cell"><input type="text" id="z-1" placeholder="Z₁"></td>
+                    <td class="user-input-cell"><input type="text" id="t-1" placeholder="T"></td>
+                    <td class="user-input-cell"><input type="text" id="a-1" placeholder="A₁"></td>
+                `;
+                tilgungsplanBody.appendChild(firstRow);
+                
+                // Feedback-Zeile für die erste Zeile
+                const firstFeedbackRow = document.createElement('tr');
+                firstFeedbackRow.classList.add('feedback-row');
+                firstFeedbackRow.innerHTML = `
+                    <td></td>
+                    <td></td>
+                    <td id="feedback-z-1"></td>
+                    <td id="feedback-t-1"></td>
+                    <td id="feedback-a-1"></td>
+                `;
+                tilgungsplanBody.appendChild(firstFeedbackRow);
+                
+                // Weitere Zeilen, bei denen die Schulden berechnet werden müssen
+                for (let v = 2; v <= rowsToFill; v++) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${v}</td>
+                        <td class="user-input-cell"><input type="text" id="k-${v}" placeholder="K₍${v-1}₎"></td>
+                        <td class="user-input-cell"><input type="text" id="z-${v}" placeholder="Z₍${v}₎"></td>
+                        <td class="user-input-cell"><input type="text" id="t-${v}" placeholder="T"></td>
+                        <td class="user-input-cell"><input type="text" id="a-${v}" placeholder="A₍${v}₎"></td>
+                    `;
+                    tilgungsplanBody.appendChild(row);
+                    
+                    // Feedback-Zeile
+                    const feedbackRow = document.createElement('tr');
+                    feedbackRow.classList.add('feedback-row');
+                    feedbackRow.innerHTML = `
+                        <td></td>
+                        <td id="feedback-k-${v}"></td>
+                        <td id="feedback-z-${v}"></td>
+                        <td id="feedback-t-${v}"></td>
+                        <td id="feedback-a-${v}"></td>
+                    `;
+                    tilgungsplanBody.appendChild(feedbackRow);
+                }
+            }
+            
+            // Lösung erstellen
+            function createSolutionTable() {
+                let solutionHTML = `
+                    <h4>Musterlösung:</h4>
+                    <p>Bei einem Ratendarlehen ist die jährliche Tilgungsrate konstant und beträgt: T = K₀/n = ${formatEuro(currentTask.k0)} / ${currentTask.n} = ${formatEuro(currentTask.t)}</p>
+                    <p>Die Annuität (Zins + Tilgung) verringert sich jedes Jahr, da der Zinsanteil mit sinkender Restschuld abnimmt.</p>
+                    <p>Hier ist der vollständige Tilgungsplan:</p>
+                    <table class="tilgungsplan-table">
+                        <thead>
+                            <tr>
+                                <th>Jahr (v)</th>
+                                <th>Schulden zu Jahresbeginn (K<sub>v-1</sub>) in €</th>
+                                <th>Zinsen (Z<sub>v</sub>) in €</th>
+                                <th>Tilgung (T) in €</th>
+                                <th>Annuität (Z<sub>v</sub> + T) in €</th>
+                                <th>Restschuld am Jahresende (K<sub>v</sub>) in €</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                // Vollständige Lösung für alle Jahre anzeigen
+                for (let i = 0; i < currentTask.rowsToFill; i++) {
+                    const sol = currentTask.solution[i];
+                    solutionHTML += `
+                        <tr>
+                            <td>${sol.v}</td>
+                            <td>${formatEuro(sol.k)}</td>
+                            <td>${formatEuro(sol.z)}</td>
+                            <td>${formatEuro(sol.t)}</td>
+                            <td>${formatEuro(sol.a)}</td>
+                            <td>${formatEuro(sol.newK)}</td>
+                        </tr>
+                    `;
+                }
+                
+                solutionHTML += `
+                        </tbody>
+                    </table>
+                    <p>Die Berechnungen im Detail:</p>
+                `;
+                
+                // Detaillierte Erklärung für jedes Jahr
+                for (let i = 0; i < currentTask.rowsToFill; i++) {
+                    const sol = currentTask.solution[i];
+                    solutionHTML += `
+                        <h5>Jahr ${sol.v}:</h5>
+                        <p>Schulden zu Jahresbeginn: K<sub>${sol.v-1}</sub> = ${i === 0 ? "K₀" : `K<sub>${sol.v-1}</sub>`} = ${formatEuro(sol.k)}</p>
+                        <p>Zinsen: Z<sub>${sol.v}</sub> = K<sub>${sol.v-1}</sub> · p/100 = ${formatEuro(sol.k)} · ${formatNumber(currentTask.p, 2)}/100 = ${formatEuro(sol.z)}</p>
+                        <p>Tilgung: T = K₀/n = ${formatEuro(currentTask.k0)} / ${currentTask.n} = ${formatEuro(sol.t)}</p>
+                        <p>Annuität: A<sub>${sol.v}</sub> = Z<sub>${sol.v}</sub> + T = ${formatEuro(sol.z)} + ${formatEuro(sol.t)} = ${formatEuro(sol.a)}</p>
+                        <p>Schulden am Ende des Jahres: K<sub>${sol.v}</sub> = K<sub>${sol.v-1}</sub> - T = ${formatEuro(sol.k)} - ${formatEuro(sol.t)} = ${formatEuro(sol.newK)}</p>
+                    `;
+                }
+                
+                solution.innerHTML = solutionHTML;
+            }
+            
+            // Antworten überprüfen
+            function checkAnswers() {
+                let allCorrect = true;
+                const tolerance = 0.01; // Toleranz für Rundungsfehler
+                
+                // Erste Zeile überprüfen (Jahr 1)
+                const z1Input = parseEuroInput(document.getElementById('z-1').value);
+                const t1Input = parseEuroInput(document.getElementById('t-1').value);
+                const a1Input = parseEuroInput(document.getElementById('a-1').value);
+                const z1Feedback = document.getElementById('feedback-z-1');
+                const t1Feedback = document.getElementById('feedback-t-1');
+                const a1Feedback = document.getElementById('feedback-a-1');
+                
+                const z1Correct = Math.abs(z1Input - currentTask.solution[0].z) < tolerance;
+                const t1Correct = Math.abs(t1Input - currentTask.solution[0].t) < tolerance;
+                const a1Correct = Math.abs(a1Input - currentTask.solution[0].a) < tolerance;
+                
+                z1Feedback.textContent = z1Correct ? "✓" : "✗";
+                z1Feedback.className = z1Correct ? "correct" : "incorrect";
+                
+                t1Feedback.textContent = t1Correct ? "✓" : "✗";
+                t1Feedback.className = t1Correct ? "correct" : "incorrect";
+                
+                a1Feedback.textContent = a1Correct ? "✓" : "✗";
+                a1Feedback.className = a1Correct ? "correct" : "incorrect";
+                
+                if (!z1Correct || !t1Correct || !a1Correct) allCorrect = false;
+                
+                // Weitere Zeilen überprüfen
+                for (let v = 2; v <= currentTask.rowsToFill; v++) {
+                    const kInput = parseEuroInput(document.getElementById(`k-${v}`).value);
+                    const zInput = parseEuroInput(document.getElementById(`z-${v}`).value);
+                    const tInput = parseEuroInput(document.getElementById(`t-${v}`).value);
+                    const aInput = parseEuroInput(document.getElementById(`a-${v}`).value);
+                    
+                    const kFeedback = document.getElementById(`feedback-k-${v}`);
+                    const zFeedback = document.getElementById(`feedback-z-${v}`);
+                    const tFeedback = document.getElementById(`feedback-t-${v}`);
+                    const aFeedback = document.getElementById(`feedback-a-${v}`);
+                    
+                    const kCorrect = Math.abs(kInput - currentTask.solution[v-1].k) < tolerance;
+                    const zCorrect = Math.abs(zInput - currentTask.solution[v-1].z) < tolerance;
+                    const tCorrect = Math.abs(tInput - currentTask.solution[v-1].t) < tolerance;
+                    const aCorrect = Math.abs(aInput - currentTask.solution[v-1].a) < tolerance;
+                    
+                    kFeedback.textContent = kCorrect ? "✓" : "✗";
+                    kFeedback.className = kCorrect ? "correct" : "incorrect";
+                    
+                    zFeedback.textContent = zCorrect ? "✓" : "✗";
+                    zFeedback.className = zCorrect ? "correct" : "incorrect";
+                    
+                    tFeedback.textContent = tCorrect ? "✓" : "✗";
+                    tFeedback.className = tCorrect ? "correct" : "incorrect";
+                    
+                    aFeedback.textContent = aCorrect ? "✓" : "✗";
+                    aFeedback.className = aCorrect ? "correct" : "incorrect";
+                    
+                    if (!kCorrect || !zCorrect || !tCorrect || !aCorrect) allCorrect = false;
+                }
+                
+                // Gesamtfeedback
+                if (allCorrect) {
+                    alert("Sehr gut! Alle Antworten sind korrekt! 👍");
+                }
+            }
+            
+            // Event-Listener für Buttons
+            generateTaskBtn.addEventListener('click', function() {
+                generateTask();
+                solution.style.display = "none";
+                showSolutionBtn.textContent = "Musterlösung anzeigen";
+            });
+            
+            checkAnswersBtn.addEventListener('click', checkAnswers);
+            
+            showSolutionBtn.addEventListener('click', function() {
+                solution.style.display = solution.style.display === "none" ? "block" : "none";
+                showSolutionBtn.textContent = solution.style.display === "none" ? 
+                    "Musterlösung anzeigen" : "Musterlösung verbergen";
+            });
+            
+            // Initialisierung: Erste Aufgabe generieren
+            generateTask();
+        });
+    </script>
+</body>
+</html>
