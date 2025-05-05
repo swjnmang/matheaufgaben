@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Wahrscheinlichkeits-Aufgabengenerator (Baumdiagramm)</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .aufgabe { margin-bottom: 20px; }
+    svg { border: 1px solid #ccc; margin-top: 10px; }
+    input { width: 80px; }
+  </style>
+</head>
+<body>
+  <h2>Aufgabengenerator: Wahrscheinlichkeiten mit Baumdiagrammen</h2>
+  <div class="aufgabe">
+    <p id="aufgabentext"></p>
+    <div id="baumdiagramm"></div>
+    <p>Wie groß ist die Wahrscheinlichkeit für das Ereignis: <b id="ereignistext"></b>?</p>
+    <label>Antwort (z. B. 3/16):</label>
+    <input type="text" id="antwort">
+    <button onclick="prüfen()">Antwort prüfen</button>
+    <p id="feedback"></p>
+  </div>
+  <button onclick="generiereAufgabe()">Neue Aufgabe generieren 🔄</button>
+
+  <script>
+    let richtigeWahrscheinlichkeit = "";
+
+    function generiereAufgabe() {
+      document.getElementById("feedback").innerText = "";
+      const farben = ["rot", "blau"];
+      const kugeln = {
+        rot: Math.floor(Math.random() * 3) + 1,
+        blau: Math.floor(Math.random() * 3) + 1
+      };
+      const gesamt = kugeln.rot + kugeln.blau;
+      const pRot = kugeln.rot / gesamt;
+      const pBlau = kugeln.blau / gesamt;
+
+      const aufgabe = `In einer Urne befinden sich ${kugeln.rot} rote und ${kugeln.blau} blaue Kugeln. Es wird zweimal mit Zurücklegen gezogen.`;
+      document.getElementById("aufgabentext").innerText = aufgabe;
+
+      // Ereignis: mindestens 1x rot
+      const ereignis = "mindestens einmal rot";
+      document.getElementById("ereignistext").innerText = ereignis;
+
+      // Berechnung: Gegenereignis = beide Male blau
+      const pBeideBlau = pBlau * pBlau;
+      const pMind1Rot = 1 - pBeideBlau;
+
+      // als gekürzter Bruch
+      richtigeWahrscheinlichkeit = kürzeBruch(pMind1Rot);
+
+      // Zeichne Baumdiagramm
+      const svg = `
+<svg width="400" height="180">
+  <text x="10" y="20">Start</text>
+  <line x1="20" y1="25" x2="100" y2="50" stroke="black"/>
+  <line x1="20" y1="25" x2="100" y2="100" stroke="black"/>
+  <text x="100" y="45">${farben[0]} (${kugeln.rot}/${gesamt})</text>
+  <text x="100" y="95">${farben[1]} (${kugeln.blau}/${gesamt})</text>
+  <line x1="100" y1="50" x2="200" y2="30" stroke="black"/>
+  <line x1="100" y1="50" x2="200" y2="70" stroke="black"/>
+  <line x1="100" y1="100" x2="200" y2="110" stroke="black"/>
+  <line x1="100" y1="100" x2="200" y2="150" stroke="black"/>
+  <text x="200" y="25">${farben[0]}</text>
+  <text x="200" y="65">${farben[1]}</text>
+  <text x="200" y="105">${farben[0]}</text>
+  <text x="200" y="145">${farben[1]}</text>
+</svg>`;
+      document.getElementById("baumdiagramm").innerHTML = svg;
+    }
+
+    function kürzeBruch(dezimal) {
+      let zähler = Math.round(dezimal * 10000);
+      let nenner = 10000;
+      const ggt = (a, b) => b === 0 ? a : ggt(b, a % b);
+      const teiler = ggt(zähler, nenner);
+      zähler /= teiler;
+      nenner /= teiler;
+      return `${zähler}/${nenner}`;
+    }
+
+    function prüfen() {
+      const eingabe = document.getElementById("antwort").value.trim().replace(/\s/g, "");
+      const feedback = document.getElementById("feedback");
+      if (eingabe === richtigeWahrscheinlichkeit) {
+        feedback.innerText = "✔️ Richtig!";
+        feedback.style.color = "green";
+      } else {
+        feedback.innerText = `❌ Leider falsch. Die richtige Antwort ist: ${richtigeWahrscheinlichkeit}`;
+        feedback.style.color = "red";
+      }
+    }
+
+    // Starte mit einer Aufgabe
+    generiereAufgabe();
+  </script>
+</body>
+</html>
