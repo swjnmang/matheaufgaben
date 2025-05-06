@@ -146,7 +146,7 @@
                 p: 0,
                 n: 0,
                 t: 0,
-                rowsToFill: 0,
+                rowsToFill: 3, // Fest auf 3 Jahre gesetzt
                 solution: []
             };
             
@@ -179,8 +179,8 @@
                 const n = getRandomNumber(5, 25, 0); // Laufzeit zwischen 5 und 25 Jahren
                 const t = k0 / n; // Konstante jährliche Tilgung berechnen
                 
-                // Anzahl der auszufüllenden Zeilen bestimmen (maximal 4, aber nicht mehr als n)
-                const rowsToFill = Math.min(4, n);
+                // Anzahl der auszufüllenden Zeilen ist fest auf 3 Jahre gesetzt
+                const rowsToFill = 3;
                 
                 // Lösungen berechnen
                 const solution = [];
@@ -217,7 +217,7 @@
                 taskText.innerHTML = `
                     <p>Ein Ratendarlehen in Höhe von <strong>${formatEuro(k0)}</strong> wird über eine Laufzeit von <strong>${n} Jahren</strong> 
                     mit einem Zinssatz von <strong>${formatNumber(p, 2)} %</strong> aufgenommen.</p>
-                    <p><strong>Aufgabe:</strong> Berechne die konstante jährliche Tilgungsrate und fülle den Tilgungsplan für die ersten ${rowsToFill} Jahre aus.</p>
+                    <p><strong>Aufgabe:</strong> Berechne die konstante jährliche Tilgungsrate und fülle den Tilgungsplan für die ersten 3 Jahre aus.</p>
                 `;
                 
                 // Tilgungsplan-Tabelle erstellen
@@ -286,7 +286,7 @@
                     <h4>Musterlösung:</h4>
                     <p>Bei einem Ratendarlehen ist die jährliche Tilgungsrate konstant und beträgt: T = K₀/n = ${formatEuro(currentTask.k0)} / ${currentTask.n} = ${formatEuro(currentTask.t)}</p>
                     <p>Die Annuität (Zins + Tilgung) verringert sich jedes Jahr, da der Zinsanteil mit sinkender Restschuld abnimmt.</p>
-                    <p>Hier ist der vollständige Tilgungsplan:</p>
+                    <p>Hier ist der Tilgungsplan für die ersten 3 Jahre:</p>
                     <table class="tilgungsplan-table">
                         <thead>
                             <tr>
@@ -301,8 +301,8 @@
                         <tbody>
                 `;
                 
-                // Vollständige Lösung für alle Jahre anzeigen
-                for (let i = 0; i < currentTask.rowsToFill; i++) {
+                // Lösung für die ersten 3 Jahre anzeigen
+                for (let i = 0; i < 3; i++) {
                     const sol = currentTask.solution[i];
                     solutionHTML += `
                         <tr>
@@ -323,7 +323,7 @@
                 `;
                 
                 // Detaillierte Erklärung für jedes Jahr
-                for (let i = 0; i < currentTask.rowsToFill; i++) {
+                for (let i = 0; i < 3; i++) {
                     const sol = currentTask.solution[i];
                     solutionHTML += `
                         <h5>Jahr ${sol.v}:</h5>
@@ -367,7 +367,7 @@
                 if (!z1Correct || !t1Correct || !a1Correct) allCorrect = false;
                 
                 // Weitere Zeilen überprüfen
-                for (let v = 2; v <= currentTask.rowsToFill; v++) {
+                for (let v = 2; v <= 3; v++) {
                     const kInput = parseEuroInput(document.getElementById(`k-${v}`).value);
                     const zInput = parseEuroInput(document.getElementById(`z-${v}`).value);
                     const tInput = parseEuroInput(document.getElementById(`t-${v}`).value);
