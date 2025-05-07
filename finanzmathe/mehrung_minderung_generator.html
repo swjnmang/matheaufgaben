@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aufgabengenerator zur Kapitalmehrung/-minderung</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .task-container {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 6px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 8px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        button.secondary {
+            background-color: #2196F3;
+        }
+        
+        button.secondary:hover {
+            background-color: #0b7dda;
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .correct {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        
+        .incorrect {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        
+        .solution {
+            background-color: #e7f3fe;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #2196F3;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .math {
+            font-style: italic;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .task-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .difficulty-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .difficulty-btn {
+            background-color: #e0e0e0;
+            color: #333;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .difficulty-btn.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Aufgabengenerator: Kapitalmehrung und Kapitalminderung</h1>
+        
+        <div class="difficulty-selector">
+            <span>Schwierigkeitsgrad:</span>
+            <button class="difficulty-btn active" data-difficulty="leicht">Leicht</button>
+            <button class="difficulty-btn" data-difficulty="mittel">Mittel</button>
+            <button class="difficulty-btn" data-difficulty="schwer">Schwer</button>
+        </div>
+        
+        <div class="task-controls">
+            <button id="newTaskBtn">Neue Aufgabe</button>
+            <button id="showSolutionBtn" class="secondary">Lösung anzeigen</button>
+        </div>
+        
+        <div class="task-container">
+            <h3>Aufgabe</h3>
+            <p id="taskText"></p>
+        </div>
+        
+        <div class="form-group">
+            <label for="userAnswer">Deine Lösung:</label>
+            <input type="text" id="userAnswer" placeholder="Gib dein Ergebnis ein (z.B. 1534,28)">
+        </div>
+        
+        <button id="checkAnswerBtn">Antwort überprüfen</button>
+        
+        <div id="resultMessage" class="result"></div>
+        <div id="solution" class="solution"></div>
+    </div>
+    
+    <script>
+        // Globale Variablen für aktuelle Aufgabe
+        let currentTask = {};
+        let currentDifficulty = "leicht";
+        
+        // Aufgabentypen
+        const taskTypes = [
+            "vorschüssige_kapitalmehrung",
+            "nachschüssige_kapitalmehrung",
+            "vorschüssige_kapitalminderung",
+            "nachschüssige_kapitalminderung"
+        ];
+        
+        // Initialisierung
+        document.addEventListener("DOMContentLoaded", function() {
+            // Event-Listener
+            document.getElementById("newTaskBtn").addEventListener("click", generateNewTask);
+            document.getElementById("checkAnswerBtn").addEventListener("click", checkAnswer);
+            document.getElementById("showSolutionBtn").addEventListener("click", showSolution);
+            
+            // Schwierigkeitsgrad-Buttons
+            document.querySelectorAll(".difficulty-btn").forEach(btn => {
+                btn.addEventListener("click", function() {
+                    document.querySelectorAll(".difficulty-btn").forEach(b => b.classList.remove("active"));
+                    this.classList.add("active");
+                    currentDifficulty = this.getAttribute("data-difficulty");
+                    generateNewTask();
+                });
+            });
+            
+            // Erste Aufgabe generieren
+            generateNewTask();
+        });
+        
+        // Zufallszahl zwischen min und max (inklusive)
+        function randomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        // Zufallszahl mit Dezimalstellen
+        function randomFloat(min, max, decimals) {
+            const num = Math.random() * (max - min) + min;
+            return parseFloat(num.toFixed(decimals));
+        }
+        
+        // Formatiert eine Zahl mit 2 Dezimalstellen und Tausendertrennzeichen
+        function formatCurrency(number) {
+            return number.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+        
+        // Generiert eine neue Aufgabe
+        function generateNewTask() {
+            // Reset UI
+            document.getElementById("resultMessage").style.display = "none";
+            document.getElementById("solution").style.display = "none";
+            document.getElementById("userAnswer").value = "";
+            
+            // Zufälligen Aufgabentyp wählen
+            const taskType = taskTypes[randomInt(0, taskTypes.length - 1)];
+            
+            // Parameter basierend auf Schwierigkeitsgrad
+            let n, r, K0, Kn, p, q, result;
+            
+            switch(currentDifficulty) {
+                case "leicht":
+                    p = randomInt(2, 5);
+                    q = 1 + (p / 100);
+                    n = randomInt(2, 6);
+                    
+                    if (taskType.includes("kapitalmehrung")) {
+                        K0 = randomInt(1000, 10000);
+                        r = randomInt(100, 1000);
+                        if (taskType === "vorschüssige_kapitalmehrung") {
+                            Kn = K0 * Math.pow(q, n) + r * q * ((Math.pow(q, n) - 1) / (q - 1));
+                            result = Kn;
+                        } else { // nachschüssige_kapitalmehrung
+                            Kn = K0 * Math.pow(q, n) + r * ((Math.pow(q, n) - 1) / (q - 1));
+                            result = Kn;
+                        }
+                    } else { // kapitalminderung
+                        Kn = randomInt(500, 2000);
+                        r = randomInt(500, 1500);
+                        if (taskType === "vorschüssige_kapitalminderung") {
+                            K0 = (Kn - r * q * ((Math.pow(q, n) - 1) / (q - 1))) / Math.pow(q, n);
+                            result = K0;
+                        } else { // nachschüssige_kapitalminderung
+                            K0 = (Kn - r * ((Math.pow(q, n) - 1) / (q - 1))) / Math.pow(q, n);
+                            result = K0;
+                        }
+                    }
+                    break;
+                    
+                case "mittel":
+                    p = randomFloat(2, 6, 2);
+                    q = 1 + (p / 100);
+                    n = randomInt(3, 10);
+                    
+                    if (taskType.includes("kapitalmehrung")) {
+                        K0 = randomInt(5000, 20000);
+                        r = randomInt(500, 2000);
+                        if (taskType === "vorschüssige_kapitalmehrung") {
+                            Kn = K0 * Math.pow(q, n) + r * q * ((Math.pow(q, n) - 1) / (q - 1));
+                            result = Kn;
+                        } else { // nachschüssige_kapitalmehrung
+                            Kn = K0 * Math.pow(q, n) + r * ((Math.pow(q, n) - 1) / (q - 1));
+                            result = Kn;
+                        }
+                    } else { // kapitalminderung
+                        Kn = randomInt(1000, 5000);
+                        r = randomInt(1000, 3000);
+                        if (taskType === "vorschüssige_kapitalminderung") {
+                            K0 = (Kn - r * q * ((Math.pow(q, n) - 1) / (q - 1))) / Math.pow(q, n);
+                            result = K0;
+                        } else { // nachschüssige_kapitalminderung
+                            K0 = (Kn - r * ((Math.pow(q, n) - 1) / (q - 1))) / Math.pow(q, n);
+                            result = K0;
+                        }
+                    }
+                    break;
+                    
+                case "schwer":
+                    p = randomFloat(1.75, 7.5, 2);
+                    q = 1 + (p / 100);
+                    n = randomInt(5, 15);
+                    
+                    if (taskType.includes("kapitalmehrung")) {
+                        K0 = randomInt(10000, 50000);
+                        r = randomInt(1000, 5000);
+                        if (taskType === "vorschüssige_kapitalmehrung") {
+                            Kn = K0 * Math.pow(q, n) + r * q * ((Math.pow(q, n) - 1) / (q - 1));
+                            result = Kn;
+                        } else { // nachschüssige_kapitalmehrung
+                            Kn = K0 * Math.pow(q, n) + r * ((Math.pow(q, n) - 1) / (q - 1));
+                            result = Kn;
+                        }
+                    } else { // kapitalminderung
+                        Kn = randomInt(2000, 10000);
+                        r = randomInt(2000, 6000);
+                        if (taskType === "vorschüssige_kapitalminderung") {
+                            K0 = (Kn - r * q * ((Math.pow(q, n) - 1) / (q - 1))) / Math.pow(q, n);
+                            result = K0;
+                        } else { // nachschüssige_kapitalminderung
+                            K0 = (Kn - r * ((Math.pow(q, n) - 1) / (q - 1))) / Math.pow(q, n);
+                            result = K0;
+                        }
+                    }
+                    break;
+            }
+            
+            // Werte für die Aufgabenstellung runden
+            K0 = Math.round(K0 * 100) / 100;
+            Kn = Math.round(Kn * 100) / 100;
+            r = Math.round(r * 100) / 100;
+            
+            // Aufgabentext generieren
+            let taskText = "";
+            
+            if (taskType === "vorschüssige_kapitalmehrung") {
+                taskText = `Ein Kapital von ${formatCurrency(K0)} € wird für ${n} Jahre zu einem Zinssatz von ${p} % pro Jahr angelegt. 
+                           Zusätzlich wird jeweils zu Beginn eines jeden Jahres eine Rate von ${formatCurrency(r)} € eingezahlt. 
+                           Berechne das Endkapital Kₙ.`;
+            } else if (taskType === "nachschüssige_kapitalmehrung") {
+                taskText = `Ein Kapital von ${formatCurrency(K0)} € wird für ${n} Jahre zu einem Zinssatz von ${p} % pro Jahr angelegt. 
+                           Zusätzlich wird jeweils am Ende eines jeden Jahres eine Rate von ${formatCurrency(r)} € eingezahlt. 
+                           Berechne das Endkapital Kₙ.`;
+            } else if (taskType === "vorschüssige_kapitalminderung") {
+                taskText = `Ein Kredit soll innerhalb von ${n} Jahren vollständig getilgt werden. Der Kreditnehmer zahlt zu Beginn jedes Jahres 
+                           eine Rate von ${formatCurrency(r)} € bei einem Zinssatz von ${p} % pro Jahr. Nach ${n} Jahren verbleibt ein Restbetrag 
+                           von ${formatCurrency(Kn)} €. Berechne die ursprüngliche Kreditsumme K₀.`;
+            } else if (taskType === "nachschüssige_kapitalminderung") {
+                taskText = `Ein Kredit soll innerhalb von ${n} Jahren vollständig getilgt werden. Der Kreditnehmer zahlt am Ende jedes Jahres 
+                           eine Rate von ${formatCurrency(r)} € bei einem Zinssatz von ${p} % pro Jahr. Nach ${n} Jahren verbleibt ein Restbetrag 
+                           von ${formatCurrency(Kn)} €. Berechne die ursprüngliche Kreditsumme K₀.`;
+            }
+            
+            // Aufgabe anzeigen
+            document.getElementById("taskText").innerHTML = taskText;
+            
+            // Aktuelle Aufgabe speichern
+            currentTask = {
+                type: taskType,
+                n: n,
+                r: r,
+                K0: K0,
+                Kn: Kn,
+                p: p,
+                q: q,
+                result: Math.round(result * 100) / 100
+            };
+        }
+        
+        // Überprüft die Antwort des Schülers
+        function checkAnswer() {
+            const userAnswer = document.getElementById("userAnswer").value.trim();
+            const resultMessage = document.getElementById("resultMessage");
+            
+            // Benutzereingabe parsen
+            let userValue;
+            try {
+                // Deutsche Zahlenformatierung berücksichtigen (Komma statt Punkt)
+                userValue = parseFloat(userAnswer.replace(/\./g, '').replace(',', '.'));
+            } catch (e) {
+                userValue = NaN;
+            }
+            
+            // Überprüfen mit Toleranz für Rundungsfehler (0.01 €)
+            const isCorrect = Math.abs(userValue - currentTask.result) < 0.01;
+            
+            // Feedback anzeigen
+            resultMessage.style.display = "block";
+            if (isCorrect) {
+                resultMessage.className = "result correct";
+                resultMessage.textContent = "Richtig! Deine Antwort ist korrekt.";
+            } else {
+                resultMessage.className = "result incorrect";
+                resultMessage.textContent = "Leider falsch. Versuche es noch einmal oder schau dir die Lösung an.";
+            }
+        }
+        
+        // Zeigt die Lösung an
+        function showSolution() {
+            const solutionDiv = document.getElementById("solution");
+            solutionDiv.style.display = "block";
+            
+            let solutionText = "";
+            const taskType = currentTask.type;
+            const n = currentTask.n;
+            const r = currentTask.r;
+            const K0 = currentTask.K0;
+            const Kn = currentTask.Kn;
+            const p = currentTask.p;
+            const q = currentTask.q;
+            
+            if (taskType === "vorschüssige_kapitalmehrung") {
+                solutionText = `
+                    <h3>Lösung: Vorschüssige Kapitalmehrung</h3>
+                    <p>Bei der vorschüssigen Kapitalmehrung wird der Grundbetrag verzinst und zusätzlich zu Beginn jedes Jahres eine Rate eingezahlt.</p>
+                    <p><strong>Formel:</strong> Kₙ = K₀ · qⁿ + r · q · (qⁿ - 1)/(q - 1)</p>
+                    <p><strong>Gegeben:</strong> K₀ = ${formatCurrency(K0)} €, n = ${n} Jahre, p = ${p} %, r = ${formatCurrency(r)} €</p>
+                    <p><strong>Berechnung:</strong></p>
+                    <p>q = 1 + p/100 = 1 + ${p}/100 = ${q.toFixed(4)}</p>
+                    <p>Kₙ = ${formatCurrency(K0)} · ${q.toFixed(4)}^${n} + ${formatCurrency(r)} · ${q.toFixed(4)} · (${q.toFixed(4)}^${n} - 1)/(${q.toFixed(4)} - 1)</p>
+                    <p>Kₙ = ${formatCurrency(currentTask.result)} €</p>
+                    <p class="math"><strong>Ergebnis:</strong> Das Endkapital beträgt ${formatCurrency(currentTask.result)} €.</p>
+                `;
+            } else if (taskType === "nachschüssige_kapitalmehrung") {
+                solutionText = `
+                    <h3>Lösung: Nachschüssige Kapitalmehrung</h3>
+                    <p>Bei der nachschüssigen Kapitalmehrung wird der Grundbetrag verzinst und zusätzlich am Ende jedes Jahres eine Rate eingezahlt.</p>
+                    <p><strong>Formel:</strong> Kₙ = K₀ · qⁿ + r · (qⁿ - 1)/(q - 1)</p>
+                    <p><strong>Gegeben:</strong> K₀ = ${formatCurrency(K0)} €, n = ${n} Jahre, p = ${p} %, r = ${formatCurrency(r)} €</p>
+                    <p><strong>Berechnung:</strong></p>
+                    <p>q = 1 + p/100 = 1 + ${p}/100 = ${q.toFixed(4)}</p>
+                    <p>Kₙ = ${formatCurrency(K0)} · ${q.toFixed(4)}^${n} + ${formatCurrency(r)} · (${q.toFixed(4)}^${n} - 1)/(${q.toFixed(4)} - 1)</p>
+                    <p>Kₙ = ${formatCurrency(currentTask.result)} €</p>
+                    <p class="math"><strong>Ergebnis:</strong> Das Endkapital beträgt ${formatCurrency(currentTask.result)} €.</p>
+                `;
+            } else if (taskType === "vorschüssige_kapitalminderung") {
+                solutionText = `
+                    <h3>Lösung: Vorschüssige Kapitalminderung</h3>
+                    <p>Bei der vorschüssigen Kapitalminderung wird zu Beginn jedes Jahres eine Rate vom Kredit abgezahlt.</p>
+                    <p><strong>Formel:</strong> K₀ = (Kₙ - r · q · (qⁿ - 1)/(q - 1)) / qⁿ</p>
+                    <p><strong>Gegeben:</strong> Kₙ = ${formatCurrency(Kn)} €, n = ${n} Jahre, p = ${p} %, r = ${formatCurrency(r)} €</p>
+                    <p><strong>Berechnung:</strong></p>
+                    <p>q = 1 + p/100 = 1 + ${p}/100 = ${q.toFixed(4)}</p>
+                    <p>K₀ = (${formatCurrency(Kn)} - ${formatCurrency(r)} · ${q.toFixed(4)} · (${q.toFixed(4)}^${n} - 1)/(${q.toFixed(4)} - 1)) / ${q.toFixed(4)}^${n}</p>
+                    <p>K₀ = ${formatCurrency(currentTask.result)} €</p>
+                    <p class="math"><strong>Ergebnis:</strong> Die ursprüngliche Kreditsumme beträgt ${formatCurrency(currentTask.result)} €.</p>
+                `;
+            } else if (taskType === "nachschüssige_kapitalminderung") {
+                solutionText = `
+                    <h3>Lösung: Nachschüssige Kapitalminderung</h3>
+                    <p>Bei der nachschüssigen Kapitalminderung wird am Ende jedes Jahres eine Rate vom Kredit abgezahlt.</p>
+                    <p><strong>Formel:</strong> K₀ = (Kₙ - r · (qⁿ - 1)/(q - 1)) / qⁿ</p>
+                    <p><strong>Gegeben:</strong> Kₙ = ${formatCurrency(Kn)} €, n = ${n} Jahre, p = ${p} %, r = ${formatCurrency(r)} €</p>
+                    <p><strong>Berechnung:</strong></p>
+                    <p>q = 1 + p/100 = 1 + ${p}/100 = ${q.toFixed(4)}</p>
+                    <p>K₀ = (${formatCurrency(Kn)} - ${formatCurrency(r)} · (${q.toFixed(4)}^${n} - 1)/(${q.toFixed(4)} - 1)) / ${q.toFixed(4)}^${n}</p>
+                    <p>K₀ = ${formatCurrency(currentTask.result)} €</p>
+                    <p class="math"><strong>Ergebnis:</strong> Die ursprüngliche Kreditsumme beträgt ${formatCurrency(currentTask.result)} €.</p>
+                `;
+            }
+            
+            solutionDiv.innerHTML = solutionText;
+        }
+    </script>
+</body>
+</html>
