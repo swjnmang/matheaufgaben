@@ -124,13 +124,49 @@
             color: white;
         }
         
+        /* Verbesserte Darstellung der Formel */
         .formula-display {
             background-color: #f5f5f5;
-            padding: 10px;
+            padding: 15px;
             border-radius: 4px;
             text-align: center;
             margin: 15px 0;
-            font-size: 1.2em;
+            font-size: 1.4em;
+            font-family: "Times New Roman", Times, serif;
+        }
+        
+        .formula {
+            display: inline-block;
+            position: relative;
+            vertical-align: middle;
+            letter-spacing: 0.01em;
+        }
+        
+        .fraction {
+            display: inline-block;
+            vertical-align: middle;
+            text-align: center;
+            margin: 0 5px;
+        }
+        
+        .fraction .numerator {
+            border-bottom: 1px solid black;
+            padding: 0 5px;
+            display: block;
+            text-align: center;
+        }
+        
+        .fraction .denominator {
+            padding: 0 5px;
+            display: block;
+            text-align: center;
+        }
+        
+        /* Formeldarstellung in der Lösung */
+        .solution-formula {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 1.1em;
+            padding: 5px 0;
         }
     </style>
 </head>
@@ -139,15 +175,18 @@
         <h1>Aufgabengenerator: Zinsrechnung innerhalb eines Jahres</h1>
         
         <div class="formula-display">
-            Z = (K · p · t) / (100 · 360)
+            Z = <div class="fraction">
+                <span class="numerator">K · p · t</span>
+                <span class="denominator">100 · 360</span>
+            </div>
         </div>
         
         <p>
             <strong>Dabei gilt:</strong><br>
             Z = Zinsen in Euro<br>
             K = Kapital in Euro<br>
-            p = Zinssatz in Prozent<br>
-            t = Laufzeit in Tagen (1 bis 360 Tage)
+            p = Zinssatz in Prozent p.a.<br>
+            t = Laufzeit in Tagen
         </p>
         
         <div class="difficulty-selector">
@@ -203,6 +242,13 @@
                 });
             });
             
+            // Enter-Taste zum Prüfen der Antwort
+            document.getElementById("userAnswer").addEventListener("keypress", function(event) {
+                if (event.key === "Enter") {
+                    checkAnswer();
+                }
+            });
+            
             // Erste Aufgabe generieren
             generateNewTask();
         });
@@ -242,7 +288,6 @@
                     K = randomInt(1000, 10000);
                     p = randomInt(2, 6);
                     t = randomInt(30, 180); // 1-6 Monate
-                    Z = (K * p * t) / (100 * 360);
                     break;
                     
                 case "mittel":
@@ -250,7 +295,6 @@
                     K = randomInt(5000, 50000);
                     p = randomFloat(1.5, 7.5, 2);
                     t = randomInt(15, 270); // 0.5-9 Monate
-                    Z = (K * p * t) / (100 * 360);
                     break;
                     
                 case "schwer":
@@ -258,13 +302,14 @@
                     K = randomInt(10000, 100000);
                     p = randomFloat(1.25, 8.75, 2);
                     t = randomInt(7, 360); // Bis zu 360 Tage
-                    Z = (K * p * t) / (100 * 360);
                     break;
             }
             
             // Werte runden
-            Z = Math.round(Z * 100) / 100;
             K = Math.round(K * 100) / 100;
+            
+            // Zinsen exakt berechnen und auf 2 Nachkommastellen runden (für Euro-Beträge)
+            Z = parseFloat(((K * p * t) / (100 * 360)).toFixed(2));
             
             // Aufgabentext generieren
             let taskText = "";
@@ -277,16 +322,24 @@
                     result = Z;
                     break;
                 case "kapital":
+                    // Berechne K exakt auf 2 Nachkommastellen
+                    K = parseFloat(((Z * 100 * 360) / (p * t)).toFixed(2));
                     taskText = `Ein Kapital wird für ${t} Tage zu einem Zinssatz von ${p} % angelegt und ergibt Zinsen in Höhe von ${formatCurrency(Z)} €. Berechne das Kapital K.`;
                     promptText = "Euro";
                     result = K;
                     break;
                 case "zinssatz":
+                    // Berechne p exakt auf 2 Nachkommastellen
+                    p = parseFloat(((Z * 100 * 360) / (K * t)).toFixed(2));
                     taskText = `Ein Kapital von ${formatCurrency(K)} € wird für ${t} Tage angelegt und ergibt Zinsen in Höhe von ${formatCurrency(Z)} €. Berechne den Zinssatz p.`;
                     promptText = "%";
                     result = p;
                     break;
                 case "laufzeit":
+                    // Berechne t auf ganze Tage gerundet
+                    t = Math.round((Z * 100 * 360) / (K * p));
+                    // Neu berechnen des Z-Wertes, um Konsistenz zu gewährleisten
+                    Z = parseFloat(((K * p * t) / (100 * 360)).toFixed(2));
                     taskText = `Ein Kapital von ${formatCurrency(K)} € wird zu einem Zinssatz von ${p} % angelegt und ergibt Zinsen in Höhe von ${formatCurrency(Z)} €. Berechne die Laufzeit t in Tagen.`;
                     promptText = "Tage";
                     result = t;
@@ -323,18 +376,31 @@
                 userValue = NaN;
             }
             
+            // Überprüfen, ob die Eingabe eine gültige Zahl ist
+            if (isNaN(userValue)) {
+                resultMessage.style.display = "block";
+                resultMessage.className = "result incorrect";
+                resultMessage.textContent = "Bitte gib eine gültige Zahl ein.";
+                return;
+            }
+            
             // Toleranz für Rundungsfehler festlegen
             let tolerance;
             switch(currentTask.type) {
                 case "zinsen":
                 case "kapital":
                     tolerance = 0.01; // 1 Cent Toleranz bei Geldbeträgen
+                    
+                    // Runde den erwarteten Wert auf 2 Dezimalstellen für Euro-Beträge
+                    if (currentTask.type === "zinsen") {
+                        currentTask.result = parseFloat(currentTask.result.toFixed(2));
+                    }
                     break;
                 case "zinssatz":
                     tolerance = 0.01; // 0.01 Prozentpunkte Toleranz beim Zinssatz
                     break;
                 case "laufzeit":
-                    tolerance = 1; // 1 Tag Toleranz bei der Laufzeit
+                    tolerance = 0; // Keine Toleranz bei der Laufzeit (ganze Tage)
                     break;
                 default:
                     tolerance = 0.01;
@@ -370,11 +436,11 @@
                 case "zinsen":
                     solutionText = `
                         <h3>Lösung: Berechnung der Zinsen</h3>
-                        <p><strong>Formel:</strong> Z = (K · p · t) / (100 · 360)</p>
+                        <p class="solution-formula"><strong>Formel:</strong> Z = <div class="fraction"><span class="numerator">K · p · t</span><span class="denominator">100 · 360</span></div></p>
                         <p><strong>Gegeben:</strong> K = ${formatCurrency(K)} €, p = ${p} % und t = ${t} Tage</p>
                         <p><strong>Berechnung:</strong></p>
-                        <p>Z = (${formatCurrency(K)} · ${p} · ${t}) / (100 · 360)</p>
-                        <p>Z = (${(K * p * t).toFixed(2)}) / ${(100 * 360)}</p>
+                        <p>Z = <div class="fraction"><span class="numerator">${formatCurrency(K)} · ${p} · ${t}</span><span class="denominator">100 · 360</span></div></p>
+                        <p>Z = <div class="fraction"><span class="numerator">${(K * p * t).toFixed(2)}</span><span class="denominator">${(100 * 360)}</span></div></p>
                         <p>Z = ${formatCurrency(Z)} €</p>
                         <p class="math"><strong>Ergebnis:</strong> Die Zinsen betragen ${formatCurrency(Z)} €.</p>
                     `;
@@ -383,12 +449,12 @@
                 case "kapital":
                     solutionText = `
                         <h3>Lösung: Berechnung des Kapitals</h3>
-                        <p><strong>Formel:</strong> Z = (K · p · t) / (100 · 360)</p>
-                        <p>Umgestellt nach K: K = (Z · 100 · 360) / (p · t)</p>
+                        <p class="solution-formula"><strong>Formel:</strong> Z = <div class="fraction"><span class="numerator">K · p · t</span><span class="denominator">100 · 360</span></div></p>
+                        <p class="solution-formula">Umgestellt nach K: K = <div class="fraction"><span class="numerator">Z · 100 · 360</span><span class="denominator">p · t</span></div></p>
                         <p><strong>Gegeben:</strong> Z = ${formatCurrency(Z)} €, p = ${p} % und t = ${t} Tage</p>
                         <p><strong>Berechnung:</strong></p>
-                        <p>K = (${formatCurrency(Z)} · 100 · 360) / (${p} · ${t})</p>
-                        <p>K = ${(Z * 100 * 360).toFixed(2)} / ${(p * t).toFixed(2)}</p>
+                        <p>K = <div class="fraction"><span class="numerator">${formatCurrency(Z)} · 100 · 360</span><span class="denominator">${p} · ${t}</span></div></p>
+                        <p>K = <div class="fraction"><span class="numerator">${(Z * 100 * 360).toFixed(2)}</span><span class="denominator">${(p * t).toFixed(2)}</span></div></p>
                         <p>K = ${formatCurrency(K)} €</p>
                         <p class="math"><strong>Ergebnis:</strong> Das Kapital beträgt ${formatCurrency(K)} €.</p>
                     `;
@@ -397,12 +463,12 @@
                 case "zinssatz":
                     solutionText = `
                         <h3>Lösung: Berechnung des Zinssatzes</h3>
-                        <p><strong>Formel:</strong> Z = (K · p · t) / (100 · 360)</p>
-                        <p>Umgestellt nach p: p = (Z · 100 · 360) / (K · t)</p>
+                        <p class="solution-formula"><strong>Formel:</strong> Z = <div class="fraction"><span class="numerator">K · p · t</span><span class="denominator">100 · 360</span></div></p>
+                        <p class="solution-formula">Umgestellt nach p: p = <div class="fraction"><span class="numerator">Z · 100 · 360</span><span class="denominator">K · t</span></div></p>
                         <p><strong>Gegeben:</strong> Z = ${formatCurrency(Z)} €, K = ${formatCurrency(K)} € und t = ${t} Tage</p>
                         <p><strong>Berechnung:</strong></p>
-                        <p>p = (${formatCurrency(Z)} · 100 · 360) / (${formatCurrency(K)} · ${t})</p>
-                        <p>p = ${(Z * 100 * 360).toFixed(2)} / ${(K * t).toFixed(2)}</p>
+                        <p>p = <div class="fraction"><span class="numerator">${formatCurrency(Z)} · 100 · 360</span><span class="denominator">${formatCurrency(K)} · ${t}</span></div></p>
+                        <p>p = <div class="fraction"><span class="numerator">${(Z * 100 * 360).toFixed(2)}</span><span class="denominator">${(K * t).toFixed(2)}</span></div></p>
                         <p>p = ${p.toFixed(2)} %</p>
                         <p class="math"><strong>Ergebnis:</strong> Der Zinssatz beträgt ${p.toFixed(2)} %.</p>
                     `;
@@ -411,12 +477,12 @@
                 case "laufzeit":
                     solutionText = `
                         <h3>Lösung: Berechnung der Laufzeit</h3>
-                        <p><strong>Formel:</strong> Z = (K · p · t) / (100 · 360)</p>
-                        <p>Umgestellt nach t: t = (Z · 100 · 360) / (K · p)</p>
+                        <p class="solution-formula"><strong>Formel:</strong> Z = <div class="fraction"><span class="numerator">K · p · t</span><span class="denominator">100 · 360</span></div></p>
+                        <p class="solution-formula">Umgestellt nach t: t = <div class="fraction"><span class="numerator">Z · 100 · 360</span><span class="denominator">K · p</span></div></p>
                         <p><strong>Gegeben:</strong> Z = ${formatCurrency(Z)} €, K = ${formatCurrency(K)} € und p = ${p} %</p>
                         <p><strong>Berechnung:</strong></p>
-                        <p>t = (${formatCurrency(Z)} · 100 · 360) / (${formatCurrency(K)} · ${p})</p>
-                        <p>t = ${(Z * 100 * 360).toFixed(2)} / ${(K * p).toFixed(2)}</p>
+                        <p>t = <div class="fraction"><span class="numerator">${formatCurrency(Z)} · 100 · 360</span><span class="denominator">${formatCurrency(K)} · ${p}</span></div></p>
+                        <p>t = <div class="fraction"><span class="numerator">${(Z * 100 * 360).toFixed(2)}</span><span class="denominator">${(K * p).toFixed(2)}</span></div></p>
                         <p>t = ${t} Tage</p>
                         <p class="math"><strong>Ergebnis:</strong> Die Laufzeit beträgt ${t} Tage.</p>
                     `;
