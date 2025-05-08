@@ -102,12 +102,8 @@
             opacity: 0.7;
             cursor: not-allowed;
         }
-        /* Die Klassen richtig und falsch werden jetzt nur temporär auf den GEKLICKTEN Button angewendet */
-        .antwort-button.richtig {
-             background-color: #48bb78;
-             color: white;
-             border-color: #38a169;
-        }
+        /* Die Klasse falsch wird nur temporär auf den GEKLICKTEN Button angewendet */
+        /* Die Klasse richtig wird hier nicht mehr für Buttons verwendet */
          .antwort-button.falsch {
              background-color: #e53e3e;
              color: white;
@@ -587,8 +583,20 @@
             let aufgabe;
             let richtigeAntwort;
 
+            let attempts = 0; // Add counter
+            const maxAttempts = 1000; // Max attempts to prevent infinite loop
+
+
              // Schleife, um sicherzustellen, dass es kombinierbare Terme gibt
             do {
+                attempts++;
+                if (attempts > maxAttempts) {
+                    console.error("Could not generate a valid 'schwer' task after multiple attempts.");
+                    // Fallback: Return a simple task for hard level if generation fails
+                    return ["2x<sup>3</sup> + 3x<sup>3</sup>", ["5x<sup>3</sup>", "6x<sup>3</sup>", "5x<sup>4</sup>", "0"], "5x<sup>3</sup>"];
+                }
+
+
                 koeffizient1 = Math.floor(Math.random() * 15) - 5; // Auch negative Koeffizienten
                 koeffizient2 = Math.floor(Math.random() * 15) - 5;
                 koeffizient3 = Math.floor(Math.random() * 15) - 5;
@@ -701,7 +709,8 @@
                 // Antwort ist RICHTIG
                 feedback.textContent = "Richtig!";
                 feedback.className = "feedback richtig-feedback";
-                geklickterButton.classList.add("richtig"); // Geklickten richtigen Button grün markieren
+                // *** WICHTIG: Der Button wird NICHT grün markiert ***
+
 
                 // Zähle nur den ERSTEN richtigen Versuch für die Level-Statistik
                 if (!aufgabeWurdeSchonVersucht) { // Wenn dies der erste Versuch bei dieser Aufgabe ÜBERHAUPT war
@@ -759,12 +768,15 @@
                 streak = 0; // Streak zurücksetzen
 
                  // *** WICHTIG: Keine Markierung des richtigen Buttons hier! ***
+                 // Der Code, der den richtigen Button grün markiert hat, wurde entfernt.
 
                  // Zähle den Versuch als "Aufgabe versucht", wenn es der allererste Versuch bei dieser Aufgabe war.
+                 // aufgabeWurdeSchonVersucht wird true gesetzt, egal ob der erste Versuch richtig oder falsch war
                  if (!aufgabeWurdeSchonVersucht) {
-                     // anzahlAufgaben wird in neueAufgabe inkrementiert
+                     // anzahlAufgaben wird in neueAufgabe inkrementiert (zählt die gestarteten Aufgaben)
                      aufgabeWurdeSchonVersucht = true; // Aufgabe wurde jetzt zum ersten Mal versucht (falsch)
                  }
+
 
                 updateAnzeigen(); // Anzeigen aktualisieren
 
@@ -773,7 +785,8 @@
                      document.querySelectorAll('.antwort-button').forEach(button => {
                          button.disabled = false;
                          // Temporäre Klassen wieder entfernen
-                         button.classList.remove('richtig', 'falsch');
+                         // Stelle sicher, dass hier NICHT versehentlich die richtige Antwort markiert wird
+                         button.classList.remove('richtig', 'falsch'); // Entfernt nur die temp. Klassen
                      });
                      // Feedback-Nachricht stehen lassen, bis der Schüler erneut klickt
                  }, 800); // Kurze Verzögerung (z.B. 800ms)
