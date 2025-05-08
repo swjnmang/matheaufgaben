@@ -10,7 +10,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start; 
+            justify-content: flex-start;
             min-height: 100vh;
             margin: 0;
             background-color: #f0f0f0;
@@ -27,7 +27,7 @@
             width: 100%;
             max-width: 600px;
             text-align: center;
-            margin-top: 20px; 
+            margin-top: 20px;
         }
 
         #task-instructions {
@@ -41,29 +41,29 @@
         }
 
         #example-task-area {
-            font-size: 1em; 
+            font-size: 1em;
             margin-bottom: 20px;
-            padding: 15px; 
+            padding: 15px;
             background-color: #e9ecef;
             border: 1px solid #ced4da;
             border-radius: 5px;
-            text-align: center; 
-            min-height: 40px; 
-            line-height: 1.6; 
+            text-align: center;
+            min-height: 40px;
+            line-height: 1.6;
         }
 
-        .coeff-color { 
-            color: #007bff; 
+        .coeff-color {
+            color: #007bff;
             font-weight: bold;
         }
 
-        .operator-color { 
-            color: #dc3545; 
+        .operator-color {
+            color: #dc3545;
             font-weight: bold;
         }
 
-        .result-coeff-color { 
-            color: #28a745; 
+        .result-coeff-color {
+            color: #28a745;
             font-weight: bold;
         }
 
@@ -79,7 +79,7 @@
             padding: 10px;
             background-color: #e7f3fe;
             border-radius: 5px;
-            min-width: 100px; /* Etwas mehr Platz für Levelnamen */
+            min-width: 100px;
         }
 
         #question-area {
@@ -93,6 +93,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            word-wrap: break-word;
         }
 
         .answer-buttons {
@@ -128,7 +129,7 @@
             min-height: 30px;
             margin-bottom: 20px;
         }
-        
+
         .feedback-correct {
             color: green;
         }
@@ -152,7 +153,7 @@
         #next-question-btn:hover, #restart-btn:hover {
             background-color: #0056b3;
         }
-         #next-question-btn:disabled {
+        #next-question-btn:disabled {
             background-color: #d0d0d0;
             cursor: not-allowed;
         }
@@ -163,7 +164,7 @@
             font-size: 1.2em;
             margin-bottom: 15px;
         }
-        
+
         .final-level-message {
             color: #17a2b8;
             font-weight: bold;
@@ -178,19 +179,18 @@
                 gap: 10px;
             }
             .answer-buttons {
-                grid-template-columns: 1fr; 
+                grid-template-columns: 1fr;
             }
             #question-area {
                 font-size: 1.5em;
             }
             #example-task-area {
-                font-size: 0.9em; 
+                font-size: 0.9em;
             }
             .answer-buttons button {
                 font-size: 1em;
             }
         }
-
     </style>
 </head>
 <body>
@@ -203,7 +203,7 @@
         <div id="example-task-area">
             {/* Beispielaufgabe wird hier per JavaScript eingefügt */}
         </div>
-        
+
         <div class="stats-container">
             <div id="level-display">Level: Einfach</div>
             <div id="score-display">Punkte: 0</div>
@@ -215,16 +215,16 @@
 
 
         <div id="question-area">Lädt...</div>
-        
+
         <div class="answer-buttons">
             <button id="ans-btn-0"></button>
             <button id="ans-btn-1"></button>
             <button id="ans-btn-2"></button>
             <button id="ans-btn-3"></button>
         </div>
-        
+
         <div id="feedback-area"></div>
-        
+
         <button id="next-question-btn" disabled>Nächste Frage</button>
         <button id="restart-btn" style="display: none;">Neu starten</button>
     </div>
@@ -239,7 +239,7 @@
         let currentQuestionData = null;
 
         const MAX_LEVEL = 4;
-        const LEVEL_NAMES = { // NEU: Level-Namen
+        const LEVEL_NAMES = {
             1: "Einfach",
             2: "Mittel",
             3: "Schwer",
@@ -251,7 +251,7 @@
         const scoreDisplay = document.getElementById('score-display');
         const streakDisplay = document.getElementById('streak-display');
         const questionArea = document.getElementById('question-area');
-        const exampleTaskArea = document.getElementById('example-task-area'); 
+        const exampleTaskArea = document.getElementById('example-task-area');
         const answerButtons = [
             document.getElementById('ans-btn-0'),
             document.getElementById('ans-btn-1'),
@@ -295,9 +295,9 @@
                 termStr += " + ";
             }
 
-            if (absCoeff !== 1 || base === "" || (base !== "" && exponent === 0) ) { 
-                 termStr += absCoeff;
-            } else if (absCoeff === 1 && base === "" && coeff !== 0) { 
+            if (absCoeff !== 1 || base === "" || (base !== "" && exponent === 0) ) {
+                termStr += absCoeff;
+            } else if (absCoeff === 1 && base === "" && coeff !== 0) {
                 termStr += absCoeff;
             }
 
@@ -310,7 +310,7 @@
             }
             return termStr;
         }
-        
+
         // Funktion zur Darstellung des gesamten Ausdrucks
         function formatExpression(terms) {
             let expression = "";
@@ -348,9 +348,9 @@
                     let c3Display = Math.abs(c3);
                     exampleHtml += `${exFormatCoeff(c1)}${varChar}<sup>${exp}</sup>${exFormatOperator('+')}${exFormatCoeff(c2)}${varChar}<sup>${exp}</sup> ${c3 < 0 ? exFormatOperator('-') : exFormatOperator('+')} ${exFormatCoeff(c3Display)}${varChar}<sup>${exp}</sup> = (${exFormatCoeff(c1)}${exFormatOperator('+')}${exFormatCoeff(c2)} ${c3 < 0 ? exFormatOperator('-') : exFormatOperator('+')} ${exFormatCoeff(c3Display)})${varChar}<sup>${exp}</sup> = ${exFormatResultCoeff(res)}${varChar}<sup>${exp}</sup>`;
                     break;
-                case 4: 
+                case 4:
                     c1 = 1.5; c2 = -4.0; c3 = 2.5; varChar = "k"; exp = 6;
-                    res = parseFloat((c1 + c2 + c3).toFixed(1)); 
+                    res = parseFloat((c1 + c2 + c3).toFixed(1));
                     let c1F = c1.toString().includes('.') ? c1.toFixed(1) : c1;
                     let c2DispF = (Math.abs(c2)).toString().includes('.') ? (Math.abs(c2)).toFixed(1) : Math.abs(c2);
                     let c3F = c3.toString().includes('.') ? c3.toFixed(1) : c3;
@@ -372,130 +372,154 @@
             let coeffMin, coeffMax;
             let expMin, expMax;
             let variables = ['a', 'b', 'c', 'x', 'y', 'z', 'm', 'n', 'p', 'k'];
-            let baseVar = variables[getRandomInt(0, variables.length - 1)];
-            let baseExponent = 1;
+            let baseVars = [];
+            let baseExponents = [];
             let useComplexBase = false;
             let useDecimalCoeffs = false;
 
+
             switch (level) {
-                case 1: 
+                case 1:
                     numTerms = 2; coeffMin = 1; coeffMax = 10; expMin = 2; expMax = 5;
-                    baseExponent = getRandomInt(expMin, expMax);
+                    baseExponents = [getRandomInt(expMin, expMax)];
+                    baseVars = [variables[getRandomInt(0, variables.length - 1)]];
                     break;
-                case 2: 
-                    numTerms = getRandomInt(2, 3); coeffMin = -10; coeffMax = 10; 
+                case 2:
+                    numTerms = getRandomInt(2, 3); coeffMin = -10; coeffMax = 10;
                     expMin = 2; expMax = 7;
-                    baseExponent = getRandomInt(expMin, expMax);
+                    baseExponents = [getRandomInt(expMin, expMax)];
+                    baseVars = [variables[getRandomInt(0, variables.length - 1)]];
                     break;
-                case 3: 
+                case 3:
                     numTerms = 3; coeffMin = -15; coeffMax = 15; expMin = 2; expMax = 10;
-                    baseExponent = getRandomInt(expMin, expMax);
-                    useComplexBase = Math.random() < 0.3; 
+                    baseExponents = [getRandomInt(expMin, expMax)];
+                    baseVars = [variables[getRandomInt(0, variables.length - 1)]];
+                    useComplexBase = Math.random() < 0.3;
                     break;
-                case 4: 
+                case 4:
                     numTerms = getRandomInt(3, 4); coeffMin = -20; coeffMax = 20;
                     expMin = 2; expMax = 12;
-                    baseExponent = getRandomInt(expMin, expMax);
-                    useComplexBase = Math.random() < 0.5; 
+                    baseExponents = [];
+                    baseVars = [];
+                    for (let i = 0; i < numTerms; i++) {
+                        baseExponents.push(getRandomInt(expMin, expMax));
+                        baseVars.push(variables[getRandomInt(0, variables.length - 1)]);
+                    }
+                    useComplexBase = Math.random() < 0.5;
                     useDecimalCoeffs = Math.random() < 0.3;
                     break;
-                default: 
+                default:
                     numTerms = 2; coeffMin = 1; coeffMax = 5; expMin = 2; expMax = 3;
-                    baseExponent = getRandomInt(expMin, expMax);
+                    baseExponents = [getRandomInt(expMin, expMax)];
+                    baseVars = [variables[getRandomInt(0, variables.length - 1)]];
             }
-            
-            if (useComplexBase) {
-                let type = getRandomInt(1,2);
-                let var1 = variables[getRandomInt(0,variables.length-1)];
-                let var2 = variables[getRandomInt(0,variables.length-1)];
-                while(var1 === var2 && variables.length > 1) var2 = variables[getRandomInt(0,variables.length-1)]; 
 
-                if (type === 1 && variables.length >=2) { 
-                    baseVar = `(${var1}${var2})`;
-                } else { 
-                    baseVar = `(${getRandomInt(2,5)}${var1})`;
-                }
-            }
+             let commonBase = "";
+             let commonExponent = 0;
 
 
             let terms = [];
             let totalCoeff = 0;
 
+            if(level < 4) {
+                commonBase = baseVars[0];
+                commonExponent = baseExponents[0];
+            }
+
+
             for (let i = 0; i < numTerms; i++) {
                 let coeff;
-                do {
-                     if(useDecimalCoeffs) {
-                        coeff = getRandomDecimal(coeffMin, coeffMax, 1); 
-                        if (coeff % 1 === 0) coeff = Math.round(coeff);
-                     } else {
+                 do {
+                      if(useDecimalCoeffs) {
+                        coeff = getRandomDecimal(coeffMin, coeffMax, 1);
+                         if (coeff % 1 === 0) coeff = Math.round(coeff);
+                      } else {
                         coeff = getRandomInt(coeffMin, coeffMax);
-                     }
-                } while (coeff === 0); 
-                terms.push({ coeff: coeff, base: baseVar, exponent: baseExponent });
-                if (useDecimalCoeffs) {
-                    totalCoeff = parseFloat((totalCoeff + coeff).toFixed(10)); 
-                } else {
-                    totalCoeff += coeff;
-                }
-            }
-            
-            if (totalCoeff === 0 && terms.length > 1) {
-                let adjustment = (Math.random() < 0.5 ? 1 : -1);
-                if (useDecimalCoeffs) adjustment = (Math.random() < 0.5 ? 0.1 : -0.1); // Kleinere Anpassung für Dezimalzahlen
+                      }
+                 } while (coeff === 0);
+                let base = level < 4 ? commonBase : baseVars[i];
+                let exponent = level < 4 ? commonExponent : baseExponents[i];
 
-                terms[terms.length-1].coeff = parseFloat((terms[terms.length-1].coeff + adjustment).toFixed(10));
-                 if(terms[terms.length-1].coeff === 0) terms[terms.length-1].coeff += adjustment; 
-                
-                totalCoeff = 0; 
-                for(const term of terms) {
-                     if (useDecimalCoeffs) {
-                        totalCoeff = parseFloat((totalCoeff + term.coeff).toFixed(10));
-                     } else {
-                        totalCoeff += term.coeff;
-                     }
+                if (useComplexBase && level >= 3) {
+                    let type = getRandomInt(1,2);
+                    let var1 = variables[getRandomInt(0,variables.length-1)];
+                    let var2 = variables[getRandomInt(0,variables.length-1)];
+                     while(var1 === var2 && variables.length > 1) var2 = variables[getRandomInt(0,variables.length-1)];
+
+                    if (type === 1 && variables.length >= 2) {
+                        base = `(${var1}${var2})`;
+                    } else {
+                         base = `(${getRandomInt(2,5)}${var1})`;
+                    }
                 }
+
+                terms.push({ coeff: coeff, base: base, exponent: exponent });
+                 if (useDecimalCoeffs) {
+                      totalCoeff = parseFloat((totalCoeff + coeff).toFixed(10));
+                 } else {
+                      totalCoeff += coeff;
+                 }
             }
+
+            if (totalCoeff === 0 && terms.length > 1) {
+                 let adjustment = (Math.random() < 0.5 ? 1 : -1);
+                 if (useDecimalCoeffs) adjustment = (Math.random() < 0.5 ? 0.1 : -0.1);
+
+                 terms[terms.length-1].coeff = parseFloat((terms[terms.length-1].coeff + adjustment).toFixed(10));
+                  if(terms[terms.length-1].coeff === 0) terms[terms.length-1].coeff += adjustment;
+
+                 totalCoeff = 0;
+                  for(const term of terms) {
+                       if (useDecimalCoeffs) {
+                         totalCoeff = parseFloat((totalCoeff + term.coeff).toFixed(10));
+                       } else {
+                         totalCoeff += term.coeff;
+                       }
+                  }
+             }
              if (useDecimalCoeffs && totalCoeff % 1 !== 0) {
                 totalCoeff = parseFloat(totalCoeff.toFixed(1));
-            } else if (useDecimalCoeffs) { // Auch wenn es .0 ist, als Ganzzahl behandeln
+             } else if (useDecimalCoeffs) {
                 totalCoeff = Math.round(totalCoeff);
-            }
+             }
+
 
 
             const questionText = formatExpression(terms);
             const correctAnswerNumeric = totalCoeff;
-            const correctAnswerFormatted = formatTerm(correctAnswerNumeric, baseVar, baseExponent, true).replace(/\s*[\+\-]\s*$/, '').trim();
+            const correctAnswerFormatted = formatTerm(correctAnswerNumeric, commonBase, commonExponent, true).replace(/\s*[\+\-]\s*$/, '').trim();
+
 
 
             let answers = [correctAnswerFormatted];
             while (answers.length < 4) {
                 let wrongCoeff;
-                let wrongExp = baseExponent;
-                let wrongBase = baseVar;
+                let wrongExp = commonExponent;
+                let wrongBase = commonBase;
 
-                let errorType = getRandomInt(1, 3);
-                if (useDecimalCoeffs) { 
-                     let deviation = getRandomInt(1,30) / 10.0 * (Math.random() < 0.5 ? 1 : -1); 
-                     wrongCoeff = parseFloat((correctAnswerNumeric + deviation).toFixed(1));
-                     if (wrongCoeff % 1 === 0) wrongCoeff = Math.round(wrongCoeff);
-                     if (wrongCoeff === correctAnswerNumeric) wrongCoeff = parseFloat((correctAnswerNumeric + 0.1 * (Math.random() < 0.5 ? 1 : -1)).toFixed(1));
-                     if (wrongCoeff % 1 === 0) wrongCoeff = Math.round(wrongCoeff); // Ensure .0 becomes integer
+                 let errorType = getRandomInt(1, 3);
+                 if (useDecimalCoeffs) {
+                      let deviation = getRandomInt(1,30) / 10.0 * (Math.random() < 0.5 ? 1 : -1);
+                      wrongCoeff = parseFloat((correctAnswerNumeric + deviation).toFixed(1));
+                      if (wrongCoeff % 1 === 0) wrongCoeff = Math.round(wrongCoeff);
+                      if (wrongCoeff === correctAnswerNumeric) wrongCoeff = parseFloat((correctAnswerNumeric + 0.1 * (Math.random() < 0.5 ? 1 : -1)).toFixed(1));
+                      if (wrongCoeff % 1 === 0) wrongCoeff = Math.round(wrongCoeff);
 
-                } else {
-                    if (errorType === 1) { 
+                 } else {
+                      if (errorType === 1) {
                         wrongCoeff = correctAnswerNumeric + getRandomInt(-5, 5);
-                        if (wrongCoeff === correctAnswerNumeric) wrongCoeff += (Math.random() < 0.5 ? 1 : -1); 
-                    } else if (errorType === 2 && baseExponent > 1) { 
-                        wrongCoeff = correctAnswerNumeric;
-                        wrongExp = baseExponent + getRandomInt(-1,1);
-                        if(wrongExp === baseExponent || wrongExp <=0) wrongExp = baseExponent + (baseExponent > 2 ? -1 : 1);
-                         if(wrongExp === 0) wrongExp = 1; 
-                    } else { 
-                        wrongCoeff = terms[getRandomInt(0, terms.length - 1)].coeff + getRandomInt(-2,2);
                          if (wrongCoeff === correctAnswerNumeric) wrongCoeff += (Math.random() < 0.5 ? 1 : -1);
-                    }
-                }
-                 if (wrongCoeff === 0 && wrongBase !== "") wrongCoeff = (Math.random() < 0.5 ? 1 : -1); 
+                      } else if (errorType === 2 && commonExponent > 1) {
+                        wrongCoeff = correctAnswerNumeric;
+                        wrongExp = commonExponent + getRandomInt(-1,1);
+                         if(wrongExp === commonExponent || wrongExp <= 0) wrongExp = commonExponent + (commonExponent > 2 ? -1 : 1);
+                         if(wrongExp === 0) wrongExp = 1;
+                      } else {
+                         wrongCoeff = terms[getRandomInt(0, terms.length - 1)].coeff + getRandomInt(-2,2);
+                         if (wrongCoeff === correctAnswerNumeric) wrongCoeff += (Math.random() < 0.5 ? 1 : -1);
+                      }
+                 }
+                 if (wrongCoeff === 0 && wrongBase !== "") wrongCoeff = (Math.random() < 0.5 ? 1 : -1);
 
                 let formattedWrongAnswer = formatTerm(wrongCoeff, wrongBase, wrongExp, true).replace(/\s*[\+\-]\s*$/, '').trim();
                 if (!answers.includes(formattedWrongAnswer) && formattedWrongAnswer !== correctAnswerFormatted) {
@@ -509,25 +533,24 @@
                 text: questionText,
                 options: answers,
                 correctAnswer: correctAnswerFormatted,
-                terms: terms 
+                terms: terms
             };
         }
 
         // Funktion zur Anzeige der Frage und Antworten
         function displayQuestion() {
-            levelUpMsgArea.style.display = 'none'; 
+            levelUpMsgArea.style.display = 'none';
             finalLevelMsgArea.style.display = 'none';
-            generateAndDisplayExampleTask(currentLevel); 
+            generateAndDisplayExampleTask(currentLevel);
 
             currentQuestionData = generateQuestion(currentLevel);
             questionArea.innerHTML = currentQuestionData.text;
-            
+
             answerButtons.forEach((button, index) => {
                 button.innerHTML = currentQuestionData.options[index];
                 button.disabled = false;
-                button.onclick = () => checkAnswer(index);
-            });
-            
+                button.onclick = () => checkAnswer(index);});
+
             feedbackArea.textContent = "";
             feedbackArea.className = "";
             nextQuestionBtn.disabled = true;
@@ -541,7 +564,7 @@
             if (selectedAnswer === currentQuestionData.correctAnswer) {
                 feedbackArea.textContent = "Richtig!";
                 feedbackArea.className = "feedback-correct";
-                score += 10 * currentLevel; 
+                score += 10 * currentLevel;
                 streak++;
                 correctAnswersInLevel++;
             } else {
@@ -555,37 +578,36 @@
             updateScoreboard();
             checkLevelUp();
         }
-        
+
         // Funktion zur Aktualisierung der Anzeigen
         function updateScoreboard() {
-            levelDisplay.textContent = `Level: ${LEVEL_NAMES[currentLevel]}`; // Level-Name verwenden
+            levelDisplay.textContent = `Level: ${LEVEL_NAMES[currentLevel]}`;
             scoreDisplay.textContent = `Punkte: ${score}`;
             streakDisplay.textContent = `Streak: ${streak}`;
         }
 
         // Funktion zur Überprüfung des Level-Aufstiegs
         function checkLevelUp() {
-            if (questionsAnsweredInLevel >= 5) {
-                const accuracy = correctAnswersInLevel / questionsAnsweredInLevel;
-                if (accuracy >= 0.8) {
-                    if (currentLevel < MAX_LEVEL) {
-                        currentLevel++;
-                        // generateAndDisplayExampleTask(currentLevel); // Wird schon in displayQuestion gemacht
-                        levelUpMsgArea.textContent = `Glückwunsch! Du hast Level ${LEVEL_NAMES[currentLevel]} erreicht!`;
-                        levelUpMsgArea.style.display = 'block';
-                        questionsAnsweredInLevel = 0;
-                        correctAnswersInLevel = 0;
-                    } else if (currentLevel === MAX_LEVEL && !finalLevelMsgArea.textContent) {
-                        finalLevelMsgArea.textContent = "Super! Du hast das höchste Level gemeistert!";
-                        finalLevelMsgArea.style.display = 'block';
-                        nextQuestionBtn.textContent = "Nochmal Level " + LEVEL_NAMES[MAX_LEVEL];
-                    }
-                } else if (questionsAnsweredInLevel >= 8 && currentLevel < MAX_LEVEL) { 
-                    feedbackArea.textContent += ` (Versuche es weiter in Level ${LEVEL_NAMES[currentLevel]})`;
-                }
-            }
+             if (questionsAnsweredInLevel >= 5) {
+                 const accuracy = correctAnswersInLevel / questionsAnsweredInLevel;
+                 if (accuracy >= 0.8) {
+                      if (currentLevel < MAX_LEVEL) {
+                         currentLevel++;
+                         levelUpMsgArea.textContent = `Glückwunsch! Du hast Level ${LEVEL_NAMES[currentLevel]} erreicht!`;
+                         levelUpMsgArea.style.display = 'block';
+                         questionsAnsweredInLevel = 0;
+                         correctAnswersInLevel = 0;
+                      } else if (currentLevel === MAX_LEVEL && !finalLevelMsgArea.textContent) {
+                         finalLevelMsgArea.textContent = "Super! Du hast das höchste Level gemeistert!";
+                         finalLevelMsgArea.style.display = 'block';
+                         nextQuestionBtn.textContent = "Nochmal Level " + LEVEL_NAMES[MAX_LEVEL];
+                      }
+                 } else if (questionsAnsweredInLevel >= 8 && currentLevel < MAX_LEVEL) {
+                      feedbackArea.textContent += ` (Versuche es weiter in Level ${LEVEL_NAMES[currentLevel]})`;
+                 }
+             }
         }
-        
+
         function handleNextQuestion() {
             displayQuestion();
         }
@@ -593,7 +615,7 @@
 
         // Event Listener
         nextQuestionBtn.addEventListener('click', handleNextQuestion);
-        
+
         restartBtn.addEventListener('click', () => {
             currentLevel = 1;
             score = 0;
@@ -601,12 +623,11 @@
             questionsAnsweredInLevel = 0;
             correctAnswersInLevel = 0;
             updateScoreboard();
-            // generateAndDisplayExampleTask(currentLevel); // Wird in displayQuestion gemacht
             displayQuestion();
             levelUpMsgArea.style.display = 'none';
             finalLevelMsgArea.style.display = 'none';
             nextQuestionBtn.textContent = "Nächste Frage";
-            restartBtn.style.display = 'inline-block'; 
+            restartBtn.style.display = 'inline-block';
             nextQuestionBtn.style.display = 'inline-block';
         });
 
@@ -614,9 +635,8 @@
         // Initialisierung des Spiels
         function initGame() {
             updateScoreboard();
-            // generateAndDisplayExampleTask(currentLevel); // Wird in displayQuestion gemacht
             displayQuestion();
-            restartBtn.style.display = 'inline-block'; 
+            restartBtn.style.display = 'inline-block';
         }
 
         initGame();
