@@ -9,20 +9,30 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            background-color: #e2e8f0; /* Leichter Hintergrund */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+            box-sizing: border-box;
         }
         .container {
             max-width: 800px;
-            margin: 2rem auto;
-            padding: 1rem;
-            background-color: #f7fafc;
-            border-radius: 0.5rem;
-            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+            width: 100%;
+            margin: 0 auto; /* Zentrieren */
+            padding: 2rem; /* Mehr Padding */
+            background-color: #ffffff; /* Hellerer Hintergrund */
+            border-radius: 0.75rem; /* Abgerundetere Ecken */
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); /* Stärkerer Schatten */
+            text-align: center; /* Zentrierter Text */
         }
         h1 {
-            font-size: 2rem;
+            font-size: 2.5rem; /* Größerer Titel */
             margin-bottom: 1.5rem;
             color: #2d3748;
             text-align: center;
+            font-weight: 700; /* Fetter */
         }
         h2 {
             font-size: 1.5rem;
@@ -43,26 +53,28 @@
         }
         .leicht {
             background-color: #f0fdf4;
-            color: #38a169;
+            color: #10b981; /* Kräftigeres Grün */
         }
         .mittel {
             background-color: #fff7ed;
-            color: #e65100;
+            color: #f97316; /* Kräftigeres Orange */
         }
         .schwer {
-            background-color: #fef0f0;
-            color: #b91c1c;
+            background-color: #fef2f2;
+            color: #ef4444; /* Kräftigeres Rot */
         }
         .aufgabe {
-            font-size: 1.25rem;
-            margin-bottom: 1rem;
+            font-size: 1.5rem; /* Größerer Aufgabentext */
+            margin: 1.5rem 0; /* Mehr Abstand */
             color: #2d3748;
+            font-weight: 600;
         }
         .antwort-bereich {
             margin-bottom: 1.5rem;
             display: flex;
             flex-wrap: wrap;
             gap: 0.75rem;
+            justify-content: center; /* Buttons zentrieren */
         }
         .antwort-button {
             padding: 0.75rem 1.5rem;
@@ -70,38 +82,43 @@
             font-weight: 600;
             color: #2d3748;
             cursor: pointer;
-            border: none;
-            transition: background-color 0.15s ease-in-out, transform 0.1s ease-in-out;
-            font-size: 1rem;
-            margin-right: 0.5rem;
-            margin-bottom: 0.5rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: fit-content;
+            border: 1px solid #cbd5e0; /* Leichter Border */
             background-color: #edf2f7;
+            transition: background-color 0.15s ease-in-out, transform 0.1s ease-in-out, border-color 0.15s ease-in-out;
+            font-size: 1rem;
+            min-width: 120px; /* Mindestbreite für Buttons */
+            text-align: center;
         }
-        .antwort-button:hover {
+        .antwort-button:hover:not(:disabled) { /* Hover nur, wenn nicht disabled */
             transform: translateY(-0.125rem);
-            background-color: #e2e8f0;
+            background-color: #dce3eb; /* Dunkleres Hover */
+            border-color: #a0aec0;
         }
         .antwort-button:focus {
             outline: none;
             box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
         }
+         .antwort-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
         .richtig {
             background-color: #48bb78;
             color: white;
+            border-color: #38a169;
         }
-        .richtig:hover {
+        .richtig:hover:not(:disabled) {
             background-color: #38a169;
+            border-color: #2f855a;
         }
         .falsch {
             background-color: #e53e3e;
             color: white;
+            border-color: #c53030;
         }
-        .falsch:hover {
+        .falsch:hover:not(:disabled) {
             background-color: #c53030;
+            border-color: #9b2c2c;
         }
         .neu-button {
             background-color: #3182ce;
@@ -111,13 +128,13 @@
             font-weight: 600;
             cursor: pointer;
             border: none;
-            transition: background-color 0.15s ease-in-out, transform 0.125rem;
+            transition: background-color 0.15s ease-in-out, transform 0.125s ease-in-out;
             font-size: 1rem;
             margin-top: 1rem;
-            display: none;
+            display: inline-block; /* Immer sichtbar, nur ausgeblendet wenn Endscreen aktiv */
         }
         .neu-button:hover {
-            background-color: #286ac0;
+            background-color: #2b6cb0; /* Dunkleres Hover */
             transform: translateY(-0.125rem);
         }
         .neu-button:focus {
@@ -125,23 +142,30 @@
             box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
         }
         .loesungsbereich {
+            margin-top: 1rem;
             padding: 1rem;
             border-radius: 0.375rem;
             background-color: #edf2f7;
             border: 1px solid #cbd5e0;
             margin-bottom: 1.5rem;
-            display: none;
+            text-align: left; /* Text linksbündig */
         }
+         .loesungsbereich p {
+             margin-bottom: 0.5rem;
+             color: #4a5568;
+         }
         .loesung-text {
             font-weight: 600;
             color: #2d3748;
+            display: block; /* Auf eigene Zeile */
             margin-bottom: 0.5rem;
         }
         .musterloesung {
             color: #48bb78;
+            font-weight: normal; /* Nicht fett */
         }
         .feedback {
-            margin-top: 1rem;
+            margin-top: 0.75rem; /* Weniger Abstand nach oben */
             padding: 0.75rem;
             border-radius: 0.375rem;
             text-align: center;
@@ -150,201 +174,275 @@
         }
         .richtig-feedback {
             background-color: #f0fdf4;
-            color: #38a169;
-            border: 1px solid #38a169;
+            color: #10b981; /* Kräftigeres Grün */
+            border: 1px solid #10b981;
         }
         .falsch-feedback {
             background-color: #fff5f5;
-            color: #e53e3e;
-            border: 1px solid #e53e3e;
+            color: #ef4444; /* Kräftigeres Rot */
+            border: 1px solid #ef4444;
         }
-        .prozentanzeige {
-            margin-top: 2rem;
-            font-size: 1.25rem;
+        .prozentanzeige, .punkteanzeige, .streak-anzeige {
+            margin-top: 1.5rem; /* Abstand */
+            font-size: 1.125rem; /* Etwas kleiner */
             font-weight: 600;
             color: #2d3748;
             text-align: center;
         }
-        #schwierigkeitsgrad {
+
+        .hinweis-bereich {
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .hinweis-button {
+            background-color: #f6e05e; /* Gelb */
             color: #2d3748;
-            font-weight: 600;
-        }
-        #schwierigkeitsgrad span {
-            padding: 0.5rem 1rem;
+             padding: 0.5rem 1rem;
             border-radius: 0.375rem;
-            font-size: 1rem;
-            margin-left: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.15s ease-in-out, transform 0.125s ease-in-out;
+            font-size: 0.9rem;
         }
-        .leicht {
-            background-color: #f0fdf4;
-            color: #38a169;
-        }
-        .mittel {
-            background-color: #fff7ed;
-            color: #e65100;
-        }
-        .schwer {
-            background-color: #fef0f0;
-            color: #b91c1c;
-        }
+         .hinweis-button:hover:not(:disabled) {
+             background-color: #ecc94b;
+              transform: translateY(-0.125rem);
+         }
+         .hinweis-button:disabled {
+             opacity: 0.7;
+             cursor: not-allowed;
+         }
+         .hinweis-text {
+             margin-top: 0.75rem;
+             padding: 0.75rem;
+             background-color: #fff9eb; /* Helleres Gelb */
+             border: 1px dashed #f6e05e;
+             border-radius: 0.375rem;
+             color: #4a5568;
+             font-style: italic;
+             text-align: left;
+             display: none; /* Anfangs versteckt */
+         }
+
+         /* Endbildschirm Styles */
+         .endbildschirm {
+             position: fixed;
+             top: 0;
+             left: 0;
+             width: 100%;
+             height: 100%;
+             background-color: rgba(255, 255, 255, 0.95); /* Leichter Overlay */
+             display: flex;
+             justify-content: center;
+             align-items: center;
+             flex-direction: column;
+             z-index: 10; /* Über allem anderen */
+             text-align: center;
+             padding: 1rem;
+             box-sizing: border-box;
+         }
+
+         .endbildschirm h2 {
+             font-size: 3rem; /* Großer Titel */
+             color: #2d3748;
+             margin-bottom: 1rem;
+             border-bottom: none;
+             padding-bottom: 0;
+             justify-content: center;
+         }
+
+         .endbildschirm p {
+             font-size: 1.5rem;
+             color: #4a5568;
+             margin-bottom: 1.5rem;
+         }
+         .endbildschirm .neu-button {
+             margin-top: 0; /* Kein extra Abstand */
+         }
 
         @media (max-width: 768px) {
             .container {
-                padding: 1rem;
+                padding: 1.5rem;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+             h2 {
+                 flex-direction: column;
+                 align-items: flex-start;
+             }
+             h2 span {
+                 margin-top: 0.5rem;
+             }
+            .aufgabe {
+                font-size: 1.3rem;
             }
             .antwort-bereich {
                 flex-direction: column;
+                gap: 0.5rem;
             }
             .antwort-button {
                 width: 100%;
-                margin-right: 0;
+                margin: 0;
             }
-            h2 {
-                flex-direction: column;
-                align-items: flex-start;
+             .prozentanzeige, .punkteanzeige, .streak-anzeige {
+                 font-size: 1rem;
+             }
+            .endbildschirm h2 {
+                font-size: 2rem;
             }
-            h2 span {
-                margin-top: 0.5rem;
+            .endbildschirm p {
+                font-size: 1.2rem;
             }
         }
     </style>
+    <audio id="correct-sound" src="https://www.soundjay.com/free-sounds/bells-ring-01.mp3" preload="auto"></audio>
+    <audio id="incorrect-sound" src="https://www.soundjay.com/free-sounds/buzzer-01.mp3" preload="auto"></audio>
 </head>
 <body>
-    <div class="container">
+    <div class="container" id="main-container">
         <h1>Potenzrechnung Aufgaben</h1>
-        <h2 id="schwierigkeitsgrad">Schwierigkeitsgrad: <span class="leicht">Einfach</span></h2>
+        <p class="punkteanzeige">Punkte: <span id="punkte">0</span></p>
+        <p class="streak-anzeige">Streak: <span id="streak">0</span></p>
+        <h2 id="schwierigkeitsgrad">Schwierigkeitsgrad: <span class="leicht" id="schwierigkeitsgrad-span">Einfach</span></h2>
+
         <div class="aufgabe" id="aufgabe"></div>
         <div class="antwort-bereich" id="antwort-bereich"></div>
-        <button class="neu-button" id="neu-button" onclick="neueAufgabe()">Neue Aufgabe</button>
-        <div class="loesungsbereich" id="loesungsbereich">
-            <p class="loesung-text">Musterlösung: <span class="musterloesung" id="musterloesung"></span></p>
+
+        <div class="hinweis-bereich">
+             <button class="hinweis-button" id="hinweis-button" onclick="zeigHinweis()">Hinweis (-5 Punkte)</button>
+             <div class="hinweis-text" id="hinweis-text">
+                 <p>Denke daran: Potenzen dürfen nur addiert oder subtrahiert werden, wenn sie die **gleiche Basis** und den **gleichen Exponenten** haben. Addiere oder subtrahiere dann nur die Zahlen (Koeffizienten), die vor der Potenz stehen.</p>
+             </div>
+        </div>
+
+
+        <div class="loesungsbereich" id="loesungsbereich" style="display: none;">
+            <p><span class="loesung-text">Musterlösung:</span> <span class="musterloesung" id="musterloesung"></span></p>
             <div class="feedback" id="feedback"></div>
         </div>
+
         <p class="prozentanzeige" id="prozentanzeige">Korrekte Antworten beim ersten Versuch: 0%</p>
+         <button class="neu-button" id="neu-button" onclick="neueAufgabe()">Nächste Aufgabe</button>
     </div>
+
+    <div class="endbildschirm" id="endbildschirm" style="display: none;">
+        <h2>Glückwunsch!</h2>
+        <p>Du hast alle Schwierigkeitsgrade gemeistert!</p>
+        <p>Dein finaler Punktestand: <span id="finaler-punkte">0</span></p>
+        <button class="neu-button" onclick="resetSpiel()">Nochmal spielen</button>
+    </div>
+
+
     <script>
         let aktuelleAufgabenSchwierigkeit = "leicht";
-        let anzahlRichtig = 0;
-        let anzahlAufgaben = 0;
-        let geloesteAufgaben = 0;
-        let aktuelleAufgabe = "";
+        let anzahlRichtig = 0; // Korrekt beim ersten Versuch pro Level
+        let anzahlAufgaben = 0; // Gesamtversuche pro Level
+        let geloesteAufgabenLevel = 0; // Anzahl der Aufgaben, die in diesem Level bereits (mindestens einmal) richtig gelöst wurden
+
+        let punkte = 0;
+        let streak = 0;
+        let hinweisGenutzt = false; // Flag, ob Hinweis für aktuelle Aufgabe genutzt wurde
+        let aufgabeGelöstBeimErstenVersuch = false; // Flag, ob die aktuelle Aufgabe im ersten Versuch gelöst wurde
+
+        let aktuelleAufgabeText = ""; // Speichert den Aufgabentext
         let korrekteAntwort = "";
+
+        // Audio Elemente holen
+        const correctSound = document.getElementById('correct-sound');
+        const incorrectSound = document.getElementById('incorrect-sound');
+
+        function spieleSound(soundElement) {
+             // Klonen, um Überlappung bei schnellen Klicks zu vermeiden
+            const soundClone = soundElement.cloneNode();
+            soundClone.play();
+        }
+
+
+        function updateAnzeigen() {
+            document.getElementById("punkte").textContent = punkte;
+            document.getElementById("streak").textContent = streak;
+            const prozent = anzahlAufgaben > 0 ? Math.round((anzahlRichtig / anzahlAufgaben) * 100) : 0;
+            document.getElementById("prozentanzeige").textContent = `Korrekte Antworten im ersten Versuch (dieses Levels): ${prozent}%`;
+
+             const schwierigkeitsgradSpan = document.getElementById("schwierigkeitsgrad-span");
+             schwierigkeitsgradSpan.textContent = aktuelleAufgabenSchwierigkeit.charAt(0).toUpperCase() + aktuelleAufgabenSchwierigkeit.slice(1); // Ersten Buchstaben groß
+             schwierigkeitsgradSpan.className = aktuelleAufgabenSchwierigkeit; // CSS Klasse setzen
+             document.getElementById("schwierigkeitsgrad").innerHTML = `Schwierigkeitsgrad: <span class="${aktuelleAufgabenSchwierigkeit}" id="schwierigkeitsgrad-span">${aktuelleAufgabenSchwierigkeit.charAt(0).toUpperCase() + aktuelleAufgabenSchwierigkeit.slice(1)}</span>`; // Workaround für Update
+
+        }
+
 
         function neueAufgabe() {
             const aufgabeElement = document.getElementById("aufgabe");
             const antwortBereich = document.getElementById("antwort-bereich");
             const loesungsbereich = document.getElementById("loesungsbereich");
+            const hinweisTextElement = document.getElementById("hinweis-text");
+            const hinweisButtonElement = document.getElementById("hinweis-button");
+
             loesungsbereich.style.display = "none";
+            hinweisTextElement.style.display = "none"; // Hinweis am Anfang verstecken
+            hinweisButtonElement.style.display = "inline-block"; // Hinweis Button zeigen
+            hinweisButtonElement.disabled = false; // Button aktivieren
+
             antwortBereich.innerHTML = "";
             document.getElementById("feedback").className = "feedback";
             document.getElementById("feedback").textContent = "";
-            document.getElementById("neu-button").style.display = "none";
-            let aufgabe = "";
+            document.getElementById("neu-button").style.display = "none"; // "Nächste Aufgabe" Button verstecken
+
+            hinweisGenutzt = false; // Reset Hinweisnutzung für die neue Aufgabe
+            aufgabeGelöstBeimErstenVersuch = false; // Reset für erste-Versuch-Check
+
+
+            let aufgabeHTML = "";
             let antworten = [];
+            let korrekteAntwortValue = "";
+
             switch (aktuelleAufgabenSchwierigkeit) {
                 case "leicht":
-                    [aufgabe, antworten, korrekteAntwort] = generiereLeichteAufgabe();
+                    [aufgabeHTML, antworten, korrekteAntwortValue] = generiereLeichteAufgabe();
                     break;
                 case "mittel":
-                    [aufgabe, antworten, korrekteAntwort] = generiereMittlereAufgabe();
+                    [aufgabeHTML, antworten, korrekteAntwortValue] = generiereMittlereAufgabe();
                     break;
                 case "schwer":
-                    [aufgabe, antworten, korrekteAntwort] = generiereSchwereAufgabe();
+                    [aufgabeHTML, antworten, korrekteAntwortValue] = generiereSchwereAufgabe();
                     break;
             }
-            aktuelleAufgabe = aufgabe;
-            let beispielAufgabe = "Beispiel: <span style='color:blue'>2</span>x<sup>2</sup> + <span style='color:green'>3</span>x<sup>2</sup> = (<span style='color:blue'>2</span>+<span style='color:green'>3</span>)x<sup>2</sup> = <span style='color:red'>5</span>x<sup>2</sup>";
-             if(aktuelleAufgabenSchwierigkeit ==="mittel"){
-                beispielAufgabe = "Beispiel: <span style='color:blue'>4</span>x<sup>3</sup> - <span style='color:green'>2</span>x<sup>3</sup> + <span style='color:purple'>5</span>y<sup>2</sup> = (<span style='color:blue'>4</span>-<span style='color:green'>2</span>)x<sup>3</sup> + <span style='color:purple'>5</span>y<sup>2</sup> = <span style='color:red'>2</span>x<sup>3</sup> + <span style='color:purple'>5</span>y<sup>2</sup>";
+            aktuelleAufgabeText = aufgabeHTML; // Den generierten Aufgabentext speichern
+            korrekteAntwort = korrekteAntwortValue; // Die korrekte Antwort speichern
+
+             // Füge die Regeln und Beispiele vor der Aufgabe ein (kann optimiert werden)
+             let regelText = "<span style='font-weight:normal;'>Fasse die nachfolgenden Potenzterme zusammen. Achte auf die Regeln, die beim Addieren bzw. Subtrahieren von Potenzen gelten.</span>";
+             let beispielText = "";
+
+             if (aktuelleAufgabenSchwierigkeit === "leicht") {
+                 beispielText = "Beispiel: <span style='color:#2563eb;'>2</span>x<sup>2</sup> + <span style='color:#059669;'>3</span>x<sup>2</sup> = (<span style='color:#2563eb;'>2</span>+<span style='color:#059669;'>3</span>)x<sup>2</sup> = <span style='color:#dc2626;'>5</span>x<sup>2</sup>";
+             } else if (aktuelleAufgabenSchwierigkeit === "mittel") {
+                 beispielText = "Beispiel: <span style='color:#2563eb;'>4</span>x<sup>3</sup> - <span style='color:#059669;'>2</span>x<sup>3</sup> + <span style='color:#9333ea;'>5</span>y<sup>2</sup> = (<span style='color:#2563eb;'>4</span>-<span style='color:#059669;'>2</span>)x<sup>3</sup> + <span style='color:#9333ea;'>5</span>y<sup>2</sup> = <span style='color:#dc2626;'>2</span>x<sup>3</sup> + <span style='color:#9333ea;'>5</span>y<sup>2</sup>";
+             } else if (aktuelleAufgabenSchwierigkeit === "schwer") {
+                 // Beispiel für schwere Aufgaben kann komplexer sein oder weggelassen werden
+                  beispielText = "Beispiel (schwer): Achte genau auf gleiche Basis und Exponent!"; // Einfachere Version für schwer
              }
-            aufgabeElement.innerHTML = "Fasse die nachfolgenden Potenzterme zusammen. Achte auf die Regeln, die beim Addieren bzw. Subtrahieren von Potenzen gelten. Potenzen dürfen nur addiert oder subtrahiert werden, wenn du nach fünf Aufgaben mindestens 80% korrekt gelöst hast, kommst du automatisch zum nächsten Schwierigkeitsgrad! <br><br> " + beispielAufgabe + " <br><br> " + aufgabe + " = ";
+
+
+            aufgabeElement.innerHTML = `${regelText} <br><br> ${beispielText} <br><br> ${aktuelleAufgabeText} = `;
+
             antworten.forEach((antwort, index) => {
                 const antwortButton = document.createElement("button");
                 antwortButton.className = "antwort-button";
-                antwortButton.innerHTML = antwort;
-                antwortButton.dataset.antwort = antwort;
-                antwortButton.onclick = () => pruefeAntwort(antwort);
+                antwortButton.innerHTML = antwort; // innerHTML für Hochzahlen
+                antwortButton.dataset.antwort = antwort; // Antwortwert im Data-Attribut speichern
+                antwortButton.onclick = () => pruefeAntwort(antwortButton); // Button-Objekt übergeben
                 antwortBereich.appendChild(antwortButton);
             });
+
+            // Anzeigen aktualisieren
+            updateAnzeigen();
         }
 
-        function generiereLeichteAufgabe() {
-            const basen = ["x", "y", "z"];
-            const koeffizient1 = Math.floor(Math.random() * 5) + 1;
-            const koeffizient2 = Math.floor(Math.random() * 5) + 1;
-            const basis = basen[Math.floor(Math.random() * basen.length)];
-            const exponent = Math.floor(Math.random() * 3) + 2;
-            let richtigeAntwort = "";
-            if (koeffizient1 + koeffizient2 === 0) {
-                richtigeAntwort = "0";
-            } else {
-                richtigeAntwort = (koeffizient1 + koeffizient2 === 1) ? `${basis}<sup>${exponent}</sup>` : `${koeffizient1 + koeffizient2}${basis}<sup>${exponent}</sup>`;
-            }
-            const falscheAntwort1 = (koeffizient1 + koeffizient2 === 1) ? `${basis}<sup>${exponent + 1}</sup>` : `${koeffizient1 + koeffizient2}${basis}<sup>${exponent + 1}</sup>`;
-            const falscheAntwort2 = `${Math.abs(koeffizient1 - koeffizient2)}${basis}<sup>${exponent}</sup>`;
-            const falscheAntwort3 = `${koeffizient1 * koeffizient2}${basis}<sup>${exponent}</sup>`;
-            const aufgabe = `${koeffizient1}${basis}<sup>${exponent}</sup> + ${koeffizient2}${basis}<sup>${exponent}</sup>`;
-            const antworten = [richtigeAntwort, falscheAntwort1, falscheAntwort2, falscheAntwort3];
-            return [aufgabe, mischeAntworten(antworten), richtigeAntwort];
-        }
-
-        function generiereMittlereAufgabe() {
-            const basen = ["x", "y", "z"];
-            const koeffizient1 = Math.floor(Math.random() * 10) + 1;
-            const koeffizient2 = Math.floor(Math.random() * 10) + 1;
-            const koeffizient3 = Math.floor(Math.random() * 5) + 1;
-            const basis1 = basen[Math.floor(Math.random() * basen.length)];
-            const basis2 = basen[Math.floor(Math.random() * basen.length)];
-            const exponent1 = Math.floor(Math.random() * 4) + 2;
-            const exponent2 = Math.floor(Math.random() * 4) + 2;
-            let richtigeAntwort = "";
-            const koeffizientErgebnis = koeffizient1 - koeffizient3;
-            const term1 = koeffizientErgebnis === 1 ? `${basis1}<sup>${exponent1}</sup>` : (koeffizientErgebnis === 0 ? "" : `${koeffizientErgebnis}${basis1}<sup>${exponent1}</sup>`);
-            const term2 = koeffizient2 === 1 ? `${basis2}<sup>${exponent2}</sup>` : `${koeffizient2}${basis2}<sup>${exponent2}</sup>`;
-            if (koeffizientErgebnis === 0) {
-                richtigeAntwort = term2;
-            } else {
-                richtigeAntwort = term1 + (koeffizient2 === 0 ? "" : ` + ${term2}`);
-            }
-            const falscheAntwort1 = `${koeffizient1 + koeffizient3}${basis1}<sup>${exponent1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2}</sup>`;
-            const falscheAntwort2 = `${koeffizient1 - koeffizient3}${basis1}<sup>${exponent1 + 1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2 + 1}</sup>`;
-            const falscheAntwort3 = `${koeffizient1 * koeffizient3}${basis1}<sup>${exponent1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2}</sup>`;
-            const aufgabe = `${koeffizient1}${basis1}<sup>${exponent1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2}</sup> - ${koeffizient3}${basis1}<sup>${exponent1}</sup>`;
-            const antworten = [richtigeAntwort, falscheAntwort1, falscheAntwort2, falscheAntwort3];
-            return [aufgabe, mischeAntworten(antworten), richtigeAntwort];
-        }
-
-        function generiereSchwereAufgabe() {
-            const basen = ["x", "y", "z"];
-            const koeffizient1 = Math.floor(Math.random() * 10) + 1;
-            const koeffizient2 = Math.floor(Math.random() * 10) + 1;
-            const koeffizient3 = Math.floor(Math.random() * 10) + 1;
-            const koeffizient4 = Math.floor(Math.random() * 5) + 1;
-            const koeffizient5 = Math.floor(Math.random() * 5) + 1;
-            const basis1 = basen[Math.floor(Math.random() * basen.length)];
-            const basis2 = basen[Math.floor(Math.random() * basen.length)];
-            const basis3 = basen[Math.floor(Math.random() * basen.length)];
-            const exponent1 = Math.floor(Math.random() * 5) + 2;
-            const exponent2 = Math.floor(Math.random() * 5) + 2;
-            const exponent3 = Math.floor(Math.random() * 5) + 2;
-            let richtigeAntwort = "";
-            const koeffizientErgebnis = koeffizient1 - koeffizient3 + koeffizient4;
-            const term1 = koeffizientErgebnis === 1 ? `${basis1}<sup>${exponent1}</sup>` : (koeffizientErgebnis === 0 ? "" : `${koeffizientErgebnis}${basis1}<sup>${exponent1}</sup>`);
-            const term2 = koeffizient2 === 1 ? `${basis2}<sup>${exponent2}</sup>` : `${koeffizient2}${basis2}<sup>${exponent2}</sup>`;
-            const term3 = koeffizient5 === 1 ? ` - ${basis3}<sup>${exponent3}</sup>` : ` - ${koeffizient5}${basis3}<sup>${exponent3}</sup>`;
-            if (koeffizientErgebnis === 0) {
-                richtigeAntwort =  term2 + term3;
-            } else {
-                richtigeAntwort = term1 + (koeffizient2 === 0 ? "" : ` + ${term2}`) + term3;
-            }
-            const falscheAntwort1 = `${koeffizient1 + koeffizient3 - koeffizient4}${basis1}<sup>${exponent1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2}</sup> + ${koeffizient5}${basis3}<sup>${exponent3}</sup>`;
-            const falscheAntwort2 = `${koeffizient1 - koeffizient3 + koeffizient4}${basis1}<sup>${exponent1 + 1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2 + 1}</sup> - ${koeffizient5}${basis3}<sup>${exponent3 + 1}</sup>`;
-            const falscheAntwort3 = `${(koeffizient1 - koeffizient3) * koeffizient4}${basis1}<sup>${exponent1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2}</sup> - ${koeffizient5}${basis3}<sup>${exponent3}</sup>`;
-            const aufgabe = `${koeffizient1}${basis1}<sup>${exponent1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2}</sup> - ${koeffizient3}${basis1}<sup>${exponent1}</sup> + ${koeffizient4}${basis1}<sup>${exponent1}</sup> - ${koeffizient5}${basis3}<sup>${exponent3}</sup>`;
-            const antworten = [richtigeAntwort, falscheAntwort1, falscheAntwort2, falscheAntwort3];
-            return [aufgabe, mischeAntworten(antworten), richtigeAntwort];
-        }
-
+        // Helper zum Mischen von Arrays (Fisher-Yates Shuffle)
         function mischeAntworten(antworten) {
             for (let i = antworten.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -353,47 +451,413 @@
             return antworten;
         }
 
+        // --- Aufgabengenerierungsfunktionen (Deine Funktionen bleiben gleich, füge sie hier ein) ---
+
+        function generiereLeichteAufgabe() {
+            const basen = ["x", "y", "z"];
+            const koeffizient1 = Math.floor(Math.random() * 5) + 1;
+            const koeffizient2 = Math.floor(Math.random() * 5) + 1;
+            const basis = basen[Math.floor(Math.random() * basen.length)];
+            const exponent = Math.floor(Math.random() * 3) + 2; // Exponent 2 bis 4
+
+            let richtigeAntwort = "";
+            const summeKoeffizienten = koeffizient1 + koeffizient2;
+
+            if (summeKoeffizienten === 0) {
+                richtigeAntwort = "0";
+            } else if (summeKoeffizienten === 1) {
+                 richtigeAntwort = `${basis}<sup>${exponent}</sup>`;
+            } else {
+                 richtigeAntwort = `${summeKoeffizienten}${basis}<sup>${exponent}</sup>`;
+            }
 
 
-        function pruefeAntwort(gewaehlteAntwort) {
+            // Generiere plausible falsche Antworten
+            const falscheAntworten = [];
+            // Falscher Exponent (oft addiert oder multipliziert)
+            falscheAntworten.push(`${summeKoeffizienten}${basis}<sup>${exponent + 1}</sup>`); // Exponent + 1
+            falscheAntworten.push(`${summeKoeffizienten}${basis}<sup>${exponent * 2}</sup>`); // Exponent * 2
+            // Falscher Koeffizient (oft subtrahiert oder multipliziert)
+             const diffKoeffizienten = Math.abs(koeffizient1 - koeffizient2);
+             if (diffKoeffizienten !== summeKoeffizienten) falscheAntworten.push(`${diffKoeffizienten}${basis}<sup>${exponent}</sup>`); // Koeffizienten subtrahiert
+             const prodKoeffizienten = koeffizient1 * koeffizient2;
+              if (prodKoeffizienten !== summeKoeffizienten) falscheAntworten.push(`${prodKoeffizienten}${basis}<sup>${exponent}</sup>`); // Koeffizienten multipliziert
+
+             // Nur 3 falsche Antworten auswählen und mischen
+             while(falscheAntworten.length > 3) {
+                 falscheAntworten.splice(Math.floor(Math.random() * falscheAntworten.length), 1);
+             }
+
+
+            const aufgabe = `${koeffizient1}${basis}<sup>${exponent}</sup> + ${koeffizient2}${basis}<sup>${exponent}</sup>`;
+            const antworten = [richtigeAntwort, ...falscheAntworten]; // Richtige Antwort hinzufügen
+            return [aufgabe, mischeAntworten(antworten), richtigeAntwort];
+        }
+
+         function generiereMittlereAufgabe() {
+            const basen = ["x", "y", "z"];
+            let koeffizient1, koeffizient2, koeffizient3;
+            let basis1, basis2;
+            let exponent1, exponent2;
+            let aufgabe;
+            let richtigeAntwort;
+
+            // Schleife, um sicherzustellen, dass es kombinierbare Terme gibt und nicht nur 0 rauskommt
+            do {
+                koeffizient1 = Math.floor(Math.random() * 10) + 1;
+                koeffizient2 = Math.floor(Math.random() * 10) + 1; // Für den nicht-kombinierbaren Term
+                koeffizient3 = Math.floor(Math.random() * 10) + 1; // Für den kombinierbaren Term
+
+                basis1 = basen[Math.floor(Math.random() * basen.length)];
+                // Sicherstellen, dass basis2 anders ist als basis1
+                do {
+                    basis2 = basen[Math.floor(Math.random() * basen.length)];
+                } while (basis1 === basis2);
+
+
+                exponent1 = Math.floor(Math.random() * 4) + 2; // Exponent 2 bis 5
+                exponent2 = Math.floor(Math.random() * 4) + 2; // Exponent 2 bis 5 (kann gleich oder anders sein)
+
+
+                const koeffizientErgebnis = koeffizient1 - koeffizient3;
+
+                const term1 = koeffizientErgebnis === 1 ? `${basis1}<sup>${exponent1}</sup>` : (koeffizientErgebnis === 0 ? "" : `${koeffizientErgebnis}${basis1}<sup>${exponent1}</sup>`);
+                const term2 = koeffizient2 === 1 ? `${basis2}<sup>${exponent2}</sup>` : `${koeffizient2}${basis2}<sup>${exponent2}</sup>`;
+
+                 if (koeffizientErgebnis === 0 && koeffizient2 === 0) { // Beide Terme fallen weg
+                     richtigeAntwort = "0";
+                 } else if (koeffizientErgebnis === 0) { // Nur der erste Term fällt weg
+                    richtigeAntwort = term2;
+                 } else if (koeffizient2 === 0) { // Nur der zweite Term fällt weg
+                    richtigeAntwort = term1;
+                 }
+                  else if (koeffizientErgebnis < 0) { // Negatives Ergebnis für Term 1
+                    richtigeAntwort = `-${Math.abs(koeffizientErgebnis)}${basis1}<sup>${exponent1}</sup> + ${term2}`;
+                 }
+                 else { // Beide Terme bleiben positiv oder einer ist 0
+                    richtigeAntwort = term1 + ` + ${term2}`;
+                 }
+
+                 aufgabe = `${koeffizient1}${basis1}<sup>${exponent1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2}</sup> - ${koeffizient3}${basis1}<sup>${exponent1}</sup>`;
+
+            } while (richtigeAntwort === "" || richtigeAntwort.includes("undefined")); // Sicherstellen, dass eine gültige Antwort generiert wurde
+
+            // Generiere plausible falsche Antworten
+             const falscheAntworten = [];
+            // Koeffizienten falsch kombiniert (z.B. alle addiert)
+            falscheAntworten.push(`${koeffizient1 + koeffizient3}${basis1}<sup>${exponent1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2}</sup>`);
+             // Exponenten falsch behandelt (z.B. addiert)
+            falscheAntworten.push(`${koeffizient1 - koeffizient3}${basis1}<sup>${exponent1 + 1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2 + 1}</sup>`);
+            // Koeffizienten multipliziert
+            falscheAntworten.push(`${(koeffizient1 - koeffizient3) * koeffizient2}${basis1}<sup>${exponent1}</sup>${basis2}<sup>${exponent2}</sup>`); // Beispiel: alle Koeff. mult.
+            // Nur einen Teil richtig
+             if (koeffizient1 - koeffizient3 !== 0) falscheAntworten.push(`${koeffizient1 - koeffizient3}${basis1}<sup>${exponent1}</sup>`);
+             if (koeffizient2 !== 0) falscheAntworten.push(`${koeffizient2}${basis2}<sup>${exponent2}</sup>`);
+
+
+             // Sicherstellen, dass falsche Antworten nicht zufällig richtig sind und auswählen
+              const eindeutigeFalscheAntworten = Array.from(new Set(falscheAntworten)).filter(ans => ans !== richtigeAntwort);
+              while(eindeutigeFalscheAntworten.length < 3) {
+                  // Füge ggf. weitere zufällige Kombinationen oder Fehler hinzu
+                  const randKoeff = Math.floor(Math.random() * 20) - 10;
+                  const randBasis = basen[Math.floor(Math.random() * basen.length)];
+                  const randExponent = Math.floor(Math.random() * 6) + 1;
+                  let zufallAntwort = `${randKoeff}${randBasis}<sup>${randExponent}</sup> + ${term2}`;
+                   if (zufallAntwort !== richtigeAntwort && !eindeutigeFalscheAntworten.includes(zufallAntwort)) eindeutigeFalscheAntworten.push(zufallAntwort);
+
+                   zufallAntwort = `${term1} + ${randKoeff}${randBasis}<sup>${randExponent}</sup>`;
+                    if (zufallAntwort !== richtigeAntwort && !eindeutigeFalscheAntworten.includes(zufallAntwort)) eindeutigeFalscheAntworten.push(zufallAntwort);
+
+                   if(eindeutigeFalscheAntworten.length >= 3) break;
+              }
+             const finaleFalscheAntworten = eindeutigeFalscheAntworten.slice(0, 3);
+
+
+            const antworten = [richtigeAntwort, ...finaleFalscheAntworten];
+            return [aufgabe, mischeAntworten(antworten), richtigeAntwort];
+        }
+
+        function generiereSchwereAufgabe() {
+            const basen = ["x", "y", "z"];
+            let koeffizient1, koeffizient2, koeffizient3, koeffizient4, koeffizient5;
+            let basis1, basis2, basis3;
+            let exponent1, exponent2, exponent3;
+            let aufgabe;
+            let richtigeAntwort;
+
+             // Schleife, um sicherzustellen, dass es kombinierbare Terme gibt
+            do {
+                koeffizient1 = Math.floor(Math.random() * 15) - 5; // Auch negative Koeffizienten
+                koeffizient2 = Math.floor(Math.random() * 15) - 5;
+                koeffizient3 = Math.floor(Math.random() * 15) - 5;
+                koeffizient4 = Math.floor(Math.random() * 10) + 1; // Positiv für den 4. Term
+                koeffizient5 = Math.floor(Math.random() * 10) - 5; // Auch negative Koeffizienten
+
+
+                basis1 = basen[Math.floor(Math.random() * basen.length)];
+                 do { basis2 = basen[Math.floor(Math.random() * basen.length)]; } while (basis1 === basis2);
+                 do { basis3 = basen[Math.floor(Math.random() * basen.length)]; } while (basis1 === basis3 || basis2 === basis3);
+
+
+                exponent1 = Math.floor(Math.random() * 5) + 2; // Exponent 2 bis 6
+                exponent2 = Math.floor(Math.random() * 5) + 2; // Exponent 2 bis 6
+                exponent3 = Math.floor(Math.random() * 5) + 2; // Exponent 2 bis 6
+
+
+                const koeffizientErgebnis1 = koeffizient1 - koeffizient3 + koeffizient4;
+                const koeffizientErgebnis2 = koeffizient2; // Term 2 wird nicht kombiniert
+                 const koeffizientErgebnis3 = -koeffizient5; // Term 5 wird nicht kombiniert (wegen Minuszeichen in Aufgabe)
+
+                let term1Str = "";
+                 if (koeffizientErgebnis1 !== 0) {
+                     if (koeffizientErgebnis1 === 1) term1Str = `${basis1}<sup>${exponent1}</sup>`;
+                     else if (koeffizientErgebnis1 === -1) term1Str = `-${basis1}<sup>${exponent1}</sup>`;
+                     else term1Str = `${koeffizientErgebnis1}${basis1}<sup>${exponent1}</sup>`;
+                 }
+
+                 let term2Str = "";
+                  if (koeffizientErgebnis2 !== 0) {
+                     if (koeffizientErgebnis2 === 1) term2Str = `${basis2}<sup>${exponent2}</sup>`;
+                     else if (koeffizientErgebnis2 === -1) term2Str = `-${basis2}<sup>${exponent2}</sup>`;
+                     else term2Str = `${koeffizientErgebnis2}${basis2}<sup>${exponent2}</sup>`;
+                  }
+
+                 let term3Str = "";
+                  if (koeffizientErgebnis3 !== 0) {
+                     if (koeffizientErgebnis3 === 1) term3Str = `${basis3}<sup>${exponent3}</sup>`;
+                     else if (koeffizientErgebnis3 === -1) term3Str = `-${basis3}<sup>${exponent3}</sup>`;
+                     else term3Str = `${koeffizientErgebnis3}${basis3}<sup>${exponent3}</sup>`;
+                  }
+
+                // Baue die richtige Antwort zusammen, achte auf Vorzeichen und '+' dazwischen
+                 const resultTerms = [];
+                 if (term1Str) resultTerms.push(term1Str);
+                 if (term2Str) resultTerms.push(term2Str);
+                 if (term3Str) resultTerms.push(term3Str);
+
+                 if (resultTerms.length === 0) {
+                     richtigeAntwort = "0";
+                 } else {
+                      richtigeAntwort = resultTerms.join(' + ').replace(/\+ -/g, '- '); // Ersetze '+ -' durch '-' für saubere Darstellung
+                 }
+
+
+                 aufgabe = `${koeffizient1}${basis1}<sup>${exponent1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2}</sup> - ${koeffizient3}${basis1}<sup>${exponent1}</sup> + ${koeffizient4}${basis1}<sup>${exponent1}</sup> - ${koeffizient5}${basis3}<sup>${exponent3}</sup>`;
+
+
+            } while (richtigeAntwort === "" || richtigeAntwort.includes("undefined")); // Sicherstellen, dass eine gültige Antwort generiert wurde
+
+
+            // Generiere plausible falsche Antworten für Schwer (komplexer)
+            const falscheAntworten = [];
+             // Falsche Kombination der ersten Terme
+             falscheAntworten.push(`${koeffizient1 + koeffizient3 + koeffizient4}${basis1}<sup>${exponent1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2}</sup> - ${koeffizient5}${basis3}<sup>${exponent3}</sup>`.replace(/\+ -/g, '- '));
+             // Exponenten falsch behandelt
+             falscheAntworten.push(`${koeffizientErgebnis1}${basis1}<sup>${exponent1 + 1}</sup> + ${koeffizientErgebnis2}${basis2}<sup>${exponent2 + 1}</sup> + ${koeffizientErgebnis3}${basis3}<sup>${exponent3 + 1}</sup>`.replace(/\+ -/g, '- '));
+            // Terme falsch gemischt oder weggelassen
+             if (term1Str && term2Str) falscheAntworten.push(`${term1Str} + ${term3Str}`.replace(/\+ -/g, '- ')); // Term 2 weggelassen
+              if (term2Str && term3Str) falscheAntworten.push(`${term2Str} + ${term3Str}`.replace(/\+ -/g, '- ')); // Term 1 weggelassen
+             // Nur Koeffizienten addiert/subtrahiert ohne Berücksichtigung der Potenz
+             falscheAntworten.push(`${koeffizient1 + koeffizient2 - koeffizient3 + koeffizient4 - koeffizient5}${basis1}<sup>${exponent1}</sup>`.replace(/\+ -/g, '- ')); // Alle Koeffizienten mit einer Potenz
+
+            // Sicherstellen, dass falsche Antworten nicht zufällig richtig sind und auswählen
+            const eindeutigeFalscheAntworten = Array.from(new Set(falscheAntworten)).filter(ans => ans !== richtigeAntwort);
+             while(eindeutigeFalscheAntworten.length < 3) {
+                 // Füge ggf. weitere zufällige Kombinationen oder Fehler hinzu
+                  const randKoeff = Math.floor(Math.random() * 20) - 10;
+                  const randBasis = basen[Math.floor(Math.random() * basen.length)];
+                  const randExponent = Math.floor(Math.random() * 6) + 1;
+                  let zufallAntwort = `${term1Str} + ${randKoeff}${randBasis}<sup>${randExponent}</sup> + ${term3Str}`.replace(/\+ -/g, '- ');
+                   if (zufallAntwort !== richtigeAntwort && !eindeutigeFalscheAntworten.includes(zufallAntwort)) eindeutigeFalscheAntworten.push(zufallAntwort);
+
+                   if(eindeutigeFalscheAntworten.length >= 3) break;
+             }
+             const finaleFalscheAntworten = eindeutigeFalscheAntworten.slice(0, 3);
+
+
+            const antworten = [richtigeAntwort, ...finaleFalscheAntworten];
+            return [aufgabe, mischeAntworten(antworten), richtigeAntwort];
+        }
+
+
+        // --- Ende Aufgabengenerierungsfunktionen ---
+
+
+        function pruefeAntwort(geklickterButton) {
+             // Deaktiviere alle Antwortbuttons, sobald eine Antwort ausgewählt wurde
+            document.querySelectorAll('.antwort-button').forEach(button => {
+                button.disabled = true;
+            });
+
+
+            const gewaehlteAntwort = geklickterButton.dataset.antwort; // Antwort aus Data-Attribut holen
             const musterloesungElement = document.getElementById("musterloesung");
             const feedback = document.getElementById("feedback");
-            const neuButton = document.getElementById("neu-button");
-            //musterloesungElement.innerHTML = korrekteAntwort;  //Entfernt
             const loesungsbereich = document.getElementById("loesungsbereich");
-            loesungsbereich.style.display = "block";
-            anzahlAufgaben++;
-            if (gewaehlteAntwort === korrekteAntwort || (gewaehlteAntwort === "0" && korrekteAntwort === "0")) {
-                feedback.textContent = "Richtig!";
-                feedback.className = "feedback richtig-feedback";
-                anzahlRichtig++;
-                geloesteAufgaben++;
-                if (geloesteAufgaben >= 5 && (anzahlRichtig / anzahlAufgaben) >= 0.8) {
-                    geloesteAufgaben = 0;
-                    if (aktuelleAufgabenSchwierigkeit === "leicht") {
-                        aktuelleAufgabenSchwierigkeit = "mittel";
-                        document.getElementById("schwierigkeitsgrad").textContent = "Schwierigkeitsgrad: Mittel";
-                        document.querySelector("#schwierigkeitsgrad + span").className = "mittel";
-                        document.querySelector("#schwierigkeitsgrad + span").textContent = "Mittel";
-                        alert("Super! Du hast deinen Schwierigkeitsgrad geschafft und kommst in das nächste Level!");
-                    } else if (aktuelleAufgabenSchwierigkeit === "mittel") {
-                        aktuelleAufgabenSchwierigkeit = "schwer";
-                        document.getElementById("schwierigkeitsgrad").textContent = "Schwierigkeitsgrad: Schwer";
-                        document.querySelector("#schwierigkeitsgrad + span").className = "schwer";
-                        document.querySelector("#schwierigkeitsgrad + span").textContent = "Schwer";
-                        alert("Super! Du hast deinen Schwierigkeitsgrad geschafft und kommst in das nächste Level!");
+            const neuButton = document.getElementById("neu-button");
+
+            loesungsbereich.style.display = "block"; // Lösungsbereich immer anzeigen nach Antwort
+            musterloesungElement.innerHTML = korrekteAntwort; // Musterlösung anzeigen!
+
+            // Erster Versuch für diese Aufgabe?
+            if (!aufgabeGelöstBeimErstenVersuch) {
+                 anzahlAufgaben++; // Nur beim ersten Versuch für diese Aufgabe zählen wir eine neue Aufgabe
+
+                if (gewaehlteAntwort === korrekteAntwort) {
+                    spieleSound(correctSound);
+                    feedback.textContent = "Richtig!";
+                    feedback.className = "feedback richtig-feedback";
+                    punkte += 10; // Punkte für richtigen Versuch
+                    anzahlRichtig++; // Richtig beim ersten Versuch zählen
+                    geloesteAufgabenLevel++; // Aufgabe in diesem Level gelöst
+                    streak++; // Streak erhöhen
+                    aufgabeGelöstBeimErstenVersuch = true; // Aufgabe wurde im ersten Versuch gelöst
+
+                    // Streak-Bonus prüfen
+                    if (streak > 0 && streak % 5 === 0) { // Bonus alle 5 richtigen am Stück
+                        const bonusPunkte = streak * 2; // Beispiel: 10 Punkte Bonus bei 5er Streak, 20 bei 10er etc.
+                        punkte += bonusPunkte;
+                        feedback.textContent += ` Streak-Bonus! (+${bonusPunkte} Punkte)`;
                     }
+
+                    // Schwierigkeitsgrad aufstieg prüfen NACHDEM die aktuelle Aufgabe verarbeitet wurde
+                    pruefeSchwierigkeitsgradAufstieg();
+
+
+                } else {
+                    spieleSound(incorrectSound);
+                    feedback.textContent = "Falsch! Das ist leider nicht richtig.";
+                    feedback.className = "feedback falsch-feedback";
+                    // Keine Punkte für falschen Versuch
+                    streak = 0; // Streak zurücksetzen
+                }
+            } else {
+                 // Wenn nicht erster Versuch, aber jetzt richtig
+                 if (gewaehlteAntwort === korrekteAntwort) {
+                      spieleSound(correctSound);
+                      feedback.textContent = "Richtig!"; // Kein erster Versuch, aber jetzt korrekt
+                      feedback.className = "feedback richtig-feedback";
+                      // Hier keine anzahlRichtig/geloesteAufgabenLevel/streak Erhöhung, keine vollen Punkte
+                      punkte += 2; // Kleine Trostpunkte für späteren richtigen Versuch (optional)
+                       // Schwierigkeitsgrad Aufstieg wird erst beim ersten richtigen Versuch einer Aufgabe geprüft
+                 } else {
+                      // Immer noch falsch
+                      spieleSound(incorrectSound);
+                       feedback.textContent = "Immer noch falsch. Versuche es erneut oder nutze den Hinweis.";
+                       feedback.className = "feedback falsch-feedback";
+                       streak = 0; // Streak zurücksetzen
+                       // Keine Punkteänderung
+                 }
+            }
+
+
+            // Button-Klassen für visuelles Feedback
+            if (gewaehlteAntwort === korrekteAntwort) {
+                geklickterButton.classList.add("richtig");
+            } else {
+                geklickterButton.classList.add("falsch");
+                 // Markiere den richtigen Button, wenn falsch geantwortet wurde
+                 document.querySelectorAll('.antwort-button').forEach(button => {
+                     if (button.dataset.antwort === korrekteAntwort) {
+                         button.classList.add("richtig");
+                     }
+                 });
+            }
+
+
+            neuButton.style.display = "inline-block"; // "Nächste Aufgabe" Button anzeigen
+
+            // Anzeigen aktualisieren
+            updateAnzeigen();
+        }
+
+        function pruefeSchwierigkeitsgradAufstieg() {
+             // Prüfe, ob genug Aufgaben im ersten Versuch richtig gelöst wurden UND die Quote stimmt
+             if (geloesteAufgabenLevel >= 5 && (anzahlRichtig / anzahlAufgaben) >= 0.8) {
+                 let alertNachricht = "Super! Du hast den Schwierigkeitsgrad gemeistert und kommst in das nächste Level!";
+                 let levelAufgestiegen = false;
+
+                 if (aktuelleAufgabenSchwierigkeit === "leicht") {
+                     aktuelleAufgabenSchwierigkeit = "mittel";
+                     levelAufgestiegen = true;
+                 } else if (aktuelleAufgabenSchwierigkeit === "mittel") {
+                     aktuelleAufgabenSchwierigkeit = "schwer";
+                     levelAufgestiegen = true;
+                 } else if (aktuelleAufgabenSchwierigkeit === "schwer") {
+                      // Endbildschirm anzeigen, da schwer gemeistert
+                      zeigeEndbildschirm();
+                      return; // Spiel ist zu Ende, nicht neueAufgabe() aufrufen
+                 }
+
+                 if (levelAufgestiegen) {
+                    alert(alertNachricht);
+                    // Stats für das neue Level zurücksetzen (aber Punkte und Streak behalten)
                     anzahlRichtig = 0;
                     anzahlAufgaben = 0;
-                }
-                neueAufgabe();
-            } else {
-                feedback.textContent = "Falsch! Versuch es noch einmal.";
-                feedback.className = "feedback falsch-feedback";
-            }
-            document.getElementById("prozentanzeige").textContent = `Korrekte Antworten beim ersten Versuch: ${Math.round(anzahlRichtig / anzahlAufgaben * 100)}%`;
+                    geloesteAufgabenLevel = 0; // Reset für den Zähler der gelösten Aufgaben in diesem Level
+                    // Neue Aufgabe im neuen Schwierigkeitsgrad starten
+                    neueAufgabe();
+                 }
+
+             } else {
+                 // Wenn Kriterien nicht erfüllt, einfach nächste Aufgabe im aktuellen Level
+                 // (Dies wird bereits durch den Klick auf "Nächste Aufgabe" oder den erfolgreichen Versuch getriggert)
+             }
         }
+
+
+        function zeigHinweis() {
+            if (!hinweisGenutzt) {
+                 const hinweisTextElement = document.getElementById("hinweis-text");
+                 const hinweisButtonElement = document.getElementById("hinweis-button");
+
+                 hinweisTextElement.style.display = "block"; // Hinweis anzeigen
+                 hinweisButtonElement.disabled = true; // Hinweis Button deaktivieren
+                 hinweisGenutzt = true; // Markiere Hinweis als genutzt
+
+                 // Punkte abziehen
+                 punkte -= 5; // Punkteabzug für Hinweis
+                 if (punkte < 0) punkte = 0; // Punkte nicht unter Null fallen lassen
+                 updateAnzeigen();
+
+                 spieleSound(incorrectSound); // Optional: Soundeffekt für Hinweis
+            }
+        }
+
+        function zeigeEndbildschirm() {
+             document.getElementById("main-container").style.display = "none";
+             document.getElementById("endbildschirm").style.display = "flex";
+             document.getElementById("finaler-punkte").textContent = punkte;
+        }
+
+        function resetSpiel() {
+             // Alle Stats zurücksetzen
+             aktuelleAufgabenSchwierigkeit = "leicht";
+             anzahlRichtig = 0;
+             anzahlAufgaben = 0;
+             geloesteAufgabenLevel = 0;
+             punkte = 0;
+             streak = 0;
+             hinweisGenutzt = false;
+             aufgabeGelöstBeimErstenVersuch = false;
+
+
+             // UI zurücksetzen
+             document.getElementById("main-container").style.display = "block";
+             document.getElementById("endbildschirm").style.display = "none";
+             document.getElementById("schwierigkeitsgrad-span").className = "leicht";
+             document.getElementById("schwierigkeitsgrad-span").textContent = "Einfach";
+
+
+             // Eine neue Aufgabe starten
+             neueAufgabe();
+             updateAnzeigen(); // Anzeigen zurücksetzen
+        }
+
+
+        // Spiel starten beim Laden der Seite
         neueAufgabe();
+        updateAnzeigen(); // Initial anzeigen
     </script>
 </body>
 </html>
