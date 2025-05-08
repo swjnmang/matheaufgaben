@@ -1,531 +1,626 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Potenzrechnung Aufgaben</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .container {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 1rem;
-            background-color: #f7fafc;
-            border-radius: 0.5rem;
-            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 1.5rem;
-            color: #2d3748;
-            text-align: center;
-        }
-        h2 {
-            font-size: 1.5rem;
-            margin-top: 2rem;
-            margin-bottom: 1rem;
-            color: #4a5568;
-            border-bottom: 2px solid #cbd5e0;
-            padding-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        h2 span {
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            font-weight: 600;
-            font-size: 1rem;
-        }
-        .leicht {
-            background-color: #f0fdf4;
-            color: #38a169;
-        }
-        .mittel {
-            background-color: #fff7ed;
-            color: #e65100;
-        }
-        .schwer {
-            background-color: #fef0f0;
-            color: #b91c1c;
-        }
-        .aufgabe {
-            font-size: 1.25rem;
-            margin-bottom: 1rem;
-            color: #2d3748;
-        }
-        .antwort-bereich {
-            margin-bottom: 1.5rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-        }
-        .antwort-button {
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.375rem;
-            font-weight: 600;
-            color: #2d3748;
-            cursor: pointer;
-            border: none;
-            transition: background-color 0.15s ease-in-out, transform 0.1s ease-in-out;
-            font-size: 1rem;
-            margin-right: 0.5rem;
-            margin-bottom: 0.5rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: fit-content;
-            background-color: #edf2f7;
-        }
-        .antwort-button:hover {
-            transform: translateY(-0.125rem);
-            background-color: #e2e8f0;
-        }
-        .antwort-button:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
-        }
-        .richtig {
-            background-color: #48bb78;
-            color: white;
-        }
-        .richtig:hover {
-            background-color: #38a169;
-        }
-        .falsch {
-            background-color: #e53e3e;
-            color: white;
-        }
-        .falsch:hover {
-            background-color: #c53030;
-        }
-        .neu-button {
-            background-color: #3182ce;
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.375rem;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: background-color 0.15s ease-in-out, transform 0.125rem;
-            font-size: 1rem;
-            margin-top: 1rem;
-            display: none;
-        }
-        .neu-button:hover {
-            background-color: #286ac0;
-            transform: translateY(-0.125rem);
-        }
-        .neu-button:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
-        }
-        .loesungsbereich {
-            padding: 1rem;
-            border-radius: 0.375rem;
-            background-color: #edf2f7;
-            border: 1px solid #cbd5e0;
-            margin-bottom: 1.5rem;
-            display: none;
-        }
-        .loesung-text {
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 0.5rem;
-        }
-        .musterloesung {
-            color: #48bb78;
-        }
-        .feedback {
-            margin-top: 1rem;
-            padding: 0.75rem;
-            border-radius: 0.375rem;
-            text-align: center;
-            font-weight: 600;
-            font-size: 1rem;
-        }
-        .richtig-feedback {
-            background-color: #f0fdf4;
-            color: #38a169;
-            border: 1px solid #38a169;
-        }
-        .falsch-feedback {
-            background-color: #fff5f5;
-            color: #e53e3e;
-            border: 1px solid #e53e3e;
-        }
-        .prozentanzeige {
-            margin-top: 2rem;
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #2d3748;
-            text-align: center;
-        }
-        #schwierigkeitsgrad {
-            color: #2d3748;
-            font-weight: 600;
-        }
-        #schwierigkeitsgrad span {
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            font-size: 1rem;
-            margin-left: 0.5rem;
-        }
-        .leicht {
-            background-color: #f0fdf4;
-            color: #38a169;
-        }
-        .mittel {
-            background-color: #fff7ed;
-            color: #e65100;
-        }
-        .schwer {
-            background-color: #fef0f0;
-            color: #b91c1c;
-        }
-        .punkteanzeige {
-            margin-top: 2rem;
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #2d3748;
-            text-align: center;
-        }
-        .streakanzeige {
-            margin-top: 2rem;
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #2d3748;
-            text-align: center;
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Potenzen addieren und subtrahieren</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; 
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            color: #333;
+            padding: 20px;
+            box-sizing: border-box;
+        }
 
-        @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-            .antwort-bereich {
-                flex-direction: column;
-            }
-            .antwort-button {
-                width: 100%;
-                margin-right: 0;
-            }
-            h2 {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            h2 span {
-                margin-top: 0.5rem;
-            }
-        }
-    </style>
+        .quiz-container {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            margin-top: 20px; 
+        }
+
+        #task-instructions {
+            font-size: 1em;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            text-align: left;
+        }
+
+        #example-task-area {
+            font-size: 1em; 
+            margin-bottom: 20px;
+            padding: 15px; 
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            text-align: center; 
+            min-height: 40px; 
+            line-height: 1.6; 
+        }
+
+        .coeff-color { 
+            color: #007bff; 
+            font-weight: bold;
+        }
+
+        .operator-color { 
+            color: #dc3545; 
+            font-weight: bold;
+        }
+
+        .result-coeff-color { 
+            color: #28a745; 
+            font-weight: bold;
+        }
+
+
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+
+        .stats-container div {
+            padding: 10px;
+            background-color: #e7f3fe;
+            border-radius: 5px;
+            min-width: 100px; /* Etwas mehr Platz für Levelnamen */
+        }
+
+        #question-area {
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .answer-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .answer-buttons button {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 1.2em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .answer-buttons button:hover {
+            background-color: #4cae4c;
+        }
+
+        .answer-buttons button:disabled {
+            background-color: #d0d0d0;
+            cursor: not-allowed;
+        }
+
+        #feedback-area {
+            font-size: 1.3em;
+            font-weight: bold;
+            min-height: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .feedback-correct {
+            color: green;
+        }
+
+        .feedback-incorrect {
+            color: red;
+        }
+
+        #next-question-btn, #restart-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+
+        #next-question-btn:hover, #restart-btn:hover {
+            background-color: #0056b3;
+        }
+         #next-question-btn:disabled {
+            background-color: #d0d0d0;
+            cursor: not-allowed;
+        }
+
+        .level-up-message {
+            color: #28a745;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+        
+        .final-level-message {
+            color: #17a2b8;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+
+        /* Responsivität */
+        @media (max-width: 480px) {
+            .stats-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .answer-buttons {
+                grid-template-columns: 1fr; 
+            }
+            #question-area {
+                font-size: 1.5em;
+            }
+            #example-task-area {
+                font-size: 0.9em; 
+            }
+            .answer-buttons button {
+                font-size: 1em;
+            }
+        }
+
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Potenzen Addieren und Subtrahieren</h1>
-        <h2 id="schwierigkeitsgrad">Schwierigkeitsgrad: <span class="leicht">Einfach</span></h2>
-        <div class="aufgabe" id="aufgabe"></div>
-        <div class="antwort-bereich" id="antwort-bereich"></div>
-        <button class="neu-button" id="neu-button" onclick="neueAufgabe()">Neue Aufgabe</button>
-        <div class="loesungsbereich" id="loesungsbereich">
-            <p class="loesung-text">Musterlösung: <span class="musterloesung" id="musterloesung"></span></p>
-            <div class="feedback" id="feedback"></div>
-        </div>
-        <p class="prozentanzeige" id="prozentanzeige">Korrekte Antworten beim ersten Versuch: 0%</p>
-        <p class="punkteanzeige" id="punkteanzeige">Punkte: 0</p>
-        <p class="streakanzeige" id="streakanzeige">Streak: 0</p>
-    </div>
-    <script>
-        let aktuelleAufgabenSchwierigkeit = "leicht";
-        let anzahlRichtig = 0;
-        let anzahlAufgaben = 0;
-        let geloesteAufgaben = 0; // Zählt richtige Aufgaben im aktuellen Level
-        let aktuelleAufgabe = "";
-        let korrekteAntwort = "";
-        let punkte = 0;
-        let streak = 0;
+    <div class="quiz-container">
+        <h1>Potenzen addieren und subtrahieren</h1>
 
-        // Funktion zum Generieren einer neuen Aufgabe
-        function neueAufgabe() {
-            const aufgabeElement = document.getElementById("aufgabe");
-            const antwortBereich = document.getElementById("antwort-bereich");
-            const loesungsbereich = document.getElementById("loesungsbereich");
+        <div id="task-instructions">
+            Fasse die nachfolgenden Potenzterme so weit wie möglich zusammen. Beachte, dass man Potenzen nur addieren oder subtrahieren darf, wenn Basis und Exponent identisch sind.
+        </div>
+        <div id="example-task-area">
+            {/* Beispielaufgabe wird hier per JavaScript eingefügt */}
+        </div>
+        
+        <div class="stats-container">
+            <div id="level-display">Level: Einfach</div> 
+            <div id="score-display">Punkte: 0</div>
+            <div id="streak-display">Streak: 0</div>
+        </div>
 
-            // Verstecke den Lösungsbereich und lösche vorheriges Feedback/Antworten
-            loesungsbereich.style.display = "none";
-            antwortBereich.innerHTML = "";
-            document.getElementById("feedback").className = "feedback"; // Feedback-Klasse zurücksetzen
-            document.getElementById("feedback").textContent = ""; // Feedback-Text leeren
-            document.getElementById("neu-button").style.display = "none"; // "Neue Aufgabe" Button verstecken
+        <div id="level-up-msg-area" class="level-up-message" style="display: none;"></div>
+        <div id="final-level-msg-area" class="final-level-message" style="display: none;"></div>
 
-            let aufgabe = "";
-            let antworten = [];
 
-            // Generiere Aufgabe basierend auf dem aktuellen Schwierigkeitsgrad
-            switch (aktuelleAufgabenSchwierigkeit) {
-                case "leicht":
-                    [aufgabe, antworten, korrekteAntwort] = generiereLeichteAufgabe();
-                    break;
-                case "mittel":
-                    [aufgabe, antworten, korrekteAntwort] = generiereMittlereAufgabe();
-                    break;
-                case "schwer":
-                    [aufgabe, antworten, korrekteAntwort] = generiereSchwereAufgabe();
-                    break;
-            }
+        <div id="question-area">Lädt...</div>
+        
+        <div class="answer-buttons">
+            <button id="ans-btn-0"></button>
+            <button id="ans-btn-1"></button>
+            <button id="ans-btn-2"></button>
+            <button id="ans-btn-3"></button>
+        </div>
+        
+        <div id="feedback-area"></div>
+        
+        <button id="next-question-btn" disabled>Nächste Frage</button>
+        <button id="restart-btn" style="display: none;">Neu starten</button>
+    </div>
 
-            aktuelleAufgabe = aufgabe;
+    <script>
+        // Globale Variablen für den Spielzustand
+        let currentLevel = 1;
+        let score = 0;
+        let streak = 0;
+        let questionsAnsweredInLevel = 0;
+        let correctAnswersInLevel = 0;
+        let currentQuestionData = null;
 
-            // Füge Beispielaufgaben basierend auf Schwierigkeitsgrad hinzu
-            let beispielAufgabe = "Beispiel: <span style='color:blue'>2</span>x<sup>2</sup> + <span style='color:green'>3</span>x<sup>2</sup> = (<span style='color:blue'>2</span>+<span style='color:green'>3</span>)x<sup>2</sup> = <span style='color:red'>5</span>x<sup>2</sup>";
-            if(aktuelleAufgabenSchwierigkeit === "mittel"){
-                beispielAufgabe = "Beispiel: <span style='color:blue'>4</span>x<sup>3</sup> - <span style='color:green'>2</span>x<sup>3</sup> + <span style='color:purple'>5</span>y<sup>2</sup> = (<span style='color:blue'>4</span>-<span style='color:green'>2</span>)x<sup>3</sup> + <span style='color:purple'>5</span>y<sup>2</sup> = <span style='color:red'>2</span>x<sup>3</sup> + <span style='color:purple'>5</span>y<sup>2</sup>";
-            } else if (aktuelleAufgabenSchwierigkeit === "schwer") {
-                // Füge ein passendes Beispiel für den schweren Schwierigkeitsgrad hinzu
-                beispielAufgabe = "Beispiel: <span style='color:blue'>5</span>a<sup>4</sup> + <span style='color:green'>2</span>b<sup>3</sup> - <span style='color:purple'>3</span>a<sup>4</sup> = (<span style='color:blue'>5</span>-<span style='color:purple'>3</span>)a<sup>4</sup> + <span style='color:green'>2</span>b<sup>3</sup> = <span style='color:red'>2</span>a<sup>4</sup> + <span style='color:green'>2</span>b<sup>3</sup>";
+        const MAX_LEVEL = 4;
+        const LEVEL_NAMES = { // NEU: Level-Namen
+            1: "Einfach",
+            2: "Mittel",
+            3: "Schwer",
+            4: "Ultimativ"
+        };
+
+        // DOM-Elemente
+        const levelDisplay = document.getElementById('level-display');
+        const scoreDisplay = document.getElementById('score-display');
+        const streakDisplay = document.getElementById('streak-display');
+        const questionArea = document.getElementById('question-area');
+        const exampleTaskArea = document.getElementById('example-task-area'); 
+        const answerButtons = [
+            document.getElementById('ans-btn-0'),
+            document.getElementById('ans-btn-1'),
+            document.getElementById('ans-btn-2'),
+            document.getElementById('ans-btn-3')
+        ];
+        const feedbackArea = document.getElementById('feedback-area');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const levelUpMsgArea = document.getElementById('level-up-msg-area');
+        const finalLevelMsgArea = document.getElementById('final-level-msg-area');
+
+
+        // Hilfsfunktionen
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function getRandomDecimal(min, max, precision) {
+            const factor = Math.pow(10, precision);
+            return Math.floor(Math.random() * ((max * factor) - (min * factor) + 1) + (min*factor)) / factor;
+        }
+
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // Funktion zur Formatierung eines Terms (z.B. 3x^2)
+        // Stellt sicher, dass die Darstellung der Potenzen klar ist.
+        function formatTerm(coeff, base, exponent, isFirstTerm = false) {
+            let termStr = "";
+            let absCoeff = Math.abs(coeff);
+
+            if (coeff < 0) {
+                termStr += isFirstTerm ? "-" : " - ";
+            } else if (!isFirstTerm) {
+                termStr += " + ";
+            }
+
+            if (absCoeff !== 1 || base === "" || (base !== "" && exponent === 0) ) { 
+                 termStr += absCoeff;
+            } else if (absCoeff === 1 && base === "" && coeff !== 0) { 
+                termStr += absCoeff;
             }
 
 
-            // Zeige die Aufgabe an
-            aufgabeElement.innerHTML = "Fasse die nachfolgenden Potenzterme zusammen. Achte auf die Regeln, die beim Addieren bzw. Subtrahieren von Potenzen gelten. Potenzen dürfen nur addiert oder subtrahiert werden, wenn Basis und Exponent identisch sind! <br><br> " + beispielAufgabe + " <br><br> " + aufgabe + " = ";
+            termStr += base;
+            // Exponent 1 wird nicht angezeigt, Exponent 0 (wenn Basis vorhanden) wird als Teil der Basis behandelt (z.B. x^0 = 1)
+            // aber in diesem Quiz haben wir immer gleiche Exponenten > 1.
+            if (base !== "" && exponent !== 0 && exponent !== 1) {
+                termStr += `<sup>${exponent}</sup>`;
+            }
+            return termStr;
+        }
+        
+        // Funktion zur Darstellung des gesamten Ausdrucks
+        function formatExpression(terms) {
+            let expression = "";
+            terms.forEach((term, index) => {
+                expression += formatTerm(term.coeff, term.base, term.exponent, index === 0);
+            });
+            return expression + " = ?";
+        }
 
-            // Erstelle die Antwort-Buttons
-            antworten.forEach((antwort, index) => {
-                const antwortButton = document.createElement("button");
-                antwortButton.className = "antwort-button";
-                antwortButton.innerHTML = antwort;
-                antwortButton.dataset.antwort = antwort;
-                antwortButton.onclick = () => pruefeAntwort(antwort);
-                antwortBereich.appendChild(antwortButton);
-            });
-        }
+        // Funktion zur Generierung und Anzeige der Beispielaufgabe
+        function generateAndDisplayExampleTask(level) {
+            let exampleHtml = `<b>Beispiel (${LEVEL_NAMES[level]}):</b> `; // Level-Name im Beispiel
+            let varChar = "x";
+            let exp = 3;
+            let c1, c2, c3, res;
 
-        // Funktion zum Generieren einer leichten Aufgabe
-        function generiereLeichteAufgabe() {
-            const basen = ["x", "y", "z"];
-            const koeffizient1 = Math.floor(Math.random() * 5) + 1;
-            const koeffizient2 = Math.floor(Math.random() * 5) + 1;
-            const basis = basen[Math.floor(Math.random() * basen.length)];
-            const exponent = Math.floor(Math.random() * 3) + 2;
+            function exFormatCoeff(coeff) { return `<span class="coeff-color">${coeff}</span>`; }
+            function exFormatOperator(op) { return `<span class="operator-color"> ${op} </span>`; }
+            function exFormatResultCoeff(coeff) { return `<span class="result-coeff-color">${coeff}</span>`; }
 
-            // Berechne die richtige Antwort
-            let richtigeAntwort = "";
-            const summeKoeffizienten = koeffizient1 + koeffizient2;
-            if (summeKoeffizienten === 0) {
-                richtigeAntwort = "0";
-            } else if (summeKoeffizienten === 1) {
-                richtigeAntwort = `${basis}<sup>${exponent}</sup>`;
-            } else {
-                richtigeAntwort = `${summeKoeffizienten}${basis}<sup>${exponent}</sup>`;
-            }
-
-            // Generiere falsche Antworten
-            const falscheAntwort1 = `${summeKoeffizienten}${basis}<sup>${exponent + 1}</sup>`; // Falscher Exponent
-            const falscheAntwort2 = `${koeffizient1 - koeffizient2}${basis}<sup>${exponent}</sup>`; // Subtrahiert statt addiert
-            const falscheAntwort3 = `${koeffizient1 * koeffizient2}${basis}<sup>${exponent}</sup>`; // Multipliziert statt addiert
-
-            const aufgabe = `${koeffizient1}${basis}<sup>${exponent}</sup> + ${koeffizient2}${basis}<sup>${exponent}</sup>`;
-            const antworten = [richtigeAntwort, falscheAntwort1, falscheAntwort2, falscheAntwort3];
-
-            return [aufgabe, mischeAntworten(antworten), richtigeAntwort];
-        }
-
-        // Funktion zum Generieren einer mittleren Aufgabe
-        function generiereMittlereAufgabe() {
-            const basen = ["x", "y", "z"];
-            const koeffizient1 = Math.floor(Math.random() * 10) + 1;
-            const koeffizient2 = Math.floor(Math.random() * 10) + 1;
-            const koeffizient3 = Math.floor(Math.random() * 5) + 1;
-            const basis1 = basen[Math.floor(Math.random() * basen.length)];
-            let basis2 = basen[Math.floor(Math.random() * basen.length)];
-            // Stelle sicher, dass Basis2 anders ist als Basis1 für eine sinnvolle mittlere Aufgabe
-            while (basis2 === basis1) {
-                basis2 = basen[Math.floor(Math.random() * basen.length)];
-            }
-            const exponent1 = Math.floor(Math.random() * 4) + 2;
-            const exponent2 = Math.floor(Math.random() * 4) + 2;
-
-            // Berechne die richtige Antwort
-            let richtigeAntwort = "";
-            const koeffizientErgebnis = koeffizient1 - koeffizient3;
-            const term1 = koeffizientErgebnis === 1 ? `${basis1}<sup>${exponent1}</sup>` : (koeffizientErgebnis === 0 ? "" : `${koeffizientErgebnis}${basis1}<sup>${exponent1}</sup>`);
-            const term2 = koeffizient2 === 1 ? `${basis2}<sup>${exponent2}</sup>` : `${koeffizient2}${basis2}<sup>${exponent2}</sup>`;
-
-            if (koeffizientErgebnis === 0) {
-                richtigeAntwort = term2;
-            } else {
-                // Füge ein Pluszeichen hinzu, wenn beide Terme vorhanden sind
-                richtigeAntwort = term1 + (term1 !== "" && term2 !== "" ? " + " : "") + term2;
-            }
-             // Entferne führende oder doppelte Pluszeichen, falls vorhanden
-            richtigeAntwort = richtigeAntwort.replace(/^\s*\+\s*/, '').replace(/\s*\+\s*\+/g, ' + ');
+            switch (level) {
+                case 1:
+                    c1 = 2; c2 = 4; varChar = "a"; exp = 3;
+                    res = c1 + c2;
+                    exampleHtml += `${exFormatCoeff(c1)}${varChar}<sup>${exp}</sup>${exFormatOperator('+')}${exFormatCoeff(c2)}${varChar}<sup>${exp}</sup> = (${exFormatCoeff(c1)}${exFormatOperator('+')}${exFormatCoeff(c2)})${varChar}<sup>${exp}</sup> = ${exFormatResultCoeff(res)}${varChar}<sup>${exp}</sup>`;
+                    break;
+                case 2:
+                    c1 = 7; c2 = -3; varChar = "b"; exp = 4;
+                    res = c1 + c2;
+                    exampleHtml += `${exFormatCoeff(c1)}${varChar}<sup>${exp}</sup> ${c2 < 0 ? exFormatOperator('-') : exFormatOperator('+')} ${exFormatCoeff(Math.abs(c2))}${varChar}<sup>${exp}</sup> = (${exFormatCoeff(c1)} ${c2 < 0 ? exFormatOperator('-') : exFormatOperator('+')} ${exFormatCoeff(Math.abs(c2))})${varChar}<sup>${exp}</sup> = ${exFormatResultCoeff(res)}${varChar}<sup>${exp}</sup>`;
+                    break;
+                case 3:
+                    c1 = -3; c2 = 8; c3 = -2; varChar = "(xy)"; exp = 5;
+                    res = c1 + c2 + c3;
+                    let c3Display = Math.abs(c3);
+                    exampleHtml += `${exFormatCoeff(c1)}${varChar}<sup>${exp}</sup>${exFormatOperator('+')}${exFormatCoeff(c2)}${varChar}<sup>${exp}</sup> ${c3 < 0 ? exFormatOperator('-') : exFormatOperator('+')} ${exFormatCoeff(c3Display)}${varChar}<sup>${exp}</sup> = (${exFormatCoeff(c1)}${exFormatOperator('+')}${exFormatCoeff(c2)} ${c3 < 0 ? exFormatOperator('-') : exFormatOperator('+')} ${exFormatCoeff(c3Display)})${varChar}<sup>${exp}</sup> = ${exFormatResultCoeff(res)}${varChar}<sup>${exp}</sup>`;
+                    break;
+                case 4: 
+                    c1 = 1.5; c2 = -4.0; c3 = 2.5; varChar = "k"; exp = 6;
+                    res = parseFloat((c1 + c2 + c3).toFixed(1)); 
+                    let c1F = c1.toString().includes('.') ? c1.toFixed(1) : c1;
+                    let c2DispF = (Math.abs(c2)).toString().includes('.') ? (Math.abs(c2)).toFixed(1) : Math.abs(c2);
+                    let c3F = c3.toString().includes('.') ? c3.toFixed(1) : c3;
+                    let resF = res.toString().includes('.') && res % 1 !== 0 ? res.toFixed(1) : Math.round(res); // Korrektur für .0 bei Ergebnis
 
 
-            // Generiere falsche Antworten
-            const falscheAntwort1 = `${koeffizient1 + koeffizient3}${basis1}<sup>${exponent1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2}</sup>`; // Addiert statt subtrahiert
-            const falscheAntwort2 = `${koeffizient1 - koeffizient3}${basis1}<sup>${exponent1 + 1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2 + 1}</sup>`; // Falsche Exponenten
-            const falscheAntwort3 = `${koeffizient1 * koeffizient3}${basis1}<sup>${exponent1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2}</sup>`; // Multipliziert statt subtrahiert
-
-            const aufgabe = `${koeffizient1}${basis1}<sup>${exponent1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2}</sup> - ${koeffizient3}${basis1}<sup>${exponent1}</sup>`;
-            const antworten = [richtigeAntwort, falscheAntwort1, falscheAntwort2, falscheAntwort3];
-
-            return [aufgabe, mischeAntworten(antworten), richtigeAntwort];
-        }
-
-        // Funktion zum Generieren einer schweren Aufgabe
-        function generiereSchwereAufgabe() {
-            const basen = ["x", "y", "z"];
-            const koeffizient1 = Math.floor(Math.random() * 10) + 1;
-            const koeffizient2 = Math.floor(Math.random() * 10) + 1;
-            const koeffizient3 = Math.floor(Math.random() * 10) + 1;
-            const koeffizient4 = Math.floor(Math.random() * 5) + 1;
-            const koeffizient5 = Math.floor(Math.random() * 5) + 1;
-
-            const basis1 = basen[Math.floor(Math.random() * basen.length)];
-            let basis2 = basen[Math.floor(Math.random() * basen.length)];
-            let basis3 = basen[Math.floor(Math.random() * basen.length)];
-
-            // Stelle sicher, dass die Basen unterschiedlich sind
-            while (basis2 === basis1) {
-                basis2 = basen[Math.floor(Math.random() * basen.length)];
-            }
-            while (basis3 === basis1 || basis3 === basis2) {
-                basis3 = basen[Math.floor(Math.random() * basen.length)];
-            }
-
-            const exponent1 = Math.floor(Math.random() * 5) + 2;
-            const exponent2 = Math.floor(Math.random() * 5) + 2;
-            const exponent3 = Math.floor(Math.random() * 5) + 2;
-
-            // Berechne die richtige Antwort
-            let richtigeAntwort = "";
-            const koeffizientErgebnisBasis1 = koeffizient1 - koeffizient3 + koeffizient4;
-
-            const term1 = koeffizientErgebnisBasis1 === 1 ? `${basis1}<sup>${exponent1}</sup>` : (koeffizientErgebnisBasis1 === 0 ? "" : `${koeffizientErgebnisBasis1}${basis1}<sup>${exponent1}</sup>`);
-            const term2 = koeffizient2 === 1 ? `${basis2}<sup>${exponent2}</sup>` : `${koeffizient2}${basis2}<sup>${exponent2}</sup>`;
-            const term3 = koeffizient5 === 1 ? `${basis3}<sup>${exponent3}</sup>` : `${koeffizient5}${basis3}<sup>${exponent3}</sup>`;
-
-            // Kombiniere die Terme zur richtigen Antwort, achte auf Vorzeichen und Reihenfolge
-            const terms = [];
-            if (term1 !== "") terms.push(term1);
-            if (term2 !== "") terms.push(term2);
-            if (term3 !== "") terms.push("-" + term3); // Term 3 ist immer negativ in dieser Aufgabe
-
-            richtigeAntwort = terms.join(" + ").replace(/\+ -/g, "- "); // Füge Pluszeichen zwischen positiven Termen ein und korrigiere "+ -" zu "-"
-
-            // Generiere falsche Antworten
-            const falscheAntwort1 = `${koeffizient1 + koeffizient3 - koeffizient4}${basis1}<sup>${exponent1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2}</sup> + ${koeffizient5}${basis3}<sup>${exponent3}</sup>`; // Falsche Koeffizientenberechnung und falsches Vorzeichen bei Term 3
-            const falscheAntwort2 = `${koeffizientErgebnisBasis1}${basis1}<sup>${exponent1 + 1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2 + 1}</sup> - ${koeffizient5}${basis3}<sup>${exponent3 + 1}</sup>`; // Falsche Exponenten
-            const falscheAntwort3 = `${(koeffizient1 - koeffizient3) * koeffizient4}${basis1}<sup>${exponent1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2}</sup> - ${koeffizient5}${basis3}<sup>${exponent3}</sup>`; // Multiplizierter Koeffizient bei Term 1
-
-            const aufgabe = `${koeffizient1}${basis1}<sup>${exponent1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2}</sup> - ${koeffizient3}${basis1}<sup>${exponent1}</sup> + ${koeffizient4}${basis1}<sup>${exponent1}</sup> - ${koeffizient5}${basis3}<sup>${exponent3}</sup>`;
-            const antworten = [richtigeAntwort, falscheAntwort1, falscheAntwort2, falscheAntwort3];
-
-            return [aufgabe, mischeAntworten(antworten), richtigeAntwort];
-        }
+                    exampleHtml += `${exFormatCoeff(c1F)}${varChar}<sup>${exp}</sup> ${c2 < 0 ? exFormatOperator('-') : exFormatOperator('+')} ${exFormatCoeff(c2DispF)}${varChar}<sup>${exp}</sup>${exFormatOperator('+')}${exFormatCoeff(c3F)}${varChar}<sup>${exp}</sup> = (${exFormatCoeff(c1F)} ${c2 < 0 ? exFormatOperator('-') : exFormatOperator('+')} ${exFormatCoeff(c2DispF)}${exFormatOperator('+')}${exFormatCoeff(c3F)})${varChar}<sup>${exp}</sup> = ${exFormatResultCoeff(resF)}${varChar}<sup>${exp}</sup>`;
+                    break;
+                default:
+                    exampleHtml += "Kein Beispiel für dieses Level verfügbar.";
+            }
+            exampleTaskArea.innerHTML = exampleHtml;
+        }
 
 
-        // Funktion zum Mischen der Antworten
-        function mischeAntworten(antworten) {
-            for (let i = antworten.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [antworten[i], antworten[j]] = [antworten[j], antworten[i]]; // Tausche Elemente
-            }
-            return antworten;
-        }
+        // Funktion zur Generierung einer Frage basierend auf dem Level
+        function generateQuestion(level) {
+            let numTerms;
+            let coeffMin, coeffMax;
+            let expMin, expMax;
+            let variables = ['a', 'b', 'c', 'x', 'y', 'z', 'm', 'n', 'p', 'k'];
+            let baseVar = variables[getRandomInt(0, variables.length - 1)];
+            let baseExponent = 1;
+            let useComplexBase = false;
+            let useDecimalCoeffs = false;
+
+            switch (level) {
+                case 1: 
+                    numTerms = 2; coeffMin = 1; coeffMax = 10; expMin = 2; expMax = 5;
+                    baseExponent = getRandomInt(expMin, expMax);
+                    break;
+                case 2: 
+                    numTerms = getRandomInt(2, 3); coeffMin = -10; coeffMax = 10; 
+                    expMin = 2; expMax = 7;
+                    baseExponent = getRandomInt(expMin, expMax);
+                    break;
+                case 3: 
+                    numTerms = 3; coeffMin = -15; coeffMax = 15; expMin = 2; expMax = 10;
+                    baseExponent = getRandomInt(expMin, expMax);
+                    useComplexBase = Math.random() < 0.3; 
+                    break;
+                case 4: 
+                    numTerms = getRandomInt(3, 4); coeffMin = -20; coeffMax = 20;
+                    expMin = 2; expMax = 12;
+                    baseExponent = getRandomInt(expMin, expMax);
+                    useComplexBase = Math.random() < 0.5; 
+                    useDecimalCoeffs = Math.random() < 0.3;
+                    break;
+                default: 
+                    numTerms = 2; coeffMin = 1; coeffMax = 5; expMin = 2; expMax = 3;
+                    baseExponent = getRandomInt(expMin, expMax);
+            }
+            
+            if (useComplexBase) {
+                let type = getRandomInt(1,2);
+                let var1 = variables[getRandomInt(0,variables.length-1)];
+                let var2 = variables[getRandomInt(0,variables.length-1)];
+                while(var1 === var2 && variables.length > 1) var2 = variables[getRandomInt(0,variables.length-1)]; 
+
+                if (type === 1 && variables.length >=2) { 
+                    baseVar = `(${var1}${var2})`;
+                } else { 
+                    baseVar = `(${getRandomInt(2,5)}${var1})`;
+                }
+            }
 
 
-        // Funktion zur Überprüfung der gewählten Antwort
-        function pruefeAntwort(gewaehlteAntwort) {
-            const musterloesungElement = document.getElementById("musterloesung");
-            const feedback = document.getElementById("feedback");
-            const loesungsbereich = document.getElementById("loesungsbereich");
+            let terms = [];
+            let totalCoeff = 0;
 
-            // Inkrementiere die Gesamtzahl der Aufgabenversuche
-            anzahlAufgaben++;
+            for (let i = 0; i < numTerms; i++) {
+                let coeff;
+                do {
+                     if(useDecimalCoeffs) {
+                        coeff = getRandomDecimal(coeffMin, coeffMax, 1); 
+                        if (coeff % 1 === 0) coeff = Math.round(coeff);
+                     } else {
+                        coeff = getRandomInt(coeffMin, coeffMax);
+                     }
+                } while (coeff === 0); 
+                terms.push({ coeff: coeff, base: baseVar, exponent: baseExponent });
+                if (useDecimalCoeffs) {
+                    totalCoeff = parseFloat((totalCoeff + coeff).toFixed(10)); 
+                } else {
+                    totalCoeff += coeff;
+                }
+            }
+            
+            if (totalCoeff === 0 && terms.length > 1) {
+                let adjustment = (Math.random() < 0.5 ? 1 : -1);
+                if (useDecimalCoeffs) adjustment = (Math.random() < 0.5 ? 0.1 : -0.1); // Kleinere Anpassung für Dezimalzahlen
 
-            let isCorrect = false;
-            // Überprüfe, ob die gewählte Antwort korrekt ist
-            if (gewaehlteAntwort === korrekteAntwort || (gewaehlteAntwort === "0" && korrekteAntwort === "0")) {
-                isCorrect = true;
-                // Stats für richtige Antwort aktualisieren
-                anzahlRichtig++;
-                punkte += 10;
-                streak++;
-                geloesteAufgaben++; // Zähle richtige Aufgaben für das aktuelle Level
-            } else {
-                // Stats für falsche Antwort aktualisieren
-                isCorrect = false;
-                streak = 0; // Streak zurücksetzen
-            }
-
-            // Prüfe, ob der Benutzer die Kriterien für den nächsten Schwierigkeitsgrad erfüllt hat *bevor* Feedback angezeigt wird
-            let leveledUp = false;
-            // Kriterium für Levelaufstieg: 5 oder mehr richtige Antworten im aktuellen Level UND mindestens 80% Trefferquote im aktuellen Level
-            if (isCorrect && geloesteAufgaben >= 5 && anzahlAufgaben > 0 && (anzahlRichtig / anzahlAufgaben) >= 0.8) {
-                 leveledUp = true;
-                 // Setze Level-spezifische Stats für das nächste Level zurück
-                 geloesteAufgaben = 0;
-                 anzahlRichtig = 0;
-                 anzahlAufgaben = 0;
-                 streak = 0; // Streak für das neue Level zurücksetzen
-
-                 // Übergang zum nächsten Schwierigkeitsgrad
-                 if (aktuelleAufgabenSchwierigkeit === "leicht") {
-                     aktuelleAufgabenSchwierigkeit = "mittel";
-                     // Finde das span-Element innerhalb des h2 und aktualisiere dessen Text und Klasse
-                     const schwierigkeitsSpan = document.querySelector("#schwierigkeitsgrad span");
-                     schwierigkeitsSpan.textContent = "Mittel";
-                     schwierigkeitsSpan.className = "mittel"; // Wende die neue Schwierigkeitsklasse für das Styling an
-                     alert("Super! Du hast das Level 'Einfach' geschafft! Du kommst automatisch zum nächsten Level.");
-                     punkte += 50; // Bonuspunkte für den Levelaufstieg
-                 } else if (aktuelleAufgabenSchwierigkeit === "mittel") {
-                     aktuelleAufgabenSchwierigkeit = "schwer";
-                     // Finde das span-Element innerhalb des h2 und aktualisiere dessen Text und Klasse
-                     const schwierigkeitsSpan = document.querySelector("#schwierigkeitsgrad span");
-                     schwierigkeitsSpan.textContent = "Schwer";
-                     schwierigkeitsSpan.className = "schwer"; // Wende die neue Schwierigkeitsklasse für das Styling an
-                     alert("Fantastisch! Du hast das Level 'Mittel' geschafft! Du kommst automatisch zum nächsten Level.");
-                     punkte += 100; // Bonuspunkte für den Levelaufstieg
-                 }
-                 // Hinweis: Nach Erreichen von "schwer" ist kein weiterer Levelübergang definiert.
-            }
-
-            // Zeige Feedback und die korrekte Lösung NUR an, wenn der Benutzer NICHT gerade einen Levelaufstieg hatte
-            if (!leveledUp) {
-                 loesungsbereich.style.display = "block"; // Zeige den Lösungs-/Feedback-Bereich
-                 // Setze den Text der korrekten Antwort
-                 musterloesungElement.innerHTML = korrekteAntwort;
-                 // Setze den Feedback-Text und die Klasse
-                 if (isCorrect) {
-                     feedback.textContent = "Richtig!";
-                     feedback.className = "feedback richtig-feedback";
-                 } else {
-                     feedback.textContent = "Falsch! Versuch es noch einmal.";
-                     feedback.className = "feedback falsch-feedback";
-                 }
-            } else {
-                 // Wenn ein Levelaufstieg stattfand, verstecke den Lösungsbereich sofort,
-                 // damit nicht kurz "Musterlösung: richtig" angezeigt wird
-                 loesungsbereich.style.display = "none";
-            }
+                terms[terms.length-1].coeff = parseFloat((terms[terms.length-1].coeff + adjustment).toFixed(10));
+                 if(terms[terms.length-1].coeff === 0) terms[terms.length-1].coeff += adjustment; 
+                
+                totalCoeff = 0; 
+                for(const term of terms) {
+                     if (useDecimalCoeffs) {
+                        totalCoeff = parseFloat((totalCoeff + term.coeff).toFixed(10));
+                     } else {
+                        totalCoeff += term.coeff;
+                     }
+                }
+            }
+             if (useDecimalCoeffs && totalCoeff % 1 !== 0) {
+                totalCoeff = parseFloat(totalCoeff.toFixed(1));
+            } else if (useDecimalCoeffs) { // Auch wenn es .0 ist, als Ganzzahl behandeln
+                totalCoeff = Math.round(totalCoeff);
+            }
 
 
-            // Aktualisiere die angezeigten Stats (Prozentsatz, Punkte, Streak) basierend auf den neuesten Werten
-            // Verwende einen ternären Operator, um Division durch Null zu vermeiden, wenn noch keine Aufgabe im aktuellen Level versucht wurde (z.B. direkt nach einem Levelaufstieg)
-            document.getElementById("prozentanzeige").textContent = `Korrekte Antworten beim ersten Versuch: ${anzahlAufgaben > 0 ? Math.round(anzahlRichtig / anzahlAufgaben * 100) : 0}%`;
-            document.getElementById("punkteanzeige").textContent = `Punkte: ${punkte}`;
-            document.getElementById("streakanzeige").textContent = `Streak: ${streak}`;
+            const questionText = formatExpression(terms);
+            const correctAnswerNumeric = totalCoeff;
+            const correctAnswerFormatted = formatTerm(correctAnswerNumeric, baseVar, baseExponent, true).replace(/\s*[\+\-]\s*$/, '').trim();
 
-            // Generiere immer eine neue Aufgabe, nachdem eine Antwort verarbeitet wurde (egal ob richtig, falsch oder mit Levelaufstieg)
-            neueAufgabe();
-        }
 
-        // Starte die erste Aufgabe beim Laden der Seite
-        neueAufgabe();
-    </script>
+            let answers = [correctAnswerFormatted];
+            while (answers.length < 4) {
+                let wrongCoeff;
+                let wrongExp = baseExponent;
+                let wrongBase = baseVar;
+
+                let errorType = getRandomInt(1, 3);
+                if (useDecimalCoeffs) { 
+                     let deviation = getRandomInt(1,30) / 10.0 * (Math.random() < 0.5 ? 1 : -1); 
+                     wrongCoeff = parseFloat((correctAnswerNumeric + deviation).toFixed(1));
+                     if (wrongCoeff % 1 === 0) wrongCoeff = Math.round(wrongCoeff);
+                     if (wrongCoeff === correctAnswerNumeric) wrongCoeff = parseFloat((correctAnswerNumeric + 0.1 * (Math.random() < 0.5 ? 1 : -1)).toFixed(1));
+                     if (wrongCoeff % 1 === 0) wrongCoeff = Math.round(wrongCoeff); // Ensure .0 becomes integer
+
+                } else {
+                    if (errorType === 1) { 
+                        wrongCoeff = correctAnswerNumeric + getRandomInt(-5, 5);
+                        if (wrongCoeff === correctAnswerNumeric) wrongCoeff += (Math.random() < 0.5 ? 1 : -1); 
+                    } else if (errorType === 2 && baseExponent > 1) { 
+                        wrongCoeff = correctAnswerNumeric;
+                        wrongExp = baseExponent + getRandomInt(-1,1);
+                        if(wrongExp === baseExponent || wrongExp <=0) wrongExp = baseExponent + (baseExponent > 2 ? -1 : 1);
+                         if(wrongExp === 0) wrongExp = 1; 
+                    } else { 
+                        wrongCoeff = terms[getRandomInt(0, terms.length - 1)].coeff + getRandomInt(-2,2);
+                         if (wrongCoeff === correctAnswerNumeric) wrongCoeff += (Math.random() < 0.5 ? 1 : -1);
+                    }
+                }
+                 if (wrongCoeff === 0 && wrongBase !== "") wrongCoeff = (Math.random() < 0.5 ? 1 : -1); 
+
+                let formattedWrongAnswer = formatTerm(wrongCoeff, wrongBase, wrongExp, true).replace(/\s*[\+\-]\s*$/, '').trim();
+                if (!answers.includes(formattedWrongAnswer) && formattedWrongAnswer !== correctAnswerFormatted) {
+                    answers.push(formattedWrongAnswer);
+                }
+            }
+
+            shuffleArray(answers);
+
+            return {
+                text: questionText,
+                options: answers,
+                correctAnswer: correctAnswerFormatted,
+                terms: terms 
+            };
+        }
+
+        // Funktion zur Anzeige der Frage und Antworten
+        function displayQuestion() {
+            levelUpMsgArea.style.display = 'none'; 
+            finalLevelMsgArea.style.display = 'none';
+            generateAndDisplayExampleTask(currentLevel); 
+
+            currentQuestionData = generateQuestion(currentLevel);
+            questionArea.innerHTML = currentQuestionData.text;
+            
+            answerButtons.forEach((button, index) => {
+                button.innerHTML = currentQuestionData.options[index];
+                button.disabled = false;
+                button.onclick = () => checkAnswer(index);
+            });
+            
+            feedbackArea.textContent = "";
+            feedbackArea.className = "";
+            nextQuestionBtn.disabled = true;
+        }
+
+        // Funktion zur Überprüfung der Antwort
+        function checkAnswer(selectedIndex) {
+            const selectedAnswer = currentQuestionData.options[selectedIndex];
+            questionsAnsweredInLevel++;
+
+            if (selectedAnswer === currentQuestionData.correctAnswer) {
+                feedbackArea.textContent = "Richtig!";
+                feedbackArea.className = "feedback-correct";
+                score += 10 * currentLevel; 
+                streak++;
+                correctAnswersInLevel++;
+            } else {
+                feedbackArea.textContent = "Falsch!";
+                feedbackArea.className = "feedback-incorrect";
+                streak = 0;
+            }
+
+            answerButtons.forEach(button => button.disabled = true);
+            nextQuestionBtn.disabled = false;
+            updateScoreboard();
+            checkLevelUp();
+        }
+        
+        // Funktion zur Aktualisierung der Anzeigen
+        function updateScoreboard() {
+            levelDisplay.textContent = `Level: ${LEVEL_NAMES[currentLevel]}`; // Level-Name verwenden
+            scoreDisplay.textContent = `Punkte: ${score}`;
+            streakDisplay.textContent = `Streak: ${streak}`;
+        }
+
+        // Funktion zur Überprüfung des Level-Aufstiegs
+        function checkLevelUp() {
+            if (questionsAnsweredInLevel >= 5) {
+                const accuracy = correctAnswersInLevel / questionsAnsweredInLevel;
+                if (accuracy >= 0.8) {
+                    if (currentLevel < MAX_LEVEL) {
+                        currentLevel++;
+                        // generateAndDisplayExampleTask(currentLevel); // Wird schon in displayQuestion gemacht
+                        levelUpMsgArea.textContent = `Glückwunsch! Du hast Level ${LEVEL_NAMES[currentLevel]} erreicht!`;
+                        levelUpMsgArea.style.display = 'block';
+                        questionsAnsweredInLevel = 0;
+                        correctAnswersInLevel = 0;
+                    } else if (currentLevel === MAX_LEVEL && !finalLevelMsgArea.textContent) {
+                        finalLevelMsgArea.textContent = "Super! Du hast das höchste Level gemeistert!";
+                        finalLevelMsgArea.style.display = 'block';
+                        nextQuestionBtn.textContent = "Nochmal Level " + LEVEL_NAMES[MAX_LEVEL];
+                    }
+                } else if (questionsAnsweredInLevel >= 8 && currentLevel < MAX_LEVEL) { 
+                    feedbackArea.textContent += ` (Versuche es weiter in Level ${LEVEL_NAMES[currentLevel]})`;
+                }
+            }
+        }
+        
+        function handleNextQuestion() {
+            displayQuestion();
+        }
+
+
+        // Event Listener
+        nextQuestionBtn.addEventListener('click', handleNextQuestion);
+        
+        restartBtn.addEventListener('click', () => {
+            currentLevel = 1;
+            score = 0;
+            streak = 0;
+            questionsAnsweredInLevel = 0;
+            correctAnswersInLevel = 0;
+            updateScoreboard();
+            // generateAndDisplayExampleTask(currentLevel); // Wird in displayQuestion gemacht
+            displayQuestion();
+            levelUpMsgArea.style.display = 'none';
+            finalLevelMsgArea.style.display = 'none';
+            nextQuestionBtn.textContent = "Nächste Frage";
+            restartBtn.style.display = 'inline-block'; 
+            nextQuestionBtn.style.display = 'inline-block';
+        });
+
+
+        // Initialisierung des Spiels
+        function initGame() {
+            updateScoreboard();
+            // generateAndDisplayExampleTask(currentLevel); // Wird in displayQuestion gemacht
+            displayQuestion();
+            restartBtn.style.display = 'inline-block'; 
+        }
+
+        initGame();
+
+    </script>
 </body>
 </html>
