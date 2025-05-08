@@ -120,6 +120,7 @@
             background-color: #c53030;
             border-color: #9b2c2c;
         }
+        /* Neu: "Nächste Aufgabe" Button nur im Endbildschirm sichtbar */
         .neu-button {
             background-color: #3182ce;
             color: white;
@@ -131,7 +132,8 @@
             transition: background-color 0.15s ease-in-out, transform 0.125s ease-in-out;
             font-size: 1rem;
             margin-top: 1rem;
-            display: inline-block; /* Immer sichtbar, nur ausgeblendet wenn Endscreen aktiv */
+             /*display: inline-block;  Immer sichtbar, nur ausgeblendet wenn Endscreen aktiv */
+            display: none !important; /* Standardmäßig versteckt in der Hauptansicht */
         }
         .neu-button:hover {
             background-color: #2b6cb0; /* Dunkleres Hover */
@@ -141,6 +143,7 @@
             outline: none;
             box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
         }
+        /* Der Lösungsbereich wird nie standardmäßig angezeigt */
         .loesungsbereich {
             margin-top: 1rem;
             padding: 1rem;
@@ -149,6 +152,7 @@
             border: 1px solid #cbd5e0;
             margin-bottom: 1.5rem;
             text-align: left; /* Text linksbündig */
+            display: none; /* Immer versteckt */
         }
          .loesungsbereich p {
              margin-bottom: 0.5rem;
@@ -259,6 +263,7 @@
          }
          .endbildschirm .neu-button {
              margin-top: 0; /* Kein extra Abstand */
+             display: inline-block !important; /* Im Endbildschirm sichtbar */
          }
 
         @media (max-width: 768px) {
@@ -297,8 +302,6 @@
             }
         }
     </style>
-    <audio id="correct-sound" src="https://www.soundjay.com/free-sounds/bells-ring-01.mp3" preload="auto"></audio>
-    <audio id="incorrect-sound" src="https://www.soundjay.com/free-sounds/buzzer-01.mp3" preload="auto"></audio>
 </head>
 <body>
     <div class="container" id="main-container">
@@ -317,14 +320,13 @@
              </div>
         </div>
 
-
         <div class="loesungsbereich" id="loesungsbereich" style="display: none;">
             <p><span class="loesung-text">Musterlösung:</span> <span class="musterloesung" id="musterloesung"></span></p>
             <div class="feedback" id="feedback"></div>
         </div>
 
         <p class="prozentanzeige" id="prozentanzeige">Korrekte Antworten beim ersten Versuch: 0%</p>
-         <button class="neu-button" id="neu-button" onclick="neueAufgabe()">Nächste Aufgabe</button>
+         <button class="neu-button" id="neu-button" onclick="neueAufgabe()" style="display: none;">Nächste Aufgabe</button>
     </div>
 
     <div class="endbildschirm" id="endbildschirm" style="display: none;">
@@ -338,38 +340,31 @@
     <script>
         let aktuelleAufgabenSchwierigkeit = "leicht";
         let anzahlRichtig = 0; // Korrekt beim ersten Versuch pro Level
-        let anzahlAufgaben = 0; // Gesamtversuche pro Level
+        let anzahlAufgaben = 0; // Gesamtversuche pro Level (Anzahl der Aufgaben, die gestartet wurden)
         let geloesteAufgabenLevel = 0; // Anzahl der Aufgaben, die in diesem Level bereits (mindestens einmal) richtig gelöst wurden
 
         let punkte = 0;
         let streak = 0;
         let hinweisGenutzt = false; // Flag, ob Hinweis für aktuelle Aufgabe genutzt wurde
-        let aufgabeGelöstBeimErstenVersuch = false; // Flag, ob die aktuelle Aufgabe im ersten Versuch gelöst wurde
+        let aufgabeWurdeSchonVersucht = false; // Flag, ob bei der aktuellen Aufgabe schon mindestens ein Versuch (richtig oder falsch) gemacht wurde
 
         let aktuelleAufgabeText = ""; // Speichert den Aufgabentext
         let korrekteAntwort = "";
-
-        // Audio Elemente holen
-        const correctSound = document.getElementById('correct-sound');
-        const incorrectSound = document.getElementById('incorrect-sound');
-
-        function spieleSound(soundElement) {
-             // Klonen, um Überlappung bei schnellen Klicks zu vermeiden
-            const soundClone = soundElement.cloneNode();
-            soundClone.play();
-        }
 
 
         function updateAnzeigen() {
             document.getElementById("punkte").textContent = punkte;
             document.getElementById("streak").textContent = streak;
+            // Prozentsatz nur für Aufgaben berechnen, die mindestens einmal versucht wurden (anzahlAufgaben)
             const prozent = anzahlAufgaben > 0 ? Math.round((anzahlRichtig / anzahlAufgaben) * 100) : 0;
             document.getElementById("prozentanzeige").textContent = `Korrekte Antworten im ersten Versuch (dieses Levels): ${prozent}%`;
 
+             // Workaround für Update des Schwierigkeitsgrad-Spans
+             const schwierigkeitsgradContainer = document.getElementById("schwierigkeitsgrad");
              const schwierigkeitsgradSpan = document.getElementById("schwierigkeitsgrad-span");
+
              schwierigkeitsgradSpan.textContent = aktuelleAufgabenSchwierigkeit.charAt(0).toUpperCase() + aktuelleAufgabenSchwierigkeit.slice(1); // Ersten Buchstaben groß
              schwierigkeitsgradSpan.className = aktuelleAufgabenSchwierigkeit; // CSS Klasse setzen
-             document.getElementById("schwierigkeitsgrad").innerHTML = `Schwierigkeitsgrad: <span class="${aktuelleAufgabenSchwierigkeit}" id="schwierigkeitsgrad-span">${aktuelleAufgabenSchwierigkeit.charAt(0).toUpperCase() + aktuelleAufgabenSchwierigkeit.slice(1)}</span>`; // Workaround für Update
 
         }
 
@@ -377,11 +372,13 @@
         function neueAufgabe() {
             const aufgabeElement = document.getElementById("aufgabe");
             const antwortBereich = document.getElementById("antwort-bereich");
-            const loesungsbereich = document.getElementById("loesungsbereich");
+            const loesungsbereich = document.getElementById("loesungsbereich"); // Wird jetzt nicht mehr angezeigt
             const hinweisTextElement = document.getElementById("hinweis-text");
             const hinweisButtonElement = document.getElementById("hinweis-button");
+            // const neuButton = document.getElementById("neu-button"); // Wird jetzt nicht mehr in der Hauptansicht verwendet
 
-            loesungsbereich.style.display = "none";
+
+            // loesungsbereich.style.display = "none"; // Lösungsbereich ist per CSS display: none !important
             hinweisTextElement.style.display = "none"; // Hinweis am Anfang verstecken
             hinweisButtonElement.style.display = "inline-block"; // Hinweis Button zeigen
             hinweisButtonElement.disabled = false; // Button aktivieren
@@ -389,10 +386,10 @@
             antwortBereich.innerHTML = "";
             document.getElementById("feedback").className = "feedback";
             document.getElementById("feedback").textContent = "";
-            document.getElementById("neu-button").style.display = "none"; // "Nächste Aufgabe" Button verstecken
+            // neuButton.style.display = "none"; // "Nächste Aufgabe" Button wird per CSSdisplay: none !important
 
             hinweisGenutzt = false; // Reset Hinweisnutzung für die neue Aufgabe
-            aufgabeGelöstBeimErstenVersuch = false; // Reset für erste-Versuch-Check
+            aufgabeWurdeSchonVersucht = false; // Reset für die neue Aufgabe
 
 
             let aufgabeHTML = "";
@@ -438,6 +435,11 @@
                 antwortBereich.appendChild(antwortButton);
             });
 
+             // Zähle die Aufgabe nur, wenn sie neu generiert wird
+             // Dies ist wichtig für die Prozentberechnung über die ANZAHL DER VERSCHIEDENEN AUFGABEN
+             anzahlAufgaben++;
+
+
             // Anzeigen aktualisieren
             updateAnzeigen();
         }
@@ -451,7 +453,7 @@
             return antworten;
         }
 
-        // --- Aufgabengenerierungsfunktionen (Deine Funktionen bleiben gleich, füge sie hier ein) ---
+        // --- Aufgabengenerierungsfunktionen (Deine Funktionen bleiben gleich) ---
 
         function generiereLeichteAufgabe() {
             const basen = ["x", "y", "z"];
@@ -546,7 +548,7 @@
              const falscheAntworten = [];
             // Koeffizienten falsch kombiniert (z.B. alle addiert)
             falscheAntworten.push(`${koeffizient1 + koeffizient3}${basis1}<sup>${exponent1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2}</sup>`);
-             // Exponenten falsch behandelt (z.B. addiert)
+             // Exponenten falsch behandelt (z.g. addiert)
             falscheAntworten.push(`${koeffizient1 - koeffizient3}${basis1}<sup>${exponent1 + 1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2 + 1}</sup>`);
             // Koeffizienten multipliziert
             falscheAntworten.push(`${(koeffizient1 - koeffizient3) * koeffizient2}${basis1}<sup>${exponent1}</sup>${basis2}<sup>${exponent2}</sup>`); // Beispiel: alle Koeff. mult.
@@ -684,97 +686,119 @@
 
 
         function pruefeAntwort(geklickterButton) {
-             // Deaktiviere alle Antwortbuttons, sobald eine Antwort ausgewählt wurde
+            // Deaktiviere alle Antwortbuttons, sobald eine Antwort ausgewählt wurde
             document.querySelectorAll('.antwort-button').forEach(button => {
                 button.disabled = true;
+                 // Temporäre Klassen für die aktuelle Auswahl entfernen
+                 button.classList.remove('richtig', 'falsch');
             });
 
-
-            const gewaehlteAntwort = geklickterButton.dataset.antwort; // Antwort aus Data-Attribut holen
-            const musterloesungElement = document.getElementById("musterloesung");
+            const gewaehlteAntwort = geklickterButton.dataset.antwort;
             const feedback = document.getElementById("feedback");
-            const loesungsbereich = document.getElementById("loesungsbereich");
-            const neuButton = document.getElementById("neu-button");
+            // Lösungsbereich und neuButton werden hier nicht mehr direkt verwendet
 
-            loesungsbereich.style.display = "block"; // Lösungsbereich immer anzeigen nach Antwort
-            musterloesungElement.innerHTML = korrekteAntwort; // Musterlösung anzeigen!
 
-            // Erster Versuch für diese Aufgabe?
-            if (!aufgabeGelöstBeimErstenVersuch) {
-                 anzahlAufgaben++; // Nur beim ersten Versuch für diese Aufgabe zählen wir eine neue Aufgabe
+            if (gewaehlteAntwort === korrekteAntwort) {
+                // Antwort ist RICHTIG
+                feedback.textContent = "Richtig!";
+                feedback.className = "feedback richtig-feedback";
+                geklickterButton.classList.add("richtig"); // Richtigen Button grün markieren
 
-                if (gewaehlteAntwort === korrekteAntwort) {
-                    spieleSound(correctSound);
-                    feedback.textContent = "Richtig!";
-                    feedback.className = "feedback richtig-feedback";
-                    punkte += 10; // Punkte für richtigen Versuch
-                    anzahlRichtig++; // Richtig beim ersten Versuch zählen
-                    geloesteAufgabenLevel++; // Aufgabe in diesem Level gelöst
-                    streak++; // Streak erhöhen
-                    aufgabeGelöstBeimErstenVersuch = true; // Aufgabe wurde im ersten Versuch gelöst
+                // Nur beim ERSTEN richtigen Versuch Stats aktualisieren und Level-Up prüfen
+                if (!aufgabeWurdeSchonVersucht) { // Wenn dies der erste Versuch bei dieser Aufgabe ÜBERHAUPT war
+                     // anzahlAufgaben wird jetzt in neueAufgabe inkrementiert
 
-                    // Streak-Bonus prüfen
-                    if (streak > 0 && streak % 5 === 0) { // Bonus alle 5 richtigen am Stück
-                        const bonusPunkte = streak * 2; // Beispiel: 10 Punkte Bonus bei 5er Streak, 20 bei 10er etc.
-                        punkte += bonusPunkte;
-                        feedback.textContent += ` Streak-Bonus! (+${bonusPunkte} Punkte)`;
-                    }
+                     punkte += 10; // Punkte für richtigen Versuch
+                     anzahlRichtig++; // Richtig beim ersten Versuch zählen
+                     geloesteAufgabenLevel++; // Aufgabe in diesem Level gelöst
+                     streak++; // Streak erhöhen
+                     aufgabeWurdeSchonVersucht = true; // Aufgabe wurde jetzt (richtig) zum ersten Mal gelöst
 
-                    // Schwierigkeitsgrad aufstieg prüfen NACHDEM die aktuelle Aufgabe verarbeitet wurde
-                    pruefeSchwierigkeitsgradAufstieg();
+                     // Streak-Bonus prüfen
+                     if (streak > 0 && streak % 5 === 0) { // Bonus alle 5 richtigen am Stück
+                         const bonusPunkte = streak * 2; // Beispiel: 10 Punkte Bonus bei 5er Streak, 20 bei 10er etc.
+                         punkte += bonusPunkte;
+                         feedback.textContent += ` Streak-Bonus! (+${bonusPunkte} Punkte)`;
+                     }
+
+                    updateAnzeigen(); // Anzeigen aktualisieren
+
+                    // Direkt zur nächsten Aufgabe oder Level-Up/Endbildschirm
+                    // Die Funktion pruefeSchwierigkeitsgradAufstieg entscheidet und ruft dann neueAufgabe auf
+                    pruebeSchwierigkeitsgradAufstieg();
 
 
                 } else {
-                    spieleSound(incorrectSound);
-                    feedback.textContent = "Falsch! Das ist leider nicht richtig.";
-                    feedback.className = "feedback falsch-feedback";
-                    // Keine Punkte für falschen Versuch
-                    streak = 0; // Streak zurücksetzen
+                    // Aufgabe war vorher falsch, aber jetzt richtig (nicht erster Versuch für diese Aufgabe)
+                    punkte += 2; // Kleine Trostpunkte (optional)
+                    streak++; // Streak wird bei richtiger Antwort erhöht, auch wenn nicht der erste Versuch
+
+                    // Streak-Bonus prüfen (falls auch hier gewünscht)
+                    if (streak > 0 && streak % 5 === 0) {
+                         const bonusPunkte = streak * 1; // Kleinerer Bonus für spätere richtige Versuche (optional)
+                         punkte += bonusPunkte;
+                         feedback.textContent += ` Streak-Bonus! (+${bonusPunkte} Punkte)`;
+                    }
+
+                     updateAnzeigen(); // Anzeigen aktualisieren
+
+                    // Aufgabe wurde jetzt (endlich) richtig gelöst, also zur nächsten Aufgabe
+                    // Da dies nicht der erste Versuch war, wird der Level-Up nicht hier geprüft,
+                    // sondern nur beim ersten richtigen Versuch einer Aufgabe.
+                    // Wir starten einfach die nächste Aufgabe.
+                     neueAufgabe(); // Nächste Aufgabe laden
+
                 }
-            } else {
-                 // Wenn nicht erster Versuch, aber jetzt richtig
-                 if (gewaehlteAntwort === korrekteAntwort) {
-                      spieleSound(correctSound);
-                      feedback.textContent = "Richtig!"; // Kein erster Versuch, aber jetzt korrekt
-                      feedback.className = "feedback richtig-feedback";
-                      // Hier keine anzahlRichtig/geloesteAufgabenLevel/streak Erhöhung, keine vollen Punkte
-                      punkte += 2; // Kleine Trostpunkte für späteren richtigen Versuch (optional)
-                       // Schwierigkeitsgrad Aufstieg wird erst beim ersten richtigen Versuch einer Aufgabe geprüft
-                 } else {
-                      // Immer noch falsch
-                      spieleSound(incorrectSound);
-                       feedback.textContent = "Immer noch falsch. Versuche es erneut oder nutze den Hinweis.";
-                       feedback.className = "feedback falsch-feedback";
-                       streak = 0; // Streak zurücksetzen
-                       // Keine Punkteänderung
-                 }
-            }
 
-
-            // Button-Klassen für visuelles Feedback
-            if (gewaehlteAntwort === korrekteAntwort) {
-                geklickterButton.classList.add("richtig");
             } else {
-                geklickterButton.classList.add("falsch");
-                 // Markiere den richtigen Button, wenn falsch geantwortet wurde
+                // Antwort ist FALSCH
+                feedback.textContent = "Falsch! Versuch es nochmal.";
+                feedback.className = "feedback falsch-feedback";
+                geklickterButton.classList.add("falsch"); // Falschen Button rot markieren
+
+                streak = 0; // Streak zurücksetzen
+
+                 // Markiere den richtigen Button kurz zur Information
                  document.querySelectorAll('.antwort-button').forEach(button => {
                      if (button.dataset.antwort === korrekteAntwort) {
-                         button.classList.add("richtig");
+                         button.classList.add("richtig"); // Richtigen Button kurz grün markieren
                      }
                  });
+
+
+                 // Zähle den Versuch als "Aufgabe versucht", wenn es der allererste Versuch bei dieser Aufgabe war.
+                 if (!aufgabeWurdeSchonVersucht) {
+                     // anzahlAufgaben wird jetzt in neueAufgabe inkrementiert
+                     aufgabeWurdeSchonVersucht = true; // Aufgabe wurde jetzt zum ersten Mal versucht (falsch)
+                 }
+
+
+                updateAnzeigen(); // Anzeigen aktualisieren
+
+                 // Buttons nach kurzer Verzögerung wieder aktivieren, damit der Schüler es nochmal versuchen kann
+                 setTimeout(() => {
+                     document.querySelectorAll('.antwort-button').forEach(button => {
+                         button.disabled = false;
+                         // Temporäre Klassen wieder entfernen
+                         button.classList.remove('richtig', 'falsch');
+                     });
+                     // Feedback und Musterlösung wieder verstecken, falls gewünscht (optional)
+                     // feedback.textContent = "";
+                     // feedback.className = "feedback";
+                 }, 1000); // 1 Sekunde Verzögerung
+
+                 // Musterlösung wird nicht angezeigt
+                 // "Nächste Aufgabe" Button wird nicht angezeigt
             }
-
-
-            neuButton.style.display = "inline-block"; // "Nächste Aufgabe" Button anzeigen
-
-            // Anzeigen aktualisieren
-            updateAnzeigen();
         }
 
-        function pruefeSchwierigkeitsgradAufstieg() {
-             // Prüfe, ob genug Aufgaben im ersten Versuch richtig gelöst wurden UND die Quote stimmt
-             if (geloesteAufgabenLevel >= 5 && (anzahlRichtig / anzahlAufgaben) >= 0.8) {
-                 let alertNachricht = "Super! Du hast den Schwierigkeitsgrad gemeistert und kommst in das nächste Level!";
+        function pruebeSchwierigkeitsgradAufstieg() {
+             // Diese Funktion wird NUR nach einem KORREKTEN ERSTEN VERSUCH einer Aufgabe aufgerufen.
+             // Sie entscheidet, ob Level-Up oder Endbildschirm, oder einfach nächste Aufgabe im selben Level.
+
+             const istAufstiegsberechtigt = geloesteAufgabenLevel >= 5 && (anzahlRichtig / anzahlAufgaben) >= 0.8;
+
+             if (istAufstiegsberechtigt) {
                  let levelAufgestiegen = false;
 
                  if (aktuelleAufgabenSchwierigkeit === "leicht") {
@@ -786,14 +810,14 @@
                  } else if (aktuelleAufgabenSchwierigkeit === "schwer") {
                       // Endbildschirm anzeigen, da schwer gemeistert
                       zeigeEndbildschirm();
-                      return; // Spiel ist zu Ende, nicht neueAufgabe() aufrufen
+                      return; // Spiel ist zu Ende
                  }
 
                  if (levelAufgestiegen) {
-                    alert(alertNachricht);
+                    alert("Super! Du hast den Schwierigkeitsgrad gemeistert und kommst in das nächste Level!");
                     // Stats für das neue Level zurücksetzen (aber Punkte und Streak behalten)
-                    anzahlRichtig = 0;
-                    anzahlAufgaben = 0;
+                    anzahlRichtig = 0; // Reset für das neue Level
+                    anzahlAufgaben = 0; // Reset für das neue Level
                     geloesteAufgabenLevel = 0; // Reset für den Zähler der gelösten Aufgaben in diesem Level
                     // Neue Aufgabe im neuen Schwierigkeitsgrad starten
                     neueAufgabe();
@@ -801,7 +825,9 @@
 
              } else {
                  // Wenn Kriterien nicht erfüllt, einfach nächste Aufgabe im aktuellen Level
-                 // (Dies wird bereits durch den Klick auf "Nächste Aufgabe" oder den erfolgreichen Versuch getriggert)
+                 // Da diese Funktion NUR nach einem korrekten ERSTEN Versuch aufgerufen wird,
+                 // starten wir hier IMMER die nächste Aufgabe, wenn kein Level-Up oder Endscreen passiert.
+                 neueAufgabe();
              }
         }
 
@@ -820,7 +846,6 @@
                  if (punkte < 0) punkte = 0; // Punkte nicht unter Null fallen lassen
                  updateAnzeigen();
 
-                 spieleSound(incorrectSound); // Optional: Soundeffekt für Hinweis
             }
         }
 
@@ -839,24 +864,25 @@
              punkte = 0;
              streak = 0;
              hinweisGenutzt = false;
-             aufgabeGelöstBeimErstenVersuch = false;
+             aufgabeWurdeSchonVersucht = false;
 
 
              // UI zurücksetzen
              document.getElementById("main-container").style.display = "block";
              document.getElementById("endbildschirm").style.display = "none";
+             // Schwierigkeitsgrad Anzeige im Hauptcontainer zurücksetzen
              document.getElementById("schwierigkeitsgrad-span").className = "leicht";
              document.getElementById("schwierigkeitsgrad-span").textContent = "Einfach";
 
 
              // Eine neue Aufgabe starten
-             neueAufgabe();
+             neueAufgabe(); // Startet die erste Aufgabe im leichten Modus
              updateAnzeigen(); // Anzeigen zurücksetzen
         }
 
 
         // Spiel starten beim Laden der Seite
-        neueAufgabe();
+        neueAufgabe(); // Startet die erste Aufgabe
         updateAnzeigen(); // Initial anzeigen
     </script>
 </body>
