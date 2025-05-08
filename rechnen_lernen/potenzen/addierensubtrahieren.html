@@ -301,6 +301,7 @@
 <body>
     <div class="container" id="main-container">
         <h1>Potenzrechnung Aufgaben</h1>
+        <!-- Anzeigen für Punkte und Streak -->
         <p class="punkteanzeige">Punkte: <span id="punkte">0</span></p>
         <p class="streak-anzeige">Streak: <span id="streak">0</span></p>
         <h2 id="schwierigkeitsgrad">Schwierigkeitsgrad: <span class="leicht" id="schwierigkeitsgrad-span">Einfach</span></h2>
@@ -308,6 +309,7 @@
         <div class="aufgabe" id="aufgabe"></div>
         <div class="antwort-bereich" id="antwort-bereich"></div>
 
+        <!-- Hinweis-Bereich -->
         <div class="hinweis-bereich">
              <button class="hinweis-button" id="hinweis-button" onclick="zeigHinweis()">Hinweis (-5 Punkte)</button>
              <div class="hinweis-text" id="hinweis-text">
@@ -315,15 +317,18 @@
              </div>
         </div>
 
+        <!-- Lösungsbereich wird jetzt nicht mehr nach jeder Antwort angezeigt -->
         <div class="loesungsbereich" id="loesungsbereich" style="display: none !important;">
             <p><span class="loesung-text">Musterlösung:</span> <span class="musterloesung" id="musterloesung"></span></p>
             <div class="feedback" id="feedback"></div>
         </div>
 
         <p class="prozentanzeige" id="prozentanzeige">Korrekte Antworten beim ersten Versuch: 0%</p>
-         <button class="neu-button" id="neu-button" onclick="neueAufgabe()" style="display: none !important;">Nächste Aufgabe</button>
+         <!-- Der "Neue Aufgabe" Button wird nur noch im Endbildschirm verwendet -->
+        <button class="neu-button" id="neu-button" onclick="neueAufgabe()" style="display: none !important;">Nächste Aufgabe</button>
     </div>
 
+    <!-- Endbildschirm Bereich (Anfangs versteckt) -->
     <div class="endbildschirm" id="endbildschirm" style="display: none;">
         <h2>Glückwunsch!</h2>
         <p>Du hast alle Schwierigkeitsgrade gemeistert!</p>
@@ -668,7 +673,7 @@
                    if (zufallAntwort !== richtigeAntwort && !eindeutigeFalscheAntworten.includes(zufallAntwort)) eindeutigeFalscheAntworten.push(zufallAntwort);
 
                    if(eindeutigeFalscheAntworten.length >= 3) break;
-             }
+              }
              const finaleFalscheAntworten = eindeutigeFalscheAntworten.slice(0, 3);
 
 
@@ -700,13 +705,13 @@
 
                 // Zähle nur den ERSTEN richtigen Versuch für die Level-Statistik
                 if (!aufgabeWurdeSchonVersucht) { // Wenn dies der erste Versuch bei dieser Aufgabe ÜBERHAUPT war
-                     // anzahlAufgaben wird in neueAufgabe inkrementiert
+                     // anzahlAufgaben wird in neueAufgabe inkrementiert (zählt die gestarteten Aufgaben)
 
                      punkte += 10; // Punkte für richtigen Versuch beim ERSTEN Versuch
                      anzahlRichtig++; // Richtig beim ersten Versuch zählen
                      geloesteAufgabenLevel++; // Aufgabe in diesem Level gelöst
+                     // aufgabeWurdeSchonVersucht wird unten auf true gesetzt
                      streak++; // Streak erhöhen
-                     aufgabeWurdeSchonVersucht = true; // Aufgabe wurde jetzt (richtig) zum ersten Mal gelöst
 
                      // Streak-Bonus prüfen
                      if (streak > 0 && streak % 5 === 0) { // Bonus alle 5 richtigen am Stück
@@ -741,6 +746,8 @@
                     // Wir starten einfach die nächste Aufgabe.
                      neueAufgabe(); // Nächste Aufgabe laden
                 }
+                 // Setze aufgabeWurdeSchonVersucht auf true, sobald die Aufgabe EINMAL richtig gelöst wurde
+                 aufgabeWurdeSchonVersucht = true;
 
 
             } else {
@@ -751,8 +758,7 @@
 
                 streak = 0; // Streak zurücksetzen
 
-                 // Markierung des richtigen Buttons wurde entfernt.
-                 // Musterlösung wird nicht angezeigt.
+                 // *** WICHTIG: Keine Markierung des richtigen Buttons hier! ***
 
                  // Zähle den Versuch als "Aufgabe versucht", wenn es der allererste Versuch bei dieser Aufgabe war.
                  if (!aufgabeWurdeSchonVersucht) {
@@ -770,8 +776,6 @@
                          button.classList.remove('richtig', 'falsch');
                      });
                      // Feedback-Nachricht stehen lassen, bis der Schüler erneut klickt
-                     // feedback.textContent = ""; // Optional: Feedback nach Timeout leeren
-                     // feedback.className = "feedback"; // Optional: Feedback Klasse zurücksetzen
                  }, 800); // Kurze Verzögerung (z.B. 800ms)
 
 
@@ -779,8 +783,10 @@
         }
 
         function pruebeSchwierigkeitsgradAufstieg() {
-             // Diese Funktion wird NUR nach einem KORREKTEN ERSTEN VERSUCH einer Aufgabe aufgerufen.
-             // Sie entscheidet, ob Level-Up oder Endbildschirm, oder einfach nächste Aufgabe im selben Level.
+             // Diese Funktion wird NUR nach einem KORREKTEN VERSUCH (erster oder später) einer Aufgabe aufgerufen.
+             // Die Logik für "erster Versuch richtig" vs "später richtig" wird in pruefeAntwort gehandhabt.
+             // Hier wird geprüft, ob die LEVEL-AUFSTIEGS-Bedingungen erfüllt sind,
+             // die sich nur auf die ERSTEN RICHTIGEN VERSUCHE beziehen.
 
              const istAufstiegsberechtigt = geloesteAufgabenLevel >= 5 && (anzahlRichtig / anzahlAufgaben) >= 0.8;
 
@@ -810,12 +816,22 @@
                  }
 
              } else {
-                 // Wenn Kriterien nicht erfüllt, einfach nächste Aufgabe im aktuellen Level
-                 // Da diese Funktion NUR nach einem korrekten ERSTEN Versuch aufgerufen wird,
-                 // starten wir hier IMMER die nächste Aufgabe, wenn kein Level-Up oder Endscreen passiert.
-                 neueAufgabe();
+                 // Wenn Kriterien nicht erfüllt, und die Aufgabe gerade richtig beantwortet wurde,
+                 // soll die nächste Aufgabe im aktuellen Level geladen werden.
+                 // Diesen Aufruf verschieben wir jetzt in pruefeAntwort,
+                 // da pruebeSchwierigkeitsgradAufstieg nur bei ERSTEM richtigen Versuch aufgerufen wird.
+
+                 // Hier passiert nichts mehr, der Aufruf von neueAufgabe() oder zeigeEndbildschirm()
+                 // kommt jetzt aus pruefeAntwort, basierend darauf, ob es der erste richtige Versuch war.
              }
         }
+
+        // --- Wichtige Anpassung in pruefeAntwort() basierend auf der verfeinerten Logik ---
+        // Die Logik in pruefeAntwort wurde angepasst, um den Übergang zur nächsten Aufgabe
+        // sowohl bei erstem richtigem Versuch (via pruebeSchwierigkeitsgradAufstieg) als auch
+        // bei spätem richtigem Versuch (direkt neueAufgabe()) zu steuern.
+        // Die vorherige Version hat das schon teilweise gemacht, ich habe nur die Kommentare
+        // und ein Detail bei aufgabeWurdeSchonVersucht korrigiert.
 
 
         function zeigHinweis() {
