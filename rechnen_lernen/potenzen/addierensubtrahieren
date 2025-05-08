@@ -278,9 +278,9 @@
             if (koeffizient1 + koeffizient2 === 0) {
                 richtigeAntwort = "0";
             } else {
-                richtigeAntwort = `${koeffizient1 + koeffizient2}${basis}<sup>${exponent}</sup>`;
+                richtigeAntwort = (koeffizient1 + koeffizient2 === 1) ? `${basis}<sup>${exponent}</sup>` : `${koeffizient1 + koeffizient2}${basis}<sup>${exponent}</sup>`;
             }
-            const falscheAntwort1 = `${koeffizient1 + koeffizient2}${basis}<sup>${exponent + 1}</sup>`;
+            const falscheAntwort1 = (koeffizient1 + koeffizient2 === 1) ? `${basis}<sup>${exponent + 1}</sup>` : `${koeffizient1 + koeffizient2}${basis}<sup>${exponent + 1}</sup>`;
             const falscheAntwort2 = `${Math.abs(koeffizient1 - koeffizient2)}${basis}<sup>${exponent}</sup>`;
             const falscheAntwort3 = `${koeffizient1 * koeffizient2}${basis}<sup>${exponent}</sup>`;
             const aufgabe = `${koeffizient1}${basis}<sup>${exponent}</sup> + ${koeffizient2}${basis}<sup>${exponent}</sup>`;
@@ -299,10 +299,12 @@
             const exponent2 = Math.floor(Math.random() * 4) + 2;
             let richtigeAntwort = "";
             const koeffizientErgebnis = koeffizient1 - koeffizient3;
+            const term1 = koeffizientErgebnis === 1 ? `${basis1}<sup>${exponent1}</sup>` : (koeffizientErgebnis === 0 ? "" : `${koeffizientErgebnis}${basis1}<sup>${exponent1}</sup>`);
+            const term2 = koeffizient2 === 1 ? `${basis2}<sup>${exponent2}</sup>` : `${koeffizient2}${basis2}<sup>${exponent2}</sup>`;
             if (koeffizientErgebnis === 0) {
-                richtigeAntwort = `${koeffizient2}${basis2}<sup>${exponent2}</sup>`;
+                richtigeAntwort = term2;
             } else {
-                richtigeAntwort = `${koeffizientErgebnis}${basis1}<sup>${exponent1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2}</sup>`;
+                richtigeAntwort = term1 + (koeffizient2 === 0 ? "" : ` + ${term2}`);
             }
             const falscheAntwort1 = `${koeffizient1 + koeffizient3}${basis1}<sup>${exponent1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2}</sup>`;
             const falscheAntwort2 = `${koeffizient1 - koeffizient3}${basis1}<sup>${exponent1 + 1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2 + 1}</sup>`;
@@ -327,12 +329,13 @@
             const exponent3 = Math.floor(Math.random() * 5) + 2;
             let richtigeAntwort = "";
             const koeffizientErgebnis = koeffizient1 - koeffizient3 + koeffizient4;
-            const term2 = `${koeffizient2}${basis2}<sup>${exponent2}</sup>`;
-            const term3 = ` - ${koeffizient5}${basis3}<sup>${exponent3}</sup>`;
+            const term1 = koeffizientErgebnis === 1 ? `${basis1}<sup>${exponent1}</sup>` : (koeffizientErgebnis === 0 ? "" : `${koeffizientErgebnis}${basis1}<sup>${exponent1}</sup>`);
+            const term2 = koeffizient2 === 1 ? `${basis2}<sup>${exponent2}</sup>` : `${koeffizient2}${basis2}<sup>${exponent2}</sup>`;
+            const term3 = koeffizient5 === 1 ? ` - ${basis3}<sup>${exponent3}</sup>` : ` - ${koeffizient5}${basis3}<sup>${exponent3}</sup>`;
             if (koeffizientErgebnis === 0) {
                 richtigeAntwort =  term2 + term3;
             } else {
-                richtigeAntwort = `${koeffizientErgebnis}${basis1}<sup>${exponent1}</sup> + ${term2} ${term3}`;
+                richtigeAntwort = term1 + (koeffizient2 === 0 ? "" : ` + ${term2}`) + term3;
             }
             const falscheAntwort1 = `${koeffizient1 + koeffizient3 - koeffizient4}${basis1}<sup>${exponent1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2}</sup> + ${koeffizient5}${basis3}<sup>${exponent3}</sup>`;
             const falscheAntwort2 = `${koeffizient1 - koeffizient3 + koeffizient4}${basis1}<sup>${exponent1 + 1}</sup> + ${koeffizient2}${basis2}<sup>${exponent2 + 1}</sup> - ${koeffizient5}${basis3}<sup>${exponent3 + 1}</sup>`;
@@ -365,20 +368,20 @@
                 feedback.className = "feedback richtig-feedback";
                 anzahlRichtig++;
                 geloesteAufgaben++;
-                if (geloesteAufgaben === 5 && (anzahlRichtig / anzahlAufgaben) >= 0.8) {
+                if (geloesteAufgaben >= 5 && (anzahlRichtig / anzahlAufgaben) >= 0.8) {
                     geloesteAufgaben = 0;
                     if (aktuelleAufgabenSchwierigkeit === "leicht") {
                         aktuelleAufgabenSchwierigkeit = "mittel";
                         document.getElementById("schwierigkeitsgrad").textContent = "Schwierigkeitsgrad: Mittel";
                         document.querySelector("#schwierigkeitsgrad + span").className = "mittel";
                         document.querySelector("#schwierigkeitsgrad + span").textContent = "Mittel";
-                        alert("Super! Du hast den Schwierigkeitsgrad abgeschlossen. Der Schwierigkeitsgrad wird angepasst.");
+                        alert("Super! Du hast deinen Schwierigkeitsgrad geschafft und kommst in das nächste Level!");
                     } else if (aktuelleAufgabenSchwierigkeit === "mittel") {
                         aktuelleAufgabenSchwierigkeit = "schwer";
                         document.getElementById("schwierigkeitsgrad").textContent = "Schwierigkeitsgrad: Schwer";
                         document.querySelector("#schwierigkeitsgrad + span").className = "schwer";
                         document.querySelector("#schwierigkeitsgrad + span").textContent = "Schwer";
-                        alert("Super! Du hast den Schwierigkeitsgrad abgeschlossen. Der Schwierigkeitsgrad wird angepasst.");
+                        alert("Super! Du hast deinen Schwierigkeitsgrad geschafft und kommst in das nächste Level!");
                     }
                     anzahlRichtig = 0;
                     anzahlAufgaben = 0;
