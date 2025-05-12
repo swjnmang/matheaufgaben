@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Handelskalkulation Rückwärts mit Vorwärts Tabelle</title>
+    <title>Handelskalkulation Rückwärts mit Vorwärts Tabelle Responsive</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -14,21 +14,21 @@
             justify-content.center;
             align-items: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 10px; /* Reduced padding for small screens */
         }
         .container {
             background-color: #ffffff;
-            padding: 30px;
+            padding: 20px; /* Reduced padding for small screens */
             border-radius: 15px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            max-width: 800px; /* Increased max-width for the longer table */
+            max-width: 800px;
             width: 100%;
         }
         #problem-text {
-            font-size: 1.1rem;
+            font-size: 1rem; /* Slightly smaller font for small screens */
             text-align: left;
             margin-bottom: 20px;
-            padding: 15px;
+            padding: 10px; /* Reduced padding */
             border: 1px solid #e2e8f0;
             border-radius: 8px;
             background-color: #edf2f7;
@@ -40,7 +40,7 @@
         }
         .calculation-table th, .calculation-table td {
             border: 1px solid #cbd5e0;
-            padding: 8px; /* Slightly reduced padding */
+            padding: 8px;
             text-align: left;
         }
         .calculation-table th {
@@ -53,7 +53,7 @@
             border: 1px solid #ccc;
             border-radius: 4px;
             text-align: right;
-            font-size: 0.9rem; /* Slightly smaller font for inputs */
+            font-size: 0.9rem;
         }
         .calculation-table td:last-child {
             text-align: right;
@@ -84,12 +84,65 @@
             text-align: left;
             white-space: pre-wrap; /* Preserve line breaks */
             word-wrap: break-word; /* Break long words */
+            font-size: 0.9rem; /* Smaller font for solution on small screens */
         }
         .button-group {
             display: flex;
-            justify-content.center;
-            gap: 15px; /* Space between buttons */
+            flex-direction: column; /* Stack buttons on small screens */
+            justify-content: center;
+            gap: 10px; /* Space between buttons */
             margin-top: 20px;
+        }
+         .button-group button {
+             width: 100%; /* Full width buttons on small screens */
+         }
+
+        /* Responsive Table Styles */
+        @media (max-width: 600px) {
+            .calculation-table thead {
+                display: none; /* Hide table header on small screens */
+            }
+            .calculation-table, .calculation-table tbody, .calculation-table tr, .calculation-table td {
+                display: block; /* Make table elements block level */
+                width: 100%;
+            }
+            .calculation-table tr {
+                margin-bottom: 15px;
+                border: 1px solid #cbd5e0;
+                border-radius: 8px;
+                padding: 10px;
+                background-color: #ffffff;
+            }
+            .calculation-table td {
+                text-align: right;
+                padding-left: 50%; /* Space for the data label */
+                position: relative;
+            }
+            .calculation-table td::before {
+                content: attr(data-label); /* Display data-label as a pseudo-element */
+                position: absolute;
+                left: 10px;
+                width: calc(50% - 20px); /* Adjust width */
+                padding-right: 10px;
+                white-space: nowrap;
+                font-weight: bold;
+                text-align: left;
+            }
+             .calculation-table td input[type="number"] {
+                 width: 100%; /* Make input fill the available space */
+                 text-align: right;
+             }
+             .calculation-table td:last-child {
+                 text-align: right;
+                 width: auto; /* Auto width for feedback cell */
+                 padding-left: 10px; /* Adjust padding */
+             }
+             .button-group {
+                flex-direction: column; /* Ensure buttons are stacked */
+             }
+             .button-group button {
+                 width: 100%; /* Ensure buttons take full width */
+             }
         }
     </style>
 </head>
@@ -116,87 +169,86 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>Listeneinkaufspreis netto</td>
-                    <td><input type="number" id="listeneinkaufspreis-netto" step="0.01"></td>
-                    <td id="feedback-listeneinkaufspreis-netto"></td>
+                    <td data-label="Posten">Listeneinkaufspreis netto</td>
+                    <td data-label="Betrag (€)"><input type="number" id="listeneinkaufspreis-netto" step="0.01"></td>
+                    <td data-label="Feedback" id="feedback-listeneinkaufspreis-netto"></td>
                 </tr>
                 <tr>
-                    <td>- Liefererrabatt (<span id="liefererrabatt-prozent"></span>%)</td>
-                    <td><input type="number" id="liefererrabatt-betrag" step="0.01"></td>
-                    <td id="feedback-liefererrabatt-betrag"></td>
+                    <td data-label="Posten">- Liefererrabatt (<span id="liefererrabatt-prozent"></span>%)</td>
+                    <td data-label="Betrag (€)"><input type="number" id="liefererrabatt-betrag" step="0.01"></td>
+                    <td data-label="Feedback" id="feedback-liefererrabatt-betrag"></td>
                 </tr>
                 <tr>
-                    <td>= Zieleinkaufspreis</td>
-                    <td><input type="number" id="zieleinkaufspreis-einkauf" step="0.01"></td>
-                    <td id="feedback-zieleinkaufspreis-einkauf"></td>
+                    <td data-label="Posten">= Zieleinkaufspreis</td>
+                    <td data-label="Betrag (€)"><input type="number" id="zieleinkaufspreis-einkauf" step="0.01"></td>
+                    <td data-label="Feedback" id="feedback-zieleinkaufspreis-einkauf"></td>
                 </tr>
                 <tr>
-                    <td>- Liefererskonto (<span id="liefererskonto-prozent"></span>%)</td>
-                    <td><input type="number" id="liefererskonto-betrag" step="0.01"></td>
-                    <td id="feedback-liefererskonto-betrag"></td>
+                    <td data-label="Posten">- Liefererskonto (<span id="liefererskonto-prozent"></span>%)</td>
+                    <td data-label="Betrag (€)"><input type="number" id="liefererskonto-betrag" step="0.01"></td>
+                    <td data-label="Feedback" id="feedback-liefererskonto-betrag"></td>
                 </tr>
                 <tr>
-                    <td>= Bareinkaufspreis</td>
-                    <td><input type="number" id="bareinkaufspreis" step="0.01"></td>
-                    <td id="feedback-bareinkaufspreis"></td>
+                    <td data-label="Posten">= Bareinkaufspreis</td>
+                    <td data-label="Betrag (€)"><input type="number" id="bareinkaufspreis" step="0.01"></td>
+                    <td data-label="Feedback" id="feedback-bareinkaufspreis"></td>
                 </tr>
                  <tr>
-                    <td>+ Bezugskosten</td>
-                    <td><input type="number" id="bezugskosten" step="0.01" readonly></td> <td id="feedback-bezugskosten"></td>
+                    <td data-label="Posten">+ Bezugskosten</td>
+                    <td data-label="Betrag (€)"><input type="number" id="bezugskosten" step="0.01" readonly></td> <td data-label="Feedback" id="feedback-bezugskosten"></td>
                 </tr>
                 <tr>
-                    <td>= Bezugspreis</td>
-                    <td><input type="number" id="bezugspreis" step="0.01"></td>
-                    <td id="feedback-bezugspreis"></td>
+                    <td data-label="Posten">= Bezugspreis</td>
+                    <td data-label="Betrag (€)"><input type="number" id="bezugspreis" step="0.01"></td>
+                    <td data-label="Feedback" id="feedback-bezugspreis"></td>
                 </tr>
                 <tr>
-                    <td>+ Handlungskostenzuschlag (<span id="handlungskostenzuschlag-prozent"></span>%)</td>
-                    <td><input type="number" id="handlungskostenzuschlag-betrag" step="0.01"></td>
-                    <td id="feedback-handlungskostenzuschlag-betrag"></td>
+                    <td data-label="Posten">+ Handlungskostenzuschlag (<span id="handlungskostenzuschlag-prozent"></span>%)</td>
+                    <td data-label="Betrag (€)"><input type="number" id="handlungskostenzuschlag-betrag" step="0.01"></td>
+                    <td data-label="Feedback" id="feedback-handlungskostenzuschlag-betrag"></td>
                 </tr>
                 <tr>
-                    <td>= Selbstkosten</td>
-                    <td><input type="number" id="selbstkosten" step="0.01"></td>
-                    <td id="feedback-selbstkosten"></td>
+                    <td data-label="Posten">= Selbstkosten</td>
+                    <td data-label="Betrag (€)"><input type="number" id="selbstkosten" step="0.01"></td>
+                    <td data-label="Feedback" id="feedback-selbstkosten"></td>
                 </tr>
                 <tr>
-                    <td>+ Gewinn (<span id="gewinn-prozent"></span>%)</td>
-                    <td><input type="number" id="gewinn-betrag" step="0.01"></td>
-                    <td id="feedback-gewinn-betrag"></td>
+                    <td data-label="Posten">+ Gewinn (<span id="gewinn-prozent"></span>%)</td>
+                    <td data-label="Betrag (€)"><input type="number" id="gewinn-betrag" step="0.01"></td>
+                    <td data-label="Feedback" id="feedback-gewinn-betrag"></td>
                 </tr>
                 <tr>
-                    <td>= Barverkaufspreis</td>
-                    <td><input type="number" id="barverkaufspreis-verkauf" step="0.01"></td>
-                    <td id="feedback-barverkaufspreis-verkauf"></td>
+                    <td data-label="Posten">= Barverkaufspreis</td>
+                    <td data-label="Betrag (€)"><input type="number" id="barverkaufspreis-verkauf" step="0.01"></td> <td data-label="Feedback" id="feedback-barverkaufspreis-verkauf"></td>
                 </tr>
                  <tr>
-                    <td>+ Kundenskonto (<span id="kundenskonto-prozent"></span>%)</td>
-                    <td><input type="number" id="kundenskonto-betrag" step="0.01"></td>
-                    <td id="feedback-kundenskonto-betrag"></td>
+                    <td data-label="Posten">+ Kundenskonto (<span id="kundenskonto-prozent"></span>%)</td>
+                    <td data-label="Betrag (€)"><input type="number" id="kundenskonto-betrag" step="0.01"></td>
+                    <td data-label="Feedback" id="feedback-kundenskonto-betrag"></td>
                 </tr>
                 <tr>
-                    <td>= Zielverkaufspreis</td>
-                    <td><input type="number" id="zielverkaufspreis" step="0.01"></td>
-                    <td id="feedback-zielverkaufspreis"></td>
+                    <td data-label="Posten">= Zielverkaufspreis</td>
+                    <td data-label="Betrag (€)"><input type="number" id="zielverkaufspreis" step="0.01"></td>
+                    <td data-label="Feedback" id="feedback-zielverkaufspreis"></td>
                 </tr>
                  <tr>
-                    <td>+ Kundenrabatt (<span id="kundenrabatt-prozent"></span>%)</td>
-                    <td><input type="number" id="kundenrabatt-betrag" step="0.01"></td>
-                    <td id="feedback-kundenrabatt-betrag"></td>
+                    <td data-label="Posten">+ Kundenrabatt (<span id="kundenrabatt-prozent"></span>%)</td>
+                    <td data-label="Betrag (€)"><input type="number" id="kundenrabatt-betrag" step="0.01"></td>
+                    <td data-label="Feedback" id="feedback-kundenrabatt-betrag"></td>
                 </tr>
                  <tr>
-                    <td>= Nettoverkaufspreis</td>
-                    <td><input type="number" id="nettoverkaufspreis" step="0.01"></td>
-                    <td id="feedback-nettoverkaufspreis"></td>
+                    <td data-label="Posten">= Nettoverkaufspreis</td>
+                    <td data-label="Betrag (€)"><input type="number" id="nettoverkaufspreis" step="0.01"></td>
+                    <td data-label="Feedback" id="feedback-nettoverkaufspreis"></td>
                 </tr>
                  <tr>
-                    <td>+ Umsatzsteuer (<span id="umsatzsteuer-prozent"></span>%)</td>
-                    <td><input type="number" id="umsatzsteuer-betrag" step="0.01"></td>
-                    <td id="feedback-umsatzsteuer-betrag"></td>
+                    <td data-label="Posten">+ Umsatzsteuer (<span id="umsatzsteuer-prozent"></span>%)</td>
+                    <td data-label="Betrag (€)"><input type="number" id="umsatzsteuer-betrag" step="0.01"></td>
+                    <td data-label="Feedback" id="feedback-umsatzsteuer-betrag"></td>
                 </tr>
                  <tr>
-                    <td>= Bruttoverkaufspreis</td>
-                    <td><input type="number" id="bruttoverkaufspreis" step="0.01" readonly></td> <td id="feedback-bruttoverkaufspreis"></td>
+                    <td data-label="Posten">= Bruttoverkaufspreis</td>
+                    <td data-label="Betrag (€)"><input type="number" id="bruttoverkaufspreis" step="0.01" readonly></td> <td data-label="Feedback" id="feedback-bruttoverkaufspreis"></td>
                 </tr>
             </tbody>
         </table>
