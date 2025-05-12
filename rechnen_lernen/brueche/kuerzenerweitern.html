@@ -64,11 +64,12 @@
             margin-bottom: 10px;
             color: #7f8c8d;
         }
+        /* Style for fractions in the task display */
         .fraction {
             display: inline-block;
             vertical-align: middle;
             text-align: center;
-            font-size: 24px;
+            font-size: 24px; /* Keep original font size for task */
         }
         .fraction .num {
             display: block;
@@ -89,7 +90,7 @@
             margin: 20px 0;
             text-align: center;
         }
-        input[type="number"] {
+        input[type="number"] { /* General style for number inputs, might be overridden */
             width: 60px;
             height: 30px;
             font-size: 18px;
@@ -98,29 +99,57 @@
             border: 1px solid #bdc3c7;
             border-radius: 5px;
         }
-        .fraction-input, .fraction-input .fraction {
-            display: inline-block;
+
+        /* --- Start: NEW/MODIFIED CSS for Fraction Input --- */
+        .fraction-input {
+            display: inline-block; /* Erlaubt Zentrierung im input-container */
             vertical-align: middle;
         }
-        .fraction input.num, .fraction input.den {
-            border: 1px solid #bdc3c7;
+
+        .fraction-input .fraction {
+             display: inline-block; /* Wichtig für die Struktur */
+             vertical-align: middle;
+             text-align: center;
+             font-size: 18px; /* Adjust font size for input if needed */
+        }
+
+        .fraction-input input.num {
+            display: block; /* Stellt sicher, dass es über dem Nenner steht */
             width: 60px;
             text-align: center;
-            padding: 2px;
-            margin: 0;
+            padding: 5px;
+            font-size: 18px;
+            border: 1px solid #bdc3c7;
+            border-bottom: none; /* Kein unterer Rand, da der Bruchstrich kommt */
+            border-radius: 5px 5px 0 0; /* Oben abrunden */
+            margin: 0 auto;
             box-sizing: border-box;
         }
-        .fraction input.num {
-            border-bottom: none;
+
+        .fraction-input .fraction-line {
+            display: block; /* Eigenes Block-Element */
+            border-top: 2px solid black; /* Deutlicher Bruchstrich */
+            margin: 0 auto; /* Zentriert */
+            width: 60px; /* Gleiche Breite wie Inputs */
+            padding: 0;
+            height: 0;
+            line-height: 0;
         }
-        .fraction input.den {
-            border-top: 1px solid #bdc3c7;
+
+        .fraction-input input.den {
+            display: block; /* Stellt sicher, dass es unter dem Zähler steht */
+            width: 60px;
+            text-align: center;
+            padding: 5px;
+            font-size: 18px;
+            border: 1px solid #bdc3c7;
+            border-top: none; /* Kein oberer Rand */
+            border-radius: 0 0 5px 5px; /* Unten abrunden */
+            margin: 0 auto;
+            box-sizing: border-box;
         }
-        .fraction-line {
-            border-top: 1px solid black;
-            margin: 2px 0;
-            width: 100%;
-        }
+         /* --- End: NEW/MODIFIED CSS for Fraction Input --- */
+
         .buttons {
             text-align: center;
             margin: 20px 0;
@@ -228,36 +257,36 @@
 <body>
     <div class="container">
         <h1>Brüche kürzen und erweitern</h1>
-        
+
         <div class="instructions">
             <h3>Anleitung:</h3>
             <p>1. Wähle eine Schwierigkeitsstufe.</p>
             <p>2. Löse die angezeigten Aufgaben zum Kürzen oder Erweitern von Brüchen.</p>
-            <p>3. Trage deine Antwort ein und überprüfe sie.</p>
+            <p>3. Trage deine Antwort als Bruch (Zähler oben, Nenner unten) ein und überprüfe sie.</p>
             <p>4. Mit jedem richtigen Ergebnis erhöht sich dein Streak!</p>
         </div>
-        
+
         <div class="difficulty-selector">
             <button id="easy" class="difficulty-btn">Leicht</button>
             <button id="medium" class="difficulty-btn">Mittel</button>
             <button id="hard" class="difficulty-btn">Schwer</button>
         </div>
-        
+
         <div class="task-container" id="task-display" style="display: none;">
             <div class="exercise-type" id="exercise-type"></div>
             <div class="task" id="task"></div>
             <div class="input-container" id="input-container"></div>
         </div>
-        
+
         <div class="buttons" id="buttons" style="display: none;">
             <button id="check-btn">Überprüfen</button>
             <button id="solution-btn">Lösung zeigen</button>
             <button id="next-btn">Nächste Aufgabe</button>
         </div>
-        
+
         <div class="feedback" id="feedback" style="display: none;"></div>
         <div class="solution" id="solution"></div>
-        
+
         <div class="stats">
             <div class="stat-item">
                 <div class="stat-value" id="correct-count">0</div>
@@ -282,7 +311,7 @@
         let totalCount = 0;
         let streakCount = 0;
         let isCorrect = false;
-        
+
         // DOM-Elemente
         const taskDisplay = document.getElementById('task-display');
         const taskElement = document.getElementById('task');
@@ -294,27 +323,27 @@
         const correctCountElement = document.getElementById('correct-count');
         const totalCountElement = document.getElementById('total-count');
         const streakCountElement = document.getElementById('streak-count');
-        
+
         // Event-Listener für Schwierigkeitsgrad-Buttons
         document.getElementById('easy').addEventListener('click', () => {
             setDifficulty('easy');
         });
-        
+
         document.getElementById('medium').addEventListener('click', () => {
             setDifficulty('medium');
         });
-        
+
         document.getElementById('hard').addEventListener('click', () => {
             setDifficulty('hard');
         });
-        
+
         // Event-Listener für Action-Buttons
         document.getElementById('check-btn').addEventListener('click', checkAnswer);
         document.getElementById('solution-btn').addEventListener('click', showSolution);
         document.getElementById('next-btn').addEventListener('click', () => {
             generateTask(difficulty);
         });
-        
+
         // Schwierigkeitsgrad setzen
         function setDifficulty(level) {
             difficulty = level;
@@ -322,16 +351,16 @@
             taskDisplay.style.display = 'block';
             buttonsElement.style.display = 'block';
         }
-        
+
         // Aufgabe generieren
         function generateTask(level) {
             // Eingabefelder und Feedback zurücksetzen
             feedbackElement.style.display = 'none';
             solutionElement.style.display = 'none';
-            
+
             // Zufällig entscheiden, ob gekürzt oder erweitert werden soll
             const taskType = Math.random() > 0.5 ? 'shorten' : 'expand';
-            
+
             if (taskType === 'shorten') {
                 generateShortenTask(level);
                 exerciseTypeElement.textContent = 'Kürze den Bruch auf die einfachste Form:';
@@ -340,17 +369,17 @@
                 exerciseTypeElement.textContent = 'Erweitere den Bruch:';
             }
         }
-        
+
         // Aufgabe zum Kürzen generieren
         function generateShortenTask(level) {
             let numDen = generateFraction(level, true);
             let numerator = numDen.numerator;
             let denominator = numDen.denominator;
-            
+
             // Bruch mit ggT erweitern, um einen kürzbaren Bruch zu erhalten
-            const gcd = findGCD(numerator, denominator);
+            const gcd = findGCD(numerator, denominator); // gcd should be 1 here due to generateFraction logic
             let factor;
-            
+
             switch(level) {
                 case 'easy':
                     factor = selectFromRange(2, 5);
@@ -362,42 +391,50 @@
                     factor = selectFromRange(2, 20);
                     break;
             }
+
+            // Original gekürzter Bruch (Lösung)
+            const expectedNum = numerator;
+            const expectedDen = denominator;
             
+            // Angezeigter Bruch (erweitert)
             numerator *= factor;
             denominator *= factor;
-            
+
+
             // Aufgabe darstellen
             currentTask = {
                 type: 'shorten',
-                numerator: numerator,
-                denominator: denominator,
-                expectedNumerator: numDen.numerator,
-                expectedDenominator: numDen.denominator
+                numerator: numerator,       // Der angezeigte, ungekürzte Zähler
+                denominator: denominator,   // Der angezeigte, ungekürzte Nenner
+                expectedNumerator: expectedNum, // Der erwartete, gekürzte Zähler
+                expectedDenominator: expectedDen // Der erwartete, gekürzte Nenner
             };
-            
+
             taskElement.innerHTML = `
                 <div class="fraction">
                     <span class="num">${numerator}</span>
                     <span class="den">${denominator}</span>
                 </div>
             `;
-            
-            // Eingabefelder erstellen
+
+            // Eingabefelder erstellen (mit neuer Struktur)
             inputContainer.innerHTML = `
-                <div class="fraction">
-                    <input type="number" class="num" id="input-num" min="1" required>
-                    <div class="fraction-line"></div>
-                    <input type="number" class="den" id="input-den" min="1" required>
+                <div class="fraction-input">
+                    <div class="fraction">
+                        <input type="number" class="num" id="input-num" min="1" required>
+                        <div class="fraction-line"></div>
+                        <input type="number" class="den" id="input-den" min="1" required>
+                    </div>
                 </div>
             `;
         }
-        
+
         // Aufgabe zum Erweitern generieren
         function generateExpandTask(level) {
             let numDen = generateFraction(level, false);
             let numerator = numDen.numerator;
             let denominator = numDen.denominator;
-            
+
             // Faktor zum Erweitern basierend auf Schwierigkeitsgrad
             let factor;
             switch(level) {
@@ -411,7 +448,7 @@
                     factor = selectFromRange(2, 15);
                     break;
             }
-            
+
             // Aufgabe darstellen
             currentTask = {
                 type: 'expand',
@@ -421,7 +458,7 @@
                 expectedNumerator: numerator * factor,
                 expectedDenominator: denominator * factor
             };
-            
+
             taskElement.innerHTML = `
                 <div class="fraction">
                     <span class="num">${numerator}</span>
@@ -430,158 +467,205 @@
                 <span class="operation">→</span>
                 Erweitere mit ${factor}
             `;
-            
-            // Eingabefelder erstellen
-            inputContainer.innerHTML = `
+
+            // Eingabefelder erstellen (mit neuer Struktur)
+             inputContainer.innerHTML = `
                 <div class="fraction-input">
-                    <input type="number" id="input-num" min="1" required>
-                    <input type="number" id="input-den" min="1" required>
+                    <div class="fraction">
+                        <input type="number" class="num" id="input-num" min="1" required>
+                        <div class="fraction-line"></div>
+                        <input type="number" class="den" id="input-den" min="1" required>
+                    </div>
                 </div>
             `;
         }
-        
+
         // Brüche generieren basierend auf Schwierigkeitsgrad
         function generateFraction(level, forShorten) {
             let numerator, denominator;
-            
+
             switch(level) {
                 case 'easy':
-                    // Einfache Brüche mit kleinen Zahlen
                     numerator = selectFromRange(1, 10);
                     do {
                         denominator = selectFromRange(2, 10);
-                    } while (denominator === 1 || (forShorten && findGCD(numerator, denominator) === 1));
+                    } while (denominator <= numerator || denominator === 1 || (forShorten && findGCD(numerator, denominator) !== 1)); // Ensure denominator > numerator for proper fraction, avoid 1, ensure it's reducible if forShorten
                     break;
-                    
+
                 case 'medium':
-                    // Mittlere Schwierigkeit
                     numerator = selectFromRange(1, 20);
                     do {
                         denominator = selectFromRange(2, 20);
-                    } while (denominator === 1 || (forShorten && findGCD(numerator, denominator) === 1));
+                    } while (denominator <= numerator || denominator === 1 || (forShorten && findGCD(numerator, denominator) !== 1));
                     break;
-                    
+
                 case 'hard':
-                    // Schwierigere Brüche mit größeren Zahlen
-                    numerator = selectFromRange(1, 50);
+                     numerator = selectFromRange(1, 50);
                     do {
                         denominator = selectFromRange(2, 50);
-                    } while (denominator === 1 || (forShorten && findGCD(numerator, denominator) === 1));
+                    } while (denominator <= numerator || denominator === 1 || (forShorten && findGCD(numerator, denominator) !== 1));
                     break;
             }
-            
-            // Bei Kürzaufgaben sicherstellen, dass der Bruch nicht weiter gekürzt werden kann
-            if (forShorten) {
-                const gcd = findGCD(numerator, denominator);
-                numerator /= gcd;
-                denominator /= gcd;
+
+            // Bei Kürzaufgaben sicherstellen, dass der *Basis*-Bruch (vor dem Erweitern für die Aufgabe) bereits gekürzt ist.
+             if (forShorten) {
+                 const gcd = findGCD(numerator, denominator);
+                 // Keep numerator and denominator already simplified for the 'expected' result.
+                 // The multiplication by 'factor' in generateShortenTask creates the actual problem.
+                 // So, this step ensures the base fraction IS simplified.
+                 numerator /= gcd;
+                 denominator /= gcd;
             }
-            
+            // Ensure numerator is smaller than denominator for simpler tasks if not for shortening
+            // Or just ensure they are not equal.
+             if (numerator === denominator) {
+                return generateFraction(level, forShorten); // Regenerate if num === den
+             }
+             // Optional: ensure proper fractions (num < den) always?
+             // if (!forShorten && numerator >= denominator) {
+             //    [numerator, denominator] = [denominator, numerator]; // Swap if improper
+             // }
+
+
             return { numerator, denominator };
         }
-        
+
         // Zufällige Zahl aus Bereich auswählen
         function selectFromRange(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
-        
-        // Größter gemeinsamer Teiler (ggT) berechnen
+
+        // Größter gemeinsamer Teiler (ggT) berechnen (Euklidischer Algorithmus)
         function findGCD(a, b) {
+            a = Math.abs(a);
+            b = Math.abs(b);
             if (b === 0) return a;
             return findGCD(b, a % b);
         }
-        
+
         // Antwort überprüfen
         function checkAnswer() {
-            const inputNum = parseInt(document.getElementById('input-num').value);
-            const inputDen = parseInt(document.getElementById('input-den').value);
+            const inputNumElement = document.getElementById('input-num');
+            const inputDenElement = document.getElementById('input-den');
             
-            if (isNaN(inputNum) || isNaN(inputDen)) {
-                feedbackElement.textContent = 'Bitte gib Zahlen ein!';
+            // Check if elements exist before accessing value
+            if (!inputNumElement || !inputDenElement) {
+                console.error("Input elements not found!");
+                feedbackElement.textContent = 'Fehler: Eingabefelder nicht gefunden.';
                 feedbackElement.className = 'feedback incorrect';
                 feedbackElement.style.display = 'block';
                 return;
             }
-            
+
+            const inputNum = parseInt(inputNumElement.value);
+            const inputDen = parseInt(inputDenElement.value);
+
+            if (isNaN(inputNum) || isNaN(inputDen)) {
+                feedbackElement.textContent = 'Bitte gib ganze Zahlen für Zähler und Nenner ein!';
+                feedbackElement.className = 'feedback incorrect';
+                feedbackElement.style.display = 'block';
+                return;
+            }
+
             if (inputDen === 0) {
                 feedbackElement.textContent = 'Der Nenner darf nicht 0 sein!';
                 feedbackElement.className = 'feedback incorrect';
                 feedbackElement.style.display = 'block';
                 return;
             }
-            
+             if (inputDen < 0) {
+                feedbackElement.textContent = 'Der Nenner sollte positiv sein. Kürze ggf. das Vorzeichen.';
+                feedbackElement.className = 'feedback incorrect';
+                feedbackElement.style.display = 'block';
+                return;
+             }
+
+
             totalCount++;
             totalCountElement.textContent = totalCount;
-            
+
             // Überprüfen, ob die eingegebenen Werte korrekt sind
             if (currentTask.type === 'shorten') {
-                // Bei Kürzen: überprüfen, ob der eingegebene Bruch gleich dem erwarteten gekürzten Bruch ist
-                const expectedRatio = currentTask.expectedNumerator / currentTask.expectedDenominator;
-                const inputRatio = inputNum / inputDen;
-                const isCorrectRatio = Math.abs(expectedRatio - inputRatio) < 0.0001;
-                const isSimplified = findGCD(inputNum, inputDen) === 1;
-                
-                isCorrect = isCorrectRatio && isSimplified;
-                
-                if (isCorrectRatio && !isSimplified) {
-                    feedbackElement.textContent = 'Die Werte stimmen, aber der Bruch ist nicht vollständig gekürzt!';
-                    feedbackElement.className = 'feedback incorrect';
-                } else if (isCorrect) {
+                // Erwartet wird der vollständig gekürzte Bruch
+                isCorrect = (inputNum === currentTask.expectedNumerator && inputDen === currentTask.expectedDenominator);
+
+                 // Zusätzliche Prüfung: Ist die Eingabe zwar wertgleich, aber nicht gekürzt?
+                 const inputGCD = findGCD(inputNum, inputDen);
+                 const isSimplifiedInput = (inputGCD === 1);
+                 const expectedRatio = currentTask.expectedNumerator / currentTask.expectedDenominator;
+                 const inputRatio = inputNum / inputDen;
+                 const isCorrectRatio = Math.abs(expectedRatio - inputRatio) < 0.0001; // Floating point comparison
+
+
+                if (isCorrect && isSimplifiedInput) { // Must be the exact expected fraction AND simplified
                     feedbackElement.textContent = 'Richtig!';
                     feedbackElement.className = 'feedback correct';
                     correctCount++;
                     streakCount++;
-                } else {
-                    feedbackElement.textContent = 'Leider falsch. Versuche es noch einmal oder zeige die Lösung.';
+                } else if (isCorrectRatio && !isSimplifiedInput) {
+                     feedbackElement.textContent = `Fast! Der Bruch ${inputNum}/${inputDen} ist zwar wertgleich, aber nicht vollständig gekürzt. Die richtige Lösung ist ${currentTask.expectedNumerator}/${currentTask.expectedDenominator}.`;
+                     feedbackElement.className = 'feedback incorrect';
+                     streakCount = 0; // Not fully correct
+                     isCorrect = false; // Mark as incorrect for potential further logic
+                }
+                 else {
+                    feedbackElement.textContent = `Leider falsch. Die richtige Lösung ist ${currentTask.expectedNumerator}/${currentTask.expectedDenominator}.`;
                     feedbackElement.className = 'feedback incorrect';
                     streakCount = 0;
+                    isCorrect = false;
                 }
-            } else {
-                // Bei Erweitern: überprüfen, ob der eingegebene Bruch dem erwarteten erweiterten Bruch entspricht
+            } else { // expand
+                // Erwartet wird der exakte erweiterte Bruch
                 isCorrect = (inputNum === currentTask.expectedNumerator && inputDen === currentTask.expectedDenominator);
-                
+
                 if (isCorrect) {
                     feedbackElement.textContent = 'Richtig!';
                     feedbackElement.className = 'feedback correct';
                     correctCount++;
                     streakCount++;
                 } else {
-                    feedbackElement.textContent = 'Leider falsch. Versuche es noch einmal oder zeige die Lösung.';
+                    feedbackElement.textContent = `Leider falsch. Die richtige Lösung ist ${currentTask.expectedNumerator}/${currentTask.expectedDenominator}.`;
                     feedbackElement.className = 'feedback incorrect';
                     streakCount = 0;
                 }
             }
-            
+
             // Statistik aktualisieren
             correctCountElement.textContent = correctCount;
             streakCountElement.textContent = streakCount;
-            
+
             feedbackElement.style.display = 'block';
+            solutionElement.style.display = 'none'; // Hide solution if check is performed
         }
-        
+
         // Lösung anzeigen
         function showSolution() {
+             // Calculate the factor used for shortening if not stored directly
+             let shortenFactor = '';
+             if (currentTask.type === 'shorten' && currentTask.expectedNumerator !== 0) {
+                 shortenFactor = `(gekürzt mit ${currentTask.numerator / currentTask.expectedNumerator})`;
+             }
+
+
             if (currentTask.type === 'shorten') {
                 solutionElement.innerHTML = `
                     <p>Lösung:</p>
-                    <p>Der Bruch ${currentTask.numerator}/${currentTask.denominator} gekürzt ergibt ${currentTask.expectedNumerator}/${currentTask.expectedDenominator}.</p>
-                    <p>Beide Zahlen wurden durch ${currentTask.numerator / currentTask.expectedNumerator} geteilt.</p>
+                    <p>Der Bruch <span class="fraction"><span class="num">${currentTask.numerator}</span><span class="den">${currentTask.denominator}</span></span> gekürzt ergibt <span class="fraction"><span class="num">${currentTask.expectedNumerator}</span><span class="den">${currentTask.expectedDenominator}</span></span> ${shortenFactor}.</p>
                 `;
-            } else {
+            } else { // expand
                 solutionElement.innerHTML = `
                     <p>Lösung:</p>
-                    <p>Der Bruch ${currentTask.numerator}/${currentTask.denominator} erweitert mit ${currentTask.factor} ergibt ${currentTask.expectedNumerator}/${currentTask.expectedDenominator}.</p>
-                    <p>${currentTask.numerator} × ${currentTask.factor} = ${currentTask.expectedNumerator}</p>
-                    <p>${currentTask.denominator} × ${currentTask.factor} = ${currentTask.expectedDenominator}</p>
+                    <p>Der Bruch <span class="fraction"><span class="num">${currentTask.numerator}</span><span class="den">${currentTask.denominator}</span></span> erweitert mit ${currentTask.factor} ergibt <span class="fraction"><span class="num">${currentTask.expectedNumerator}</span><span class="den">${currentTask.expectedDenominator}</span></span>.</p>
+                    <p>${currentTask.numerator} &times; ${currentTask.factor} = ${currentTask.expectedNumerator}</p>
+                    <p>${currentTask.denominator} &times; ${currentTask.factor} = ${currentTask.expectedDenominator}</p>
                 `;
             }
-            
+
             solutionElement.style.display = 'block';
+            feedbackElement.style.display = 'none'; // Hide feedback when solution is shown
         }
-        
-        // Erste Aufgabe mit dem Standard-Schwierigkeitsgrad generieren
-        // (auskommentiert, damit der Benutzer erst einen Schwierigkeitsgrad auswählen muss)
-        // generateTask(difficulty);
+
+        // Initial state - do not generate task until difficulty is selected
     </script>
 </body>
 </html>
