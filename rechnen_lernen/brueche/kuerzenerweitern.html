@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brüche kürzen und erweitern - Übungen</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1, h2 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .difficulty-selector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .difficulty-btn {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .difficulty-btn:hover {
+            transform: translateY(-2px);
+        }
+        #easy {
+            background-color: #2ecc71;
+            color: white;
+        }
+        #medium {
+            background-color: #f39c12;
+            color: white;
+        }
+        #hard {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .task-container {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 20px;
+        }
+        .exercise-type {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #7f8c8d;
+        }
+        .fraction {
+            display: inline-block;
+            vertical-align: middle;
+            text-align: center;
+            font-size: 24px;
+        }
+        .fraction .num {
+            display: block;
+            border-bottom: 1px solid black;
+            padding: 0 5px;
+        }
+        .fraction .den {
+            display: block;
+            padding: 0 5px;
+        }
+        .operation {
+            margin: 0 15px;
+            font-size: 24px;
+            vertical-align: middle;
+            display: inline-block;
+        }
+        .input-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+        input[type="number"] {
+            width: 60px;
+            height: 30px;
+            font-size: 18px;
+            text-align: center;
+            margin: 0 5px;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+        }
+        .fraction-input, .fraction-input .fraction {
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .fraction input.num, .fraction input.den {
+            border: 1px solid #bdc3c7;
+            width: 60px;
+            text-align: center;
+            padding: 2px;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        .fraction input.num {
+            border-bottom: none;
+        }
+        .fraction input.den {
+            border-top: 1px solid #bdc3c7;
+        }
+        .fraction-line {
+            border-top: 1px solid black;
+            margin: 2px 0;
+            width: 100%;
+        }
+        .buttons {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        #check-btn {
+            background-color: #3498db;
+            color: white;
+        }
+        #next-btn {
+            background-color: #9b59b6;
+            color: white;
+        }
+        #solution-btn {
+            background-color: #34495e;
+            color: white;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .feedback {
+            text-align: center;
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .correct {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .incorrect {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        .solution {
+            display: none;
+            background-color: #d9edf7;
+            color: #31708f;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            padding: 10px;
+            background-color: #e8f4f8;
+            border-radius: 5px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2980b9;
+        }
+        .streak {
+            position: relative;
+            text-align: center;
+        }
+        .streak-count {
+            font-size: 30px;
+            font-weight: bold;
+            color: #e67e22;
+        }
+        .streak-label {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        .streak-flame {
+            font-size: 24px;
+            margin-right: 5px;
+        }
+        .instructions {
+            background-color: #f1f1f1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 600px) {
+            .difficulty-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+            .difficulty-btn {
+                margin: 5px 0;
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Brüche kürzen und erweitern</h1>
+        
+        <div class="instructions">
+            <h3>Anleitung:</h3>
+            <p>1. Wähle eine Schwierigkeitsstufe.</p>
+            <p>2. Löse die angezeigten Aufgaben zum Kürzen oder Erweitern von Brüchen.</p>
+            <p>3. Trage deine Antwort ein und überprüfe sie.</p>
+            <p>4. Mit jedem richtigen Ergebnis erhöht sich dein Streak!</p>
+        </div>
+        
+        <div class="difficulty-selector">
+            <button id="easy" class="difficulty-btn">Leicht</button>
+            <button id="medium" class="difficulty-btn">Mittel</button>
+            <button id="hard" class="difficulty-btn">Schwer</button>
+        </div>
+        
+        <div class="task-container" id="task-display" style="display: none;">
+            <div class="exercise-type" id="exercise-type"></div>
+            <div class="task" id="task"></div>
+            <div class="input-container" id="input-container"></div>
+        </div>
+        
+        <div class="buttons" id="buttons" style="display: none;">
+            <button id="check-btn">Überprüfen</button>
+            <button id="solution-btn">Lösung zeigen</button>
+            <button id="next-btn">Nächste Aufgabe</button>
+        </div>
+        
+        <div class="feedback" id="feedback" style="display: none;"></div>
+        <div class="solution" id="solution"></div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="correct-count">0</div>
+                <div class="stat-label">Richtig</div>
+            </div>
+            <div class="streak">
+                <div class="streak-count"><span class="streak-flame">🔥</span><span id="streak-count">0</span></div>
+                <div class="streak-label">Streak</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="total-count">0</div>
+                <div class="stat-label">Gesamt</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Globale Variablen
+        let currentTask = {};
+        let difficulty = 'easy';
+        let correctCount = 0;
+        let totalCount = 0;
+        let streakCount = 0;
+        let isCorrect = false;
+        
+        // DOM-Elemente
+        const taskDisplay = document.getElementById('task-display');
+        const taskElement = document.getElementById('task');
+        const exerciseTypeElement = document.getElementById('exercise-type');
+        const inputContainer = document.getElementById('input-container');
+        const feedbackElement = document.getElementById('feedback');
+        const solutionElement = document.getElementById('solution');
+        const buttonsElement = document.getElementById('buttons');
+        const correctCountElement = document.getElementById('correct-count');
+        const totalCountElement = document.getElementById('total-count');
+        const streakCountElement = document.getElementById('streak-count');
+        
+        // Event-Listener für Schwierigkeitsgrad-Buttons
+        document.getElementById('easy').addEventListener('click', () => {
+            setDifficulty('easy');
+        });
+        
+        document.getElementById('medium').addEventListener('click', () => {
+            setDifficulty('medium');
+        });
+        
+        document.getElementById('hard').addEventListener('click', () => {
+            setDifficulty('hard');
+        });
+        
+        // Event-Listener für Action-Buttons
+        document.getElementById('check-btn').addEventListener('click', checkAnswer);
+        document.getElementById('solution-btn').addEventListener('click', showSolution);
+        document.getElementById('next-btn').addEventListener('click', () => {
+            generateTask(difficulty);
+        });
+        
+        // Schwierigkeitsgrad setzen
+        function setDifficulty(level) {
+            difficulty = level;
+            generateTask(level);
+            taskDisplay.style.display = 'block';
+            buttonsElement.style.display = 'block';
+        }
+        
+        // Aufgabe generieren
+        function generateTask(level) {
+            // Eingabefelder und Feedback zurücksetzen
+            feedbackElement.style.display = 'none';
+            solutionElement.style.display = 'none';
+            
+            // Zufällig entscheiden, ob gekürzt oder erweitert werden soll
+            const taskType = Math.random() > 0.5 ? 'shorten' : 'expand';
+            
+            if (taskType === 'shorten') {
+                generateShortenTask(level);
+                exerciseTypeElement.textContent = 'Kürze den Bruch auf die einfachste Form:';
+            } else {
+                generateExpandTask(level);
+                exerciseTypeElement.textContent = 'Erweitere den Bruch:';
+            }
+        }
+        
+        // Aufgabe zum Kürzen generieren
+        function generateShortenTask(level) {
+            let numDen = generateFraction(level, true);
+            let numerator = numDen.numerator;
+            let denominator = numDen.denominator;
+            
+            // Bruch mit ggT erweitern, um einen kürzbaren Bruch zu erhalten
+            const gcd = findGCD(numerator, denominator);
+            let factor;
+            
+            switch(level) {
+                case 'easy':
+                    factor = selectFromRange(2, 5);
+                    break;
+                case 'medium':
+                    factor = selectFromRange(2, 10);
+                    break;
+                case 'hard':
+                    factor = selectFromRange(2, 20);
+                    break;
+            }
+            
+            numerator *= factor;
+            denominator *= factor;
+            
+            // Aufgabe darstellen
+            currentTask = {
+                type: 'shorten',
+                numerator: numerator,
+                denominator: denominator,
+                expectedNumerator: numDen.numerator,
+                expectedDenominator: numDen.denominator
+            };
+            
+            taskElement.innerHTML = `
+                <div class="fraction">
+                    <span class="num">${numerator}</span>
+                    <span class="den">${denominator}</span>
+                </div>
+            `;
+            
+            // Eingabefelder erstellen
+            inputContainer.innerHTML = `
+                <div class="fraction">
+                    <input type="number" class="num" id="input-num" min="1" required>
+                    <div class="fraction-line"></div>
+                    <input type="number" class="den" id="input-den" min="1" required>
+                </div>
+            `;
+        }
+        
+        // Aufgabe zum Erweitern generieren
+        function generateExpandTask(level) {
+            let numDen = generateFraction(level, false);
+            let numerator = numDen.numerator;
+            let denominator = numDen.denominator;
+            
+            // Faktor zum Erweitern basierend auf Schwierigkeitsgrad
+            let factor;
+            switch(level) {
+                case 'easy':
+                    factor = selectFromRange(2, 5);
+                    break;
+                case 'medium':
+                    factor = selectFromRange(2, 10);
+                    break;
+                case 'hard':
+                    factor = selectFromRange(2, 15);
+                    break;
+            }
+            
+            // Aufgabe darstellen
+            currentTask = {
+                type: 'expand',
+                numerator: numerator,
+                denominator: denominator,
+                factor: factor,
+                expectedNumerator: numerator * factor,
+                expectedDenominator: denominator * factor
+            };
+            
+            taskElement.innerHTML = `
+                <div class="fraction">
+                    <span class="num">${numerator}</span>
+                    <span class="den">${denominator}</span>
+                </div>
+                <span class="operation">→</span>
+                Erweitere mit ${factor}
+            `;
+            
+            // Eingabefelder erstellen
+            inputContainer.innerHTML = `
+                <div class="fraction-input">
+                    <input type="number" id="input-num" min="1" required>
+                    <input type="number" id="input-den" min="1" required>
+                </div>
+            `;
+        }
+        
+        // Brüche generieren basierend auf Schwierigkeitsgrad
+        function generateFraction(level, forShorten) {
+            let numerator, denominator;
+            
+            switch(level) {
+                case 'easy':
+                    // Einfache Brüche mit kleinen Zahlen
+                    numerator = selectFromRange(1, 10);
+                    do {
+                        denominator = selectFromRange(2, 10);
+                    } while (denominator === 1 || (forShorten && findGCD(numerator, denominator) === 1));
+                    break;
+                    
+                case 'medium':
+                    // Mittlere Schwierigkeit
+                    numerator = selectFromRange(1, 20);
+                    do {
+                        denominator = selectFromRange(2, 20);
+                    } while (denominator === 1 || (forShorten && findGCD(numerator, denominator) === 1));
+                    break;
+                    
+                case 'hard':
+                    // Schwierigere Brüche mit größeren Zahlen
+                    numerator = selectFromRange(1, 50);
+                    do {
+                        denominator = selectFromRange(2, 50);
+                    } while (denominator === 1 || (forShorten && findGCD(numerator, denominator) === 1));
+                    break;
+            }
+            
+            // Bei Kürzaufgaben sicherstellen, dass der Bruch nicht weiter gekürzt werden kann
+            if (forShorten) {
+                const gcd = findGCD(numerator, denominator);
+                numerator /= gcd;
+                denominator /= gcd;
+            }
+            
+            return { numerator, denominator };
+        }
+        
+        // Zufällige Zahl aus Bereich auswählen
+        function selectFromRange(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        // Größter gemeinsamer Teiler (ggT) berechnen
+        function findGCD(a, b) {
+            if (b === 0) return a;
+            return findGCD(b, a % b);
+        }
+        
+        // Antwort überprüfen
+        function checkAnswer() {
+            const inputNum = parseInt(document.getElementById('input-num').value);
+            const inputDen = parseInt(document.getElementById('input-den').value);
+            
+            if (isNaN(inputNum) || isNaN(inputDen)) {
+                feedbackElement.textContent = 'Bitte gib Zahlen ein!';
+                feedbackElement.className = 'feedback incorrect';
+                feedbackElement.style.display = 'block';
+                return;
+            }
+            
+            if (inputDen === 0) {
+                feedbackElement.textContent = 'Der Nenner darf nicht 0 sein!';
+                feedbackElement.className = 'feedback incorrect';
+                feedbackElement.style.display = 'block';
+                return;
+            }
+            
+            totalCount++;
+            totalCountElement.textContent = totalCount;
+            
+            // Überprüfen, ob die eingegebenen Werte korrekt sind
+            if (currentTask.type === 'shorten') {
+                // Bei Kürzen: überprüfen, ob der eingegebene Bruch gleich dem erwarteten gekürzten Bruch ist
+                const expectedRatio = currentTask.expectedNumerator / currentTask.expectedDenominator;
+                const inputRatio = inputNum / inputDen;
+                const isCorrectRatio = Math.abs(expectedRatio - inputRatio) < 0.0001;
+                const isSimplified = findGCD(inputNum, inputDen) === 1;
+                
+                isCorrect = isCorrectRatio && isSimplified;
+                
+                if (isCorrectRatio && !isSimplified) {
+                    feedbackElement.textContent = 'Die Werte stimmen, aber der Bruch ist nicht vollständig gekürzt!';
+                    feedbackElement.className = 'feedback incorrect';
+                } else if (isCorrect) {
+                    feedbackElement.textContent = 'Richtig!';
+                    feedbackElement.className = 'feedback correct';
+                    correctCount++;
+                    streakCount++;
+                } else {
+                    feedbackElement.textContent = 'Leider falsch. Versuche es noch einmal oder zeige die Lösung.';
+                    feedbackElement.className = 'feedback incorrect';
+                    streakCount = 0;
+                }
+            } else {
+                // Bei Erweitern: überprüfen, ob der eingegebene Bruch dem erwarteten erweiterten Bruch entspricht
+                isCorrect = (inputNum === currentTask.expectedNumerator && inputDen === currentTask.expectedDenominator);
+                
+                if (isCorrect) {
+                    feedbackElement.textContent = 'Richtig!';
+                    feedbackElement.className = 'feedback correct';
+                    correctCount++;
+                    streakCount++;
+                } else {
+                    feedbackElement.textContent = 'Leider falsch. Versuche es noch einmal oder zeige die Lösung.';
+                    feedbackElement.className = 'feedback incorrect';
+                    streakCount = 0;
+                }
+            }
+            
+            // Statistik aktualisieren
+            correctCountElement.textContent = correctCount;
+            streakCountElement.textContent = streakCount;
+            
+            feedbackElement.style.display = 'block';
+        }
+        
+        // Lösung anzeigen
+        function showSolution() {
+            if (currentTask.type === 'shorten') {
+                solutionElement.innerHTML = `
+                    <p>Lösung:</p>
+                    <p>Der Bruch ${currentTask.numerator}/${currentTask.denominator} gekürzt ergibt ${currentTask.expectedNumerator}/${currentTask.expectedDenominator}.</p>
+                    <p>Beide Zahlen wurden durch ${currentTask.numerator / currentTask.expectedNumerator} geteilt.</p>
+                `;
+            } else {
+                solutionElement.innerHTML = `
+                    <p>Lösung:</p>
+                    <p>Der Bruch ${currentTask.numerator}/${currentTask.denominator} erweitert mit ${currentTask.factor} ergibt ${currentTask.expectedNumerator}/${currentTask.expectedDenominator}.</p>
+                    <p>${currentTask.numerator} × ${currentTask.factor} = ${currentTask.expectedNumerator}</p>
+                    <p>${currentTask.denominator} × ${currentTask.factor} = ${currentTask.expectedDenominator}</p>
+                `;
+            }
+            
+            solutionElement.style.display = 'block';
+        }
+        
+        // Erste Aufgabe mit dem Standard-Schwierigkeitsgrad generieren
+        // (auskommentiert, damit der Benutzer erst einen Schwierigkeitsgrad auswählen muss)
+        // generateTask(difficulty);
+    </script>
+</body>
+</html>
