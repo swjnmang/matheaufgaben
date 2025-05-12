@@ -71,6 +71,22 @@
         .incorrect-feedback {
             color: #ef4444; /* Red */
         }
+        #solution-area {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            text-align: left;
+            white-space: pre-wrap; /* Preserve line breaks */
+            word-wrap: break-word; /* Break long words */
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px; /* Space between buttons */
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-height-screen bg-gray-100">
@@ -133,13 +149,20 @@
             </tbody>
         </table>
 
-        <div class="text-center">
-            <button id="checkBtn" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+        <div class="button-group">
+             <button id="checkBtn" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                  <i class="fas fa-check icon"></i> Überprüfen
+            </button>
+             <button id="showSolutionBtn" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                <i class="fas fa-info-circle icon"></i> Musterlösung anzeigen
             </button>
         </div>
 
+
         <div id="overall-feedback" class="mt-6 text-center text-xl font-semibold">
+            </div>
+
+        <div id="solution-area" class="hidden">
             </div>
 
         <div id="progressDisplay" class="mt-4 text-center text-gray-700">
@@ -170,7 +193,9 @@
         const feedbackBezugspreis = document.getElementById('feedback-bezugspreis');
 
         const checkBtn = document.getElementById('checkBtn');
+        const showSolutionBtn = document.getElementById('showSolutionBtn'); // New button
         const overallFeedbackDiv = document.getElementById('overall-feedback');
+        const solutionAreaDiv = document.getElementById('solution-area'); // New solution area
         const progressDisplay = document.getElementById('progressDisplay');
 
         let correctValues = {}; // Stores the correct calculated values for each step
@@ -205,8 +230,10 @@
             // Store correct values
             correctValues = {
                 listenpreis: listenpreis,
+                rabattProzent: rabattProzent, // Store percentage for solution text
                 rabattBetrag: rabattBetrag,
                 zieleinkaufspreis: zieleinkaufspreis,
+                skontoProzent: skontoProzent, // Store percentage for solution text
                 skontoBetrag: skontoBetrag,
                 bareinkaufspreis: bareinkaufspreis,
                 bezugskosten: bezugskosten,
@@ -239,8 +266,8 @@
 
             // Display problem text and fixed values in the table
             problemTextDiv.innerHTML = randomTemplate; // Use the selected template
-            rabattProzentSpan.textContent = rabattProzent;
-            skontoProzentSpan.textContent = skontoProzent;
+            rabattProzentSpan.textContent = rabattProzent.toFixed(2); // Display with 2 decimals
+            skontoProzentSpan.textContent = skontoProzent.toFixed(2); // Display with 2 decimals
             listenpreisInput.value = listenpreis.toFixed(2); // Display with 2 decimals
             bezugskostenInput.value = bezugskosten.toFixed(2); // Display with 2 decimals
 
@@ -260,6 +287,9 @@
             feedbackBezugspreis.textContent = '';
             overallFeedbackDiv.textContent = '';
             overallFeedbackDiv.className = 'mt-6 text-center text-xl font-semibold'; // Reset class
+
+            // Hide the solution area when a new problem is generated
+            solutionAreaDiv.classList.add('hidden');
         }
 
         // Funktion zur Überprüfung der Antwort
@@ -320,9 +350,33 @@
             updateProgress();
         }
 
+        // Funktion zur Anzeige der Musterlösung
+        function showSolution() {
+            const solutionText = `
+                Musterlösung:
+
+                Listenpreis: ${correctValues.listenpreis.toFixed(2)} €
+                - Rabatt (${correctValues.rabattProzent.toFixed(2)}%): ${correctValues.rabattBetrag.toFixed(2)} €
+                  (Berechnung: ${correctValues.listenpreis.toFixed(2)} € * ${correctValues.rabattProzent.toFixed(2)} / 100)
+                = Zieleinkaufspreis: ${correctValues.zieleinkaufspreis.toFixed(2)} €
+                  (Berechnung: ${correctValues.listenpreis.toFixed(2)} € - ${correctValues.rabattBetrag.toFixed(2)} €)
+                - Skonto (${correctValues.skontoProzent.toFixed(2)}%): ${correctValues.skontoBetrag.toFixed(2)} €
+                  (Berechnung: ${correctValues.zieleinkaufspreis.toFixed(2)} € * ${correctValues.skontoProzent.toFixed(2)} / 100)
+                = Bareinkaufspreis: ${correctValues.bareinkaufspreis.toFixed(2)} €
+                  (Berechnung: ${correctValues.zieleinkaufspreis.toFixed(2)} € - ${correctValues.skontoBetrag.toFixed(2)} €)
+                + Bezugskosten: ${correctValues.bezugskosten.toFixed(2)} €
+                = Bezugspreis: ${correctValues.bezugspreis.toFixed(2)} €
+                  (Berechnung: ${correctValues.bareinkaufspreis.toFixed(2)} € + ${correctValues.bezugskosten.toFixed(2)} €)
+            `;
+            solutionAreaDiv.textContent = solutionText;
+            solutionAreaDiv.classList.remove('hidden'); // Show the solution area
+        }
+
+
         // Event Listener
         generateBtn.addEventListener('click', generateProblem);
         checkBtn.addEventListener('click', checkAnswer);
+        showSolutionBtn.addEventListener('click', showSolution); // Event listener for the new button
 
         // Erste Aufgabe beim Laden der Seite generieren und Fortschritt initialisieren
         generateProblem();
