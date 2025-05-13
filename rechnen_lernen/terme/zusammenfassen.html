@@ -36,11 +36,22 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
-        .difficulty-buttons button.selected {
-            background-color: #3b82f6; /* Brighter blue for selected */
-            color: white;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        /* Default state for difficulty buttons (not selected) */
+        .difficulty-buttons button {
+             background-color: #60a5fa; /* Tailwind blue-400, a neutral starting point */
+             color: white;
         }
+        /* Selected states for difficulty buttons */
+        .difficulty-buttons button.selected-easy {
+            background-color: #22c55e; /* Tailwind green-500 */
+        }
+        .difficulty-buttons button.selected-medium {
+            background-color: #facc15; /* Tailwind yellow-400 */
+        }
+        .difficulty-buttons button.selected-hard {
+            background-color: #ef4444; /* Tailwind red-500 */
+        }
+
         .answer-button {
              transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
              min-width: 120px; /* Ensure buttons have minimum width */
@@ -125,9 +136,9 @@
         <div class="mb-6">
              <h2 class="text-xl font-semibold mb-3 text-gray-700">Wähle ein Niveau:</h2>
             <div class="difficulty-buttons flex justify-center space-x-4 md:space-x-6">
-                <button data-level="easy" class="px-6 py-3 rounded-lg bg-blue-500 text-white font-semibold hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">Einfach</button>
-                <button data-level="medium" class="px-6 py-3 rounded-lg bg-blue-500 text-white font-semibold hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">Mittel</button>
-                <button data-level="hard" class="px-6 py-3 rounded-lg bg-blue-500 text-white font-semibold hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">Schwer</button>
+                <button data-level="easy" class="px-6 py-3 rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">Einfach</button>
+                <button data-level="medium" class="px-6 py-3 rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">Mittel</button>
+                <button data-level="hard" class="px-6 py-3 rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">Schwer</button>
             </div>
         </div>
 
@@ -185,12 +196,16 @@
         // Event listeners for difficulty buttons
         difficultyButtons.forEach(button => {
             button.addEventListener('click', () => {
-                // Remove 'selected' class from all buttons
-                difficultyButtons.forEach(btn => btn.classList.remove('selected'));
-                // Add 'selected' class to the clicked button
-                button.classList.add('selected');
+                // Remove 'selected' class and level-specific color classes from all buttons
+                difficultyButtons.forEach(btn => {
+                    btn.classList.remove('selected-easy', 'selected-medium', 'selected-hard');
+                });
+                // Add level-specific color class to the clicked button
+                const level = button.dataset.level;
+                button.classList.add(`selected-${level}`);
 
-                currentLevel = button.dataset.level;
+
+                currentLevel = level;
                 taskArea.classList.remove('hidden');
                 progressArea.classList.remove('hidden');
                 updateProgressDisplay();
@@ -542,12 +557,12 @@
                 button.addEventListener('click', () => {
                     if (selectedAnswerButton) {
                         selectedAnswerButton.classList.remove('selected');
-                         selectedAnswerButton.classList.remove('bg-blue-500');
-                         selectedAnswerButton.classList.add('bg-gray-200');
+                         selectedAnswerButton.classList.remove('bg-blue-500'); // Remove blue background
+                         selectedAnswerButton.classList.add('bg-gray-200'); // Add gray background
                     }
                     button.classList.add('selected');
-                     button.classList.remove('bg-gray-200');
-                     button.classList.add('bg-blue-500');
+                     button.classList.remove('bg-gray-200'); // Remove gray background
+                     button.classList.add('bg-blue-500'); // Add blue background for selected
                     selectedAnswerButton = button;
                 });
                 answerButtonsContainer.appendChild(button);
