@@ -6,6 +6,18 @@
     <title>Potenzen mit gleicher Basis multiplizieren und dividieren</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']], // Use $...$ for inline math
+                displayMath: [['$$', '$$'], ['\\[', '\\]']] // Use $$...$$ for display math
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
     <style>
         body {
             font-family: sans-serif;
@@ -159,6 +171,11 @@
 
          #rulesExplanation p {
              margin-bottom: 8px;
+         }
+
+         /* Style for rendered math from MathJax */
+         .MathJax {
+             font-size: 1.1em; /* Slightly larger font for formulas */
          }
 
          .hidden {
@@ -453,6 +470,10 @@
         // Funktion zum Anzeigen/Ausblenden der Regelerklärung
         function toggleRulesExplanation() {
             rulesExplanationDiv.classList.toggle('hidden');
+            // Trigger MathJax rendering when showing the explanation
+            if (!rulesExplanationDiv.classList.contains('hidden')) {
+                 MathJax.typesetPromise([rulesExplanationDiv]);
+            }
         }
 
 
