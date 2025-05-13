@@ -96,6 +96,25 @@
             margin-left: -10px; /* Pull the exponent input closer to the base */
             margin-top: -0.5em; /* Adjust vertical position to simulate superscript */
         }
+
+         /* Styling for the special 'answer is 1' input */
+         .answer-input-group #answerOne {
+             width: 80px; /* Match base input width */
+             font-size: 1.2rem;
+             padding: 8px;
+             border: 1px solid #ccc;
+             border-radius: 5px;
+             text-align: center;
+             margin: 0 auto; /* Center this input when visible */
+         }
+
+         /* Hide one of the input groups based on context */
+         .answer-power-input-flex.hidden,
+         #answerOne.hidden {
+             display: none;
+         }
+
+
          /* --- End Answer Input Styling --- */
 
         .icon {
@@ -132,10 +151,7 @@
             background-color: #22c55e; /* Green 500 */
             color: white;
         }
-        .difficulty-buttons #mediumBtn.active {
-            background-color: #f97316; /* Orange 500 */
-            color: white;
-        }
+        /* Removed mediumBtn active style */
         .difficulty-buttons #hardBtn.active {
             background-color: #ef4444; /* Red 500 */
             color: white;
@@ -188,7 +204,6 @@
             <label class="block text-gray-700 text-sm font-bold mb-2">Schwierigkeit:</label>
             <div class="difficulty-buttons">
                 <button id="easyBtn" class="active">Einfach</button>
-                <button id="mediumBtn" class="inactive">Mittel</button>
                 <button id="hardBtn" class="inactive">Schwer</button>
             </div>
         </div>
@@ -205,10 +220,11 @@
         <div class="text-center mb-6">
             <label class="block text-gray-700 text-sm font-bold mb-2">Deine Antwort:</label>
             <div class="answer-input-group">
-                 <div class="answer-power-input-flex">
+                 <div id="regularAnswerInputs" class="answer-power-input-flex">
                      <input type="text" id="answerBase" placeholder="Basis">
                      <input type="number" id="answerExponent" placeholder="Exponent">
                  </div>
+                 <input type="number" id="answerOne" placeholder="Antwort" class="hidden">
             </div>
         </div>
 
@@ -232,19 +248,24 @@
             <p>Formel: $(a^m)^n = a^{m \times n}$</p>
             <p>Beispiel: $(3^2)^3 = 3^{2 \times 3} = 3^6$</p>
              <br>
-             <p>Diese Regel gilt für numerische und variable Basen sowie für positive und negative Exponenten.</p>
+            <p>Sonderfall: Jede Zahl (außer 0) potenziert mit 0 ergibt 1.</p>
+            <p>Formel: $a^0 = 1$ (für $a \neq 0$)</p>
+             <br>
+             <p>Diese Regeln gelten für numerische und variable Basen sowie für positive und negative Exponenten.</p>
         </div>
 
     </div>
 
     <script>
         const easyBtn = document.getElementById('easyBtn');
-        const mediumBtn = document.getElementById('mediumBtn');
+        // const mediumBtn = document.getElementById('mediumBtn'); // Removed
         const hardBtn = document.getElementById('hardBtn');
         const generateBtn = document.getElementById('generateBtn');
         const problemDiv = document.getElementById('problem');
+        const regularAnswerInputsDiv = document.getElementById('regularAnswerInputs'); // New reference
         const answerBaseInput = document.getElementById('answerBase');
         const answerExponentInput = document.getElementById('answerExponent');
+        const answerOneInput = document.getElementById('answerOne'); // New reference for the '1' input
         const checkBtn = document.getElementById('checkBtn');
         const rulesBtn = document.getElementById('rulesBtn');
         const feedbackDiv = document.getElementById('feedback');
@@ -284,14 +305,9 @@
 
             // Set parameters based on difficulty
             if (currentDifficulty === 'easy') {
-                base = Math.floor(Math.random() * 4) + 2; // Numerische Basis zwischen 2 und 5
-                innerExponent = Math.floor(Math.random() * 3) + 2; // Exponent zwischen 2 und 4
-                outerExponent = Math.floor(Math.random() * 2) + 2; // Exponent zwischen 2 und 3
-                isVariableBase = false;
-            } else if (currentDifficulty === 'medium') {
-                base = Math.floor(Math.random() * 5) + 2; // Numerische Basis zwischen 2 und 6
-                innerExponent = Math.floor(Math.random() * 5) + 2; // Exponent zwischen 2 und 6
-                outerExponent = Math.floor(Math.random() * 3) + 2; // Exponent zwischen 2 und 4
+                base = Math.floor(Math.random() * 3) + 2; // Numerische Basis zwischen 2 und 4
+                innerExponent = Math.floor(Math.random() * 2) + 2; // Exponent zwischen 2 und 3
+                outerExponent = Math.floor(Math.random()) + 2; // Exponent ist 2
                 isVariableBase = false;
             } else if (currentDifficulty === 'hard') {
                 // Zufällig entscheiden, ob numerische oder variable Basis
@@ -328,10 +344,23 @@
                 answerBaseInput.placeholder = 'Basis';
             }
 
+            // Show/hide input fields based on whether the correct exponent is 0
+            if (correctExponent === 0) {
+                 // For exponent 0, show only the 'answerOne' input
+                 regularAnswerInputsDiv.classList.add('hidden');
+                 answerOneInput.classList.remove('hidden');
+                 answerOneInput.value = ''; // Clear the input
+            } else {
+                 // For non-zero exponent, show regular base and exponent inputs
+                 regularAnswerInputsDiv.classList.remove('hidden');
+                 answerOneInput.classList.add('hidden');
+                 answerBaseInput.value = ''; // Clear inputs
+                 answerExponentInput.value = '';
+            }
+
+
             feedbackDiv.textContent = '';
             feedbackDiv.className = 'mt-6 text-center text-xl font-semibold'; // Reset class
-            answerBaseInput.value = '';
-            answerExponentInput.value = '';
 
             // Hide rules explanation when a new problem is generated
             rulesExplanationDiv.classList.add('hidden');
@@ -339,42 +368,53 @@
 
         // Funktion zur Überprüfung der Antwort
         function checkAnswer() {
-            let studentBase;
-            const studentExponent = parseInt(answerExponentInput.value);
+            let isCorrect = false;
 
-            // Lese die Basis basierend auf dem Input-Typ
-            if (currentProblem.isVariable) {
-                 studentBase = answerBaseInput.value.trim(); // Lese als String
+            if (currentProblem.exponent === 0) {
+                 // Check the 'answerOne' input
+                 const studentAnswer = parseInt(answerOneInput.value);
+                 if (!isNaN(studentAnswer) && studentAnswer === 1) {
+                     isCorrect = true;
+                 }
             } else {
-                 studentBase = parseInt(answerBaseInput.value); // Lese als Zahl
+                 // Check the regular base and exponent inputs
+                 let studentBase;
+                 const studentExponent = parseInt(answerExponentInput.value);
+
+                 // Lese die Basis basierend auf dem Input-Typ
+                 if (currentProblem.isVariable) {
+                      studentBase = answerBaseInput.value.trim(); // Lese als String
+                 } else {
+                      studentBase = parseInt(answerBaseInput.value); // Lese als Zahl
+                 }
+
+                 // Grundlegende Eingabevalidierung
+                 if (currentProblem.isVariable) {
+                      if (studentBase === '' || isNaN(studentExponent)) {
+                          feedbackDiv.textContent = 'Bitte gib eine Variable für die Basis und eine Zahl für den Exponenten ein.';
+                          feedbackDiv.className = 'mt-6 text-center text-xl font-semibold text-red-500';
+                          return;
+                      }
+                      // Für variable Basen, prüfe ob die eingegebene Variable gültig ist (x, y, z)
+                      const validVariables = ['x', 'y', 'z'];
+                      if (!validVariables.includes(studentBase)) {
+                           feedbackDiv.textContent = 'Bitte gib eine gültige Variable (x, y oder z) für die Basis ein.';
+                           feedbackDiv.className = 'mt-6 text-center text-xl font-semibold text-red-500';
+                           return;
+                      }
+
+                 } else { // Numerische Basis
+                      if (isNaN(studentBase) || isNaN(studentExponent)) {
+                          feedbackDiv.textContent = 'Bitte gib sowohl Basis als auch Exponent als Zahlen ein.';
+                          feedbackDiv.className = 'mt-6 text-center text-xl font-semibold text-red-500';
+                          return;
+                      }
+                 }
+
+                 // Überprüfung der Basis und des Exponenten
+                 isCorrect = studentBase === currentProblem.base && studentExponent === currentProblem.exponent;
             }
 
-            // Grundlegende Eingabevalidierung
-            if (currentProblem.isVariable) {
-                 if (studentBase === '' || isNaN(studentExponent)) {
-                     feedbackDiv.textContent = 'Bitte gib eine Variable für die Basis und eine Zahl für den Exponenten ein.';
-                     feedbackDiv.className = 'mt-6 text-center text-xl font-semibold text-red-500';
-                     return;
-                 }
-                 // Für variable Basen, prüfe ob die eingegebene Variable gültig ist (x, y, z)
-                 const validVariables = ['x', 'y', 'z'];
-                 if (!validVariables.includes(studentBase)) {
-                      feedbackDiv.textContent = 'Bitte gib eine gültige Variable (x, y oder z) für die Basis ein.';
-                      feedbackDiv.className = 'mt-6 text-center text-xl font-semibold text-red-500';
-                      return;
-                 }
-
-            } else { // Numerische Basis
-                 if (isNaN(studentBase) || isNaN(studentExponent)) {
-                     feedbackDiv.textContent = 'Bitte gib sowohl Basis als auch Exponent als Zahlen ein.';
-                     feedbackDiv.className = 'mt-6 text-center text-xl font-semibold text-red-500';
-                     return;
-                 }
-            }
-
-
-            // Überprüfung der Basis und des Exponenten
-            const isCorrect = studentBase === currentProblem.base && studentExponent === currentProblem.exponent;
 
             if (isCorrect) {
                 feedbackDiv.textContent = 'Richtig!';
@@ -382,9 +422,7 @@
                 // Punkte hinzufügen
                 if (currentDifficulty === 'easy') {
                     points += 1;
-                } else if (currentDifficulty === 'medium') {
-                    points += 2;
-                } else if (currentDifficulty === 'hard') {
+                } else if (currentDifficulty === 'hard') { // Only Easy and Hard now
                     points += 3;
                 }
             } else {
@@ -406,20 +444,16 @@
         // Funktion zur Aktualisierung der Button-Klassen
         function updateDifficultyButtonClasses() {
              easyBtn.classList.remove('active', 'inactive');
-             mediumBtn.classList.remove('active', 'inactive');
+             // mediumBtn.classList.remove('active', 'inactive'); // Removed
              hardBtn.classList.remove('active', 'inactive');
 
              if (currentDifficulty === 'easy') {
                  easyBtn.classList.add('active');
-                 mediumBtn.classList.add('inactive');
+                 // mediumBtn.classList.add('inactive'); // Removed
                  hardBtn.classList.add('inactive');
-             } else if (currentDifficulty === 'medium') {
+             } else if (currentDifficulty === 'hard') { // Only Easy and Hard now
                  easyBtn.classList.add('inactive');
-                 mediumBtn.classList.add('active');
-                 hardBtn.classList.add('inactive');
-             } else if (currentDifficulty === 'hard') {
-                 easyBtn.classList.add('inactive');
-                 mediumBtn.classList.add('inactive');
+                 // mediumBtn.classList.add('inactive'); // Removed
                  hardBtn.classList.add('active');
              }
         }
@@ -440,11 +474,12 @@
             generateProblem(); // Generate new problem with selected difficulty
         });
 
-        mediumBtn.addEventListener('click', () => {
-            currentDifficulty = 'medium';
-            updateDifficultyButtonClasses();
-            generateProblem(); // Generate new problem with selected difficulty
-        });
+        // Removed Medium Button Event Listener
+        // mediumBtn.addEventListener('click', () => {
+        //     currentDifficulty = 'medium';
+        //     updateDifficultyButtonClasses();
+        //     generateProblem(); // Generate new problem with selected difficulty
+        // });
 
         hardBtn.addEventListener('click', () => {
             currentDifficulty = 'hard';
@@ -465,4 +500,3 @@
     </script>
 </body>
 </html>
-
