@@ -75,6 +75,42 @@
         .icon {
             margin-right: 5px; /* Space between icon and text/element */
         }
+         .button-group { /* Style for grouping buttons */
+             display: flex;
+             justify-content: center;
+             gap: 15px; /* Space between buttons */
+             margin-top: 20px;
+         }
+
+         /* Tips Area Styling */
+         #tips-area {
+             margin-top: 20px;
+             padding: 15px;
+             border: 1px solid #ccc;
+             border-radius: 8px;
+             background-color: #f9f9f9;
+             text-align: left;
+             white-space: pre-wrap; /* Preserve line breaks */
+             word-wrap: break-word; /* Break long words */
+             font-size: 0.9rem;
+             color: #333;
+         }
+          #tips-area h3 {
+              font-weight: bold;
+              margin-bottom: 8px;
+              font-size: 1rem;
+          }
+           #tips-area .example { /* Style for the example section */
+               margin-top: 15px;
+               padding-top: 10px;
+               border-top: 1px dashed #ccc; /* Separator line */
+               font-style: italic;
+               color: #555;
+           }
+
+         .hidden {
+             display: none;
+         }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen bg-gray-100">
@@ -87,7 +123,8 @@
                 <option value="easy">Einfach</option>
                 <option value="medium">Mittel</option>
                 <option value="hard">Schwer</option>
-                <option value="ultimativ">Ultimativ</option> </select>
+                <option value="ultimativ">Ultimativ</option>
+            </select>
             <button id="generateBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-4">
                 <i class="fas fa-sync-alt icon"></i> Neue Aufgabe
             </button>
@@ -106,12 +143,18 @@
             </div>
         </div>
 
-        <div class="text-center">
-            <button id="checkBtn" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Überprüfen</button>
+        <div class="text-center button-group"> <button id="checkBtn" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Überprüfen</button>
+             <button id="tipsBtn" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"> <i class="fas fa-info-circle icon"></i> Tipps
+            </button>
         </div>
 
         <div id="feedback" class="mt-6 text-center text-xl font-semibold">
             </div>
+
+        <div id="tips-area" class="hidden"> <h3>Tipps zur Aufgabe:</h3>
+             <div id="tip-content"></div>
+             <div class="example" id="tip-example"></div> </div>
+
 
         <div id="progressDisplay" class="mt-4 text-center text-gray-700">
             Richtig gelöst: 0 von 0 Aufgaben
@@ -125,10 +168,16 @@
         const answerNumeratorInput = document.getElementById('answerNumerator');
         const answerDenominatorInput = document.getElementById('answerDenominator');
         const checkBtn = document.getElementById('checkBtn');
+        const tipsBtn = document.getElementById('tipsBtn'); // Reference to new button
         const feedbackDiv = document.getElementById('feedback');
+        const tipsAreaDiv = document.getElementById('tips-area'); // Reference to new tips area
+        const tipContentDiv = document.getElementById('tip-content'); // Reference to tip content div
+        const tipExampleDiv = document.getElementById('tip-example'); // Reference to example div
         const progressDisplay = document.getElementById('progressDisplay');
 
-        let currentProblem = {};
+        let currentProblem = {}; // Stores the simplified numerical result and operation type
+        let currentFractions = []; // Stores the original fractions for the example
+        let currentOperator = ''; // Stores the main operator for the example (for mixed, it's the first one)
         let correctAnswers = 0;
         let totalProblems = 0;
 
@@ -227,6 +276,10 @@
                 }
             }
 
+            currentFractions = fractions; // Store original fractions for tips
+            currentOperator = operators[0] || ''; // Store the first operator for tips
+
+
             // Build the problem string and calculate the numerical result
             let currentNumericalNumerator = fractions[0].num;
             let currentNumericalDenominator = fractions[0].den;
@@ -237,7 +290,7 @@
                 const operator = operators[i];
                 const nextFraction = fractions[i + 1];
 
-                problemString += ` ${operator === '*' ? '*' : ':'} `; // Display operator
+                problemString += ` ${operator === '*' ? '&times;' : '&divide;'} `; // Display operator using HTML entities
 
                 problemString += displayFraction(nextFraction.num, nextFraction.den, nextFraction.numVar, nextFraction.denVar);
 
@@ -257,13 +310,14 @@
             // Simplify the final numerical result
             correctAnswer = simplifyFraction(currentNumericalNumerator, currentNumericalDenominator);
 
-            currentProblem = {...correctAnswer, operationType: difficulty === 'ultimativ' ? 'mixed' : operators[0]}; // Store operation type for feedback
+            currentProblem = {...correctAnswer, operationType: difficulty === 'ultimativ' ? 'mixed' : operators[0]}; // Store operation type for feedback and tips
             problemDiv.innerHTML = problemString;
 
             feedbackDiv.textContent = '';
             feedbackDiv.className = 'mt-6 text-center text-xl font-semibold'; // Reset class
             answerNumeratorInput.value = '';
             answerDenominatorInput.value = '';
+            tipsAreaDiv.classList.add('hidden'); // Hide tips area on new problem
         }
 
         // Funktion zur Überprüfung der Antwort
@@ -316,13 +370,13 @@
             } else {
                 let hint = 'Leider falsch.';
                 if (difficulty === 'easy' || difficulty === 'medium') {
-                     if (currentProblem.operationType === 'multiply') {
+                     if (currentProblem.operationType === '*' || (currentProblem.operationType === 'mixed' && currentOperator === '*')) {
                          hint += ' Überprüfe deine Multiplikation der Zähler und Nenner.';
                      } else { // Division
                          hint += ' Hast du den zweiten Bruch richtig umgedreht und dann multipliziert?';
                      }
                 } else { // Hard or Ultimativ
-                     hint += ' Überprüfe deine Berechnungsschritte.'; // More general hint
+                     hint += ' Überprüfe deine Berechnungsschritte, insbesondere bei den Variablen.'; // More general hint
                 }
                 feedbackDiv.textContent = hint;
                 feedbackDiv.className = 'mt-6 text-center text-xl font-semibold text-red-500';
@@ -330,11 +384,91 @@
 
             // Aktualisiere die Fortschrittsanzeige nach jeder Überprüfung
             updateProgress();
+            tipsAreaDiv.classList.add('hidden'); // Hide tips area after checking
         }
+
+        // Funktion zur Anzeige der Tipps
+        function showTips() {
+            let tipText = '';
+            let exampleText = '';
+
+            if (currentProblem.operationType === '*' || (currentProblem.operationType === 'mixed' && currentOperator === '*')) {
+                 tipText = `
+                 **Regel für die Multiplikation von Brüchen:**
+                 Multipliziere Zähler mit Zähler und Nenner mit Nenner.
+                 Vor dem Multiplizieren kannst du über Kreuz kürzen, um die Zahlen kleiner zu machen.
+                 `;
+                 // Example for Multiplication (using the first two fractions if mixed)
+                 const frac1 = currentFractions[0];
+                 const frac2 = currentFractions[1];
+                 const exampleNum = frac1.num * frac2.num;
+                 const exampleDen = frac1.den * frac2.den;
+                 const simplifiedExample = simplifyFraction(exampleNum, exampleDen);
+
+                 exampleText = `Beispiel: ${displayFraction(frac1.num, frac1.den)} &times; ${displayFraction(frac2.num, frac2.den)} = ${displayFraction(exampleNum, exampleDen)} = ${displayFraction(simplifiedExample.numerator, simplifiedExample.denominator)}`;
+
+            } else if (currentProblem.operationType === ':' || (currentProblem.operationType === 'mixed' && currentOperator === ':')) {
+                 tipText = `
+                 **Regel für die Division von Brüchen:**
+                 Dividieren durch einen Bruch ist dasselbe wie Multiplizieren mit seinem Kehrwert (Umkehrung des Bruchs).
+                 Drehe den zweiten Bruch um und multipliziere dann die Brüche wie gewohnt.
+                 `;
+                 // Example for Division (using the first two fractions if mixed)
+                 const frac1 = currentFractions[0];
+                 const frac2 = currentFractions[1];
+                 const exampleNum = frac1.num * frac2.den; // Multiply by reciprocal
+                 const exampleDen = frac1.den * frac2.num;
+                 const simplifiedExample = simplifyFraction(exampleNum, exampleDen);
+
+                 exampleText = `Beispiel: ${displayFraction(frac1.num, frac1.den)} &divide; ${displayFraction(frac2.num, frac2.den)} = ${displayFraction(frac1.num, frac1.den)} &times; ${displayFraction(frac2.den, frac2.num)} = ${displayFraction(exampleNum, exampleDen)} = ${displayFraction(simplifiedExample.numerator, simplifiedExample.denominator)}`;
+            } else { // Mixed operations (Ultimativ) - Show the rule for the first operation
+                 if (currentOperator === '*') {
+                      tipText = `
+                      **Regel für die Multiplikation von Brüchen:**
+                      Multipliziere Zähler mit Zähler und Nenner mit Nenner.
+                      Vor dem Multiplizieren kannst du über Kreuz kürzen, um die Zahlen kleiner zu machen.
+                      `;
+                      // Example for Multiplication (using the first two fractions)
+                      const frac1 = currentFractions[0];
+                      const frac2 = currentFractions[1];
+                      const exampleNum = frac1.num * frac2.num;
+                      const exampleDen = frac1.den * frac2.den;
+                      const simplifiedExample = simplifyFraction(exampleNum, exampleDen);
+
+                      exampleText = `Beispiel (erster Schritt): ${displayFraction(frac1.num, frac1.den)} &times; ${displayFraction(frac2.num, frac2.den)} = ${displayFraction(exampleNum, exampleDen)} = ${displayFraction(simplifiedExample.numerator, simplifiedExample.denominator)}`;
+
+                 } else if (currentOperator === ':') {
+                       tipText = `
+                       **Regel für die Division von Brüchen:**
+                       Dividieren durch einen Bruch ist dasselbe wie Multiplizieren mit seinem Kehrwert (Umkehrung des Bruchs).
+                       Drehe den zweiten Bruch um und multipliziere dann die Brüche wie gewohnt.
+                       `;
+                       // Example for Division (using the first two fractions)
+                       const frac1 = currentFractions[0];
+                       const frac2 = currentFractions[1];
+                       const exampleNum = frac1.num * frac2.den; // Multiply by reciprocal
+                       const exampleDen = frac1.den * frac2.num;
+                       const simplifiedExample = simplifyFraction(exampleNum, exampleDen);
+
+                       exampleText = `Beispiel (erster Schritt): ${displayFraction(frac1.num, frac1.den)} &divide; ${displayFraction(frac2.num, frac2.den)} = ${displayFraction(frac1.num, frac1.den)} &times; ${displayFraction(frac2.den, frac2.num)} = ${displayFraction(exampleNum, exampleDen)} = ${displayFraction(simplifiedExample.numerator, simplifiedExample.denominator)}`;
+                 } else {
+                      tipText = 'Keine spezifische Regel für diese Aufgabe verfügbar.';
+                      exampleText = 'Kein Beispiel verfügbar.';
+                 }
+                  tipText += '\n\nBei gemischten Aufgaben arbeite die Operationen von links nach rechts ab.';
+            }
+
+            tipContentDiv.textContent = tipText;
+            tipExampleDiv.innerHTML = exampleText; // Use innerHTML because displayFraction returns HTML
+            tipsAreaDiv.classList.toggle('hidden'); // Toggle visibility
+        }
+
 
         // Event Listener
         generateBtn.addEventListener('click', generateProblem);
         checkBtn.addEventListener('click', checkAnswer);
+        tipsBtn.addEventListener('click', showTips); // Event listener for Tips button
+
 
         // Erste Aufgabe beim Laden der Seite generieren und Fortschritt initialisieren
         generateProblem();
