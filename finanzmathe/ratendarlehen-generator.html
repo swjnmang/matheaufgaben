@@ -3,423 +3,465 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ratendarlehen-Aufgabengenerator</title>
+    <title>Ratendarlehen Tilgungsplan Aufgabe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .ratendarlehen-container {
-            font-family: inherit;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-            border-radius: 8px;
-            background-color: inherit;
-        }
-        .ratendarlehen-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .ratendarlehen-button {
-            padding: 8px 16px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
+        /* Optional: Custom styles if needed */
+        .table-input {
+            width: 100px; /* Adjust width as needed */
+            padding: 4px;
+            border: 1px solid #ccc;
             border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            margin: 0 auto;
-            display: block;
-        }
-        .ratendarlehen-button:hover {
-            background-color: #45a049;
-        }
-        .ratendarlehen-task {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 20px;
-            background-color: #f9f9f9;
-        }
-        .ratendarlehen-solution {
-            margin-top: 15px;
-            display: none;
-        }
-        .solution-box {
-            border-left: 4px solid #4CAF50;
-            padding-left: 15px;
-            margin-top: 15px;
-            background-color: #f0f8f0;
-            padding: 10px;
-        }
-        .ratendarlehen-info {
-            font-style: italic;
-            margin-bottom: 15px;
-            font-size: 0.9em;
-            color: #666;
-        }
-        .tilgungsplan-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        .tilgungsplan-table th, .tilgungsplan-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
             text-align: right;
+            display: inline-block; /* Allow space for icon */
+            margin-right: 5px; /* Space between input and icon */
         }
-        .tilgungsplan-table th {
-            background-color: #f2f2f2;
-            text-align: center;
+        .input-container {
+            display: flex;
+            align-items: center;
         }
-        .tilgungsplan-table input {
-            width: 100px;
-            padding: 5px;
-            text-align: right;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+        .feedback-icon {
+            font-size: 1.2em;
         }
-        .feedback-row td {
-            font-weight: bold;
-            padding: 5px;
-            text-align: center;
+        .correct-icon {
+            color: #10b981; /* Tailwind green-500 */
         }
-        .correct {
-            color: #4CAF50;
+        .incorrect-icon {
+            color: #ef4444; /* Tailwind red-500 */
         }
-        .incorrect {
-            color: #f44336;
+        .empty-cell {
+            background-color: #f3f4f6; /* Light gray background for empty cell */
         }
-        .user-input-cell {
-            background-color: #fff;
+        .separator-row td {
+            border-top: 2px solid #d1d5db; /* Add a top border for separation */
+            padding-top: 10px; /* Add some space above the line */
         }
+         .separator-row {
+            line-height: 0.1em;
+         }
+         .separator-row span {
+            background:#fff;
+            padding:0 10px;
+         }
     </style>
 </head>
-<body>
-    <div id="ratendarlehen-generator" class="ratendarlehen-container">
-        <div class="ratendarlehen-header">
-            <h2>Ratendarlehen-Aufgabengenerator</h2>
-            <p>Übe die Berechnung eines Tilgungsplans für ein Ratendarlehen</p>
-            <p class="ratendarlehen-info">Hinweis: Alle Beträge werden auf 2 Nachkommastellen gerundet.</p>
+<body class="bg-gray-100 p-6">
+    <div class="container mx-auto bg-white p-8 rounded-lg shadow-md">
+        <h1 class="text-2xl font-bold mb-6 text-center">Aufgabe: Tilgungsplan Ratendarlehen</h1>
+
+        <div id="task-description" class="mb-6">
+            <p id="task-intro"></p> <p id="loan-details-text"></p> <p>Füllen Sie die fehlenden Felder in der folgenden Tabelle aus.</p>
         </div>
-        
-        <button id="generate-task" class="ratendarlehen-button">Neue Aufgabe generieren</button>
-        
-        <div id="task-container" class="ratendarlehen-task">
-            <div id="task-text"></div>
-            
-            <div id="tilgungsplan-container">
-                <h3>Tilgungsplan</h3>
-                <table class="tilgungsplan-table" id="tilgungsplan-table">
-                    <thead>
-                        <tr>
-                            <th>Jahr (v)</th>
-                            <th>Schulden zu Jahresbeginn (K<sub>v-1</sub>) in €</th>
-                            <th>Zinsen (Z<sub>v</sub>) in €</th>
-                            <th>Tilgung (T) in €</th>
-                            <th>Annuität (Z<sub>v</sub> + T) in €</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tilgungsplan-body">
-                        <!-- Hier werden die Zeilen dynamisch eingefügt -->
-                    </tbody>
-                </table>
-            </div>
-            
-            <button id="check-answers" class="ratendarlehen-button" style="margin-top: 20px;">Antworten überprüfen</button>
-            
-            <button id="show-solution" class="ratendarlehen-button" style="margin-top: 15px;">Musterlösung anzeigen</button>
-            
-            <div id="solution" class="ratendarlehen-solution solution-box"></div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white border border-gray-300 rounded-lg">
+                <thead>
+                    <tr>
+                        <th class="py-2 px-4 border-b text-left">Jahr (v)</th>
+                        <th class="py-2 px-4 border-b text-left">Schulden zu Jahresbeginn in €</th>
+                        <th class="py-2 px-4 border-b text-left">Zinsen in €</th>
+                        <th class="py-2 px-4 border-b text-left">Tilgung in €</th>
+                        <th class="py-2 px-4 border-b text-left">Annuität in €</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="py-2 px-4 border-b">1</td>
+                        <td class="py-2 px-4 border-b">
+                            <div class="input-container">
+                                <input type="number" step="0.01" id="input-k0" class="table-input" placeholder="K₀">
+                                <span id="feedback-k0" class="feedback-icon"></span>
+                            </div>
+                        </td>
+                        <td class="py-2 px-4 border-b">
+                             <div class="input-container">
+                                <input type="number" step="0.01" id="input-z1" class="table-input" placeholder="Z₁">
+                                <span id="feedback-z1" class="feedback-icon"></span>
+                            </div>
+                        </td>
+                        <td class="py-2 px-4 border-b">
+                            <div class="input-container">
+                                <input type="number" step="0.01" id="input-t1" class="table-input" placeholder="T">
+                                <span id="feedback-t1" class="feedback-icon"></span>
+                            </div>
+                        </td>
+                        <td class="py-2 px-4 border-b">
+                            <div class="input-container">
+                                <input type="number" step="0.01" id="input-a1" class="table-input" placeholder="A₁">
+                                <span id="feedback-a1" class="feedback-icon"></span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 px-4 border-b">2</td>
+                         <td class="py-2 px-4 border-b">
+                            <div class="input-container">
+                                <input type="number" step="0.01" id="input-k1" class="table-input" placeholder="K₁">
+                                <span id="feedback-k1" class="feedback-icon"></span>
+                            </div>
+                        </td>
+                        <td class="py-2 px-4 border-b">
+                            <div class="input-container">
+                                <input type="number" step="0.01" id="input-z2" class="table-input" placeholder="Z₂">
+                                <span id="feedback-z2" class="feedback-icon"></span>
+                            </div>
+                        </td>
+                        <td class="py-2 px-4 border-b">
+                            <div class="input-container">
+                                <input type="number" step="0.01" id="input-t2" class="table-input" placeholder="T">
+                                <span id="feedback-t2" class="feedback-icon"></span>
+                            </div>
+                        </td>
+                        <td class="py-2 px-4 border-b">
+                            <div class="input-container">
+                                <input type="number" step="0.01" id="input-a2" class="table-input" placeholder="A₂">
+                                <span id="feedback-a2" class="feedback-icon"></span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr id="separator-row" class="separator-row">
+                        <td colspan="5" class="py-2 px-4 border-b"></td>
+                    </tr>
+                    <tr id="intermediate-row">
+                        <td class="py-2 px-4 border-b" id="intermediate-year-display"></td>
+                         <td class="py-2 px-4 border-b">
+                            <div class="input-container">
+                                <input type="number" step="0.01" id="input-kv-1" class="table-input" placeholder="Kᵥ₋₁">
+                                <span id="feedback-kv-1" class="feedback-icon"></span>
+                            </div>
+                        </td>
+                        <td class="py-2 px-4 border-b">
+                            <div class="input-container">
+                                <input type="number" step="0.01" id="input-zv" class="table-input" placeholder="Zᵥ">
+                                <span id="feedback-zv" class="feedback-icon"></span>
+                            </div>
+                        </td>
+                        <td class="py-2 px-4 border-b">
+                            <div class="input-container">
+                                <input type="number" step="0.01" id="input-tv" class="table-input" placeholder="T">
+                                <span id="feedback-tv" class="feedback-icon"></span>
+                            </div>
+                        </td>
+                        <td class="py-2 px-4 border-b">
+                            <div class="input-container">
+                                <input type="number" step="0.01" id="input-av" class="table-input" placeholder="Aᵥ">
+                                <span id="feedback-av" class="feedback-icon"></span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-6 flex justify-center space-x-4">
+            <button id="generate-task" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Neue Aufgabe generieren
+            </button>
+            <button id="check-answers" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                Antworten prüfen
+            </button>
+             <button id="show-tip" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">
+                Tipp anzeigen
+            </button>
+        </div>
+
+        <div id="feedback" class="mt-6 text-center font-bold"></div>
+        <div id="tip-area" class="mt-4 p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded hidden">
+            <strong>Tipp:</strong> <span id="tip-text"></span>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const taskContainer = document.getElementById('task-container');
-            const taskText = document.getElementById('task-text');
-            const tilgungsplanBody = document.getElementById('tilgungsplan-body');
-            const checkAnswersBtn = document.getElementById('check-answers');
-            const showSolutionBtn = document.getElementById('show-solution');
-            const solution = document.getElementById('solution');
-            const generateTaskBtn = document.getElementById('generate-task');
-            
-            let currentTask = {
-                k0: 0,
-                p: 0,
-                n: 0,
-                t: 0,
-                rowsToFill: 3, // Fest auf 3 Jahre gesetzt
-                solution: []
-            };
-            
-            // Funktion zum Formatieren von Zahlen mit 2 Nachkommastellen in kaufmännischer Schreibweise
-            function formatEuro(num) {
-                return Number(num).toFixed(2).replace('.', ',') + ' €';
-            }
-            
-            // Funktion zum Formatieren von Zahlen mit angegebenen Nachkommastellen
-            function formatNumber(num, decimals = 2) {
-                return Number(num).toFixed(decimals).replace('.', ',');
-            }
-            
-            // Funktion zum Umwandeln eines formatierten Euro-Strings in eine Zahl
-            function parseEuroInput(str) {
-                return parseFloat(str.replace(/[^\d,.-]/g, '').replace(',', '.'));
-            }
-            
-            // Funktion zum Zufallszahlen generieren
-            function getRandomNumber(min, max, decimals = 0) {
-                const factor = Math.pow(10, decimals);
-                return Math.round((Math.random() * (max - min) + min) * factor) / factor;
-            }
-            
-            // Funktion zum Generieren einer Aufgabe
+        document.addEventListener('DOMContentLoaded', () => {
+            const taskIntroParagraph = document.getElementById('task-intro');
+            const loanDetailsText = document.getElementById('loan-details-text');
+
+            const inputK0 = document.getElementById('input-k0');
+            const inputZ1 = document.getElementById('input-z1');
+            const inputT1 = document.getElementById('input-t1');
+            const inputA1 = document.getElementById('input-a1');
+            const inputK1 = document.getElementById('input-k1');
+            const inputZ2 = document.getElementById('input-z2');
+            const inputT2 = document.getElementById('input-t2');
+            const inputA2 = document.getElementById('input-a2');
+            const inputKv1 = document.getElementById('input-kv-1');
+            const inputZv = document.getElementById('input-zv');
+            const inputTv = document.getElementById('input-tv');
+            const inputAv = document.getElementById('input-av');
+
+            const intermediateYearDisplay = document.getElementById('intermediate-year-display');
+            const intermediateRow = document.getElementById('intermediate-row');
+            const separatorRow = document.getElementById('separator-row');
+
+            const generateButton = document.getElementById('generate-task');
+            const checkButton = document.getElementById('check-answers');
+            const showTipButton = document.getElementById('show-tip'); // Get the tip button
+            const feedbackDiv = document.getElementById('feedback');
+            const tipArea = document.getElementById('tip-area'); // Get the tip area
+            const tipTextSpan = document.getElementById('tip-text'); // Get the span for tip text
+
+            let correctValues = {};
+            let randomYear = 0; // To store the randomly generated intermediate year
+            let currentK0 = 0; // To store the generated K0
+            let currentRate = 0; // To store the generated rate
+            let currentT = 0; // To store the calculated Tilgung
+
+            let activeInputId = null; // To track the currently focused input
+
+
+            // Alternative task introduction texts
+            const introTexts = [
+                "Ein Unternehmen nimmt ein Ratendarlehen auf, um eine neue Maschine zu finanzieren.",
+                "Zur Anschaffung neuer Betriebsmittel nimmt ein Betrieb ein Ratendarlehen auf.",
+                "Ein Kreditinstitut vergibt ein Ratendarlehen an einen Kunden.",
+                "Ein Darlehen wird als Ratendarlehen mit fester Tilgung vereinbart."
+            ];
+
+            // Alternative loan detail templates
+            const loanDetailTemplates = [
+                "Das Darlehen hat eine anfängliche Schuldenhöhe (K₀) von <strong>{k0}</strong>, eine Gesamtlaufzeit (n) von <strong>{n} Jahren</strong> und einen jährlichen Zinssatz von <strong>{rate} % p.a.</strong>",
+                "Vereinbart wurde ein Ratendarlehen über <strong>{k0}</strong> mit einer Laufzeit von <strong>{n} Jahren</strong> und einem Zinssatz von <strong>{rate} % p.a.</strong>",
+                "Die Konditionen des Ratendarlehens lauten: K₀ = <strong>{k0}</strong>, n = <strong>{n} Jahre</strong>, Zinssatz = <strong>{rate} % p.a.</strong>",
+                "Ein Ratendarlehen wird mit folgenden Eckdaten aufgenommen: Anfängliche Schulden <strong>{k0}</strong>, Laufzeit <strong>{n} Jahre</strong>, Zinssatz <strong>{rate} % p.a.</strong>"
+            ];
+
+            // Add focus event listeners to all input fields
+            const allInputs = [inputK0, inputZ1, inputT1, inputA1, inputK1, inputZ2, inputT2, inputA2, inputKv1, inputZv, inputTv, inputAv];
+            allInputs.forEach(input => {
+                input.addEventListener('focus', () => {
+                    activeInputId = input.id;
+                    // Clear previous tip when a new input is focused
+                    tipArea.classList.add('hidden');
+                    tipTextSpan.textContent = '';
+                });
+                 input.addEventListener('blur', () => {
+                    // Reset activeInputId after a short delay to allow button clicks
+                    setTimeout(() => {
+                         if (document.activeElement !== showTipButton) {
+                             activeInputId = null;
+                         }
+                    }, 10);
+                 });
+            });
+
+
             function generateTask() {
-                // Parameter generieren
-                const k0 = getRandomNumber(10000, 300000, 0); // Anfangsschulden zwischen 10.000 und 300.000 €
-                const p = getRandomNumber(2, 8, 2); // Zinssatz zwischen 2% und 8%
-                const n = getRandomNumber(5, 25, 0); // Laufzeit zwischen 5 und 25 Jahren
-                const t = k0 / n; // Konstante jährliche Tilgung berechnen
-                
-                // Anzahl der auszufüllenden Zeilen ist fest auf 3 Jahre gesetzt
-                const rowsToFill = 3;
-                
-                // Lösungen berechnen
-                const solution = [];
-                let currentK = k0;
-                
-                for (let v = 1; v <= n; v++) {
-                    const zinsen = currentK * (p / 100);
-                    const annuitaet = zinsen + t;
-                    const newK = currentK - t;
-                    
-                    solution.push({
-                        v: v,
-                        k: currentK,
-                        z: zinsen,
-                        t: t,
-                        a: annuitaet,
-                        newK: newK
-                    });
-                    
-                    currentK = newK;
+                // Generate random values
+                const k0 = Math.floor(Math.random() * 100000) + 50000; // K0 between 50000 and 150000
+                const n = Math.floor(Math.random() * 22) + 9; // n between 9 and 30 (30 - 9 + 1 = 22)
+                const annualRate = (Math.random() * 0.09) + 0.01; // Rate between 1% and 10%
+                const ratePercent = (annualRate * 100).toFixed(2);
+
+                currentK0 = k0; // Store the generated K0
+                currentRate = annualRate; // Store the generated rate
+
+                // Generate a random intermediate year (between 4 and n-1)
+                randomYear = Math.floor(Math.random() * (n - 4)) + 4; // Year between 4 and n-1
+
+                // Display the random intermediate year and show the row/separator
+                intermediateYearDisplay.textContent = randomYear;
+                intermediateRow.style.display = '';
+                separatorRow.style.display = '';
+
+                // Select random task texts
+                const randomIntro = introTexts[Math.floor(Math.random() * introTexts.length)];
+                const randomLoanDetailsTemplate = loanDetailTemplates[Math.floor(Math.random() * loanDetailTemplates.length)];
+
+                // Format K0 in German commercial style with € after the value
+                const formattedK0 = k0.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+
+                // Update task texts with generated values
+                taskIntroParagraph.textContent = randomIntro;
+                loanDetailsText.innerHTML = randomLoanDetailsTemplate
+                    .replace('{k0}', formattedK0)
+                    .replace('{n}', n)
+                    .replace('{rate}', ratePercent);
+
+
+                // Calculate correct values
+                const T = k0 / n;
+                currentT = T; // Store the calculated Tilgung
+                const Z1 = k0 * annualRate;
+                const A1 = T + Z1;
+                const K1 = k0 - T;
+                const Z2 = K1 * annualRate;
+                const A2 = T + Z2;
+
+                // Calculate values for the random intermediate year
+                let Kv_1_intermediate = k0;
+                for (let i = 1; i < randomYear; i++) {
+                    Kv_1_intermediate -= T;
                 }
-                
-                // Aktuelle Aufgabe speichern
-                currentTask = {
-                    k0: k0,
-                    p: p,
-                    n: n,
-                    t: t,
-                    rowsToFill: rowsToFill,
-                    solution: solution
+                const Zv_intermediate = Kv_1_intermediate * annualRate;
+                const Av_intermediate = T + Zv_intermediate;
+
+
+                correctValues = {
+                    k0: k0.toFixed(2), // Store K0 with 2 decimal places for comparison
+                    z1: Z1.toFixed(2),
+                    t: T.toFixed(2),
+                    a1: A1.toFixed(2),
+                    k1: K1.toFixed(2),
+                    z2: Z2.toFixed(2),
+                    a2: A2.toFixed(2),
+                    kv1_intermediate: Kv_1_intermediate.toFixed(2),
+                    zv_intermediate: Zv_intermediate.toFixed(2),
+                    tv_intermediate: T.toFixed(2), // Tilgung is constant
+                    av_intermediate: Av_intermediate.toFixed(2)
                 };
-                
-                // Aufgabentext erstellen
-                taskText.innerHTML = `
-                    <p>Ein Ratendarlehen in Höhe von <strong>${formatEuro(k0)}</strong> wird über eine Laufzeit von <strong>${n} Jahren</strong> 
-                    mit einem Zinssatz von <strong>${formatNumber(p, 2)} %</strong> aufgenommen.</p>
-                    <p><strong>Aufgabe:</strong> Berechne die konstante jährliche Tilgungsrate und fülle den Tilgungsplan für die ersten 3 Jahre aus.</p>
-                `;
-                
-                // Tilgungsplan-Tabelle erstellen
-                createTilgungsplanTable(rowsToFill);
-                
-                // Lösung erstellen
-                createSolutionTable();
+
+                // Clear input fields, feedback icons, and feedback text
+                allInputs.forEach(input => input.value = '');
+                document.querySelectorAll('.feedback-icon').forEach(icon => icon.innerHTML = ''); // Clear icons
+                feedbackDiv.textContent = '';
+                tipArea.classList.add('hidden'); // Hide tip area
+                tipTextSpan.textContent = ''; // Clear tip text
+
+
+                // Reset input field styles
+                resetInputStyles();
             }
-            
-            // Tilgungsplan-Tabelle erstellen
-            function createTilgungsplanTable(rowsToFill) {
-                tilgungsplanBody.innerHTML = '';
-                
-                // Erste Zeile mit den Anfangsschulden ist vorgegeben
-                const firstRow = document.createElement('tr');
-                firstRow.innerHTML = `
-                    <td>1</td>
-                    <td>${formatEuro(currentTask.k0)}</td>
-                    <td class="user-input-cell"><input type="text" id="z-1" placeholder="Z₁"></td>
-                    <td class="user-input-cell"><input type="text" id="t-1" placeholder="T"></td>
-                    <td class="user-input-cell"><input type="text" id="a-1" placeholder="A₁"></td>
-                `;
-                tilgungsplanBody.appendChild(firstRow);
-                
-                // Feedback-Zeile für die erste Zeile
-                const firstFeedbackRow = document.createElement('tr');
-                firstFeedbackRow.classList.add('feedback-row');
-                firstFeedbackRow.innerHTML = `
-                    <td></td>
-                    <td></td>
-                    <td id="feedback-z-1"></td>
-                    <td id="feedback-t-1"></td>
-                    <td id="feedback-a-1"></td>
-                `;
-                tilgungsplanBody.appendChild(firstFeedbackRow);
-                
-                // Weitere Zeilen, bei denen die Schulden berechnet werden müssen
-                for (let v = 2; v <= rowsToFill; v++) {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${v}</td>
-                        <td class="user-input-cell"><input type="text" id="k-${v}" placeholder="K₍${v-1}₎"></td>
-                        <td class="user-input-cell"><input type="text" id="z-${v}" placeholder="Z₍${v}₎"></td>
-                        <td class="user-input-cell"><input type="text" id="t-${v}" placeholder="T"></td>
-                        <td class="user-input-cell"><input type="text" id="a-${v}" placeholder="A₍${v}₎"></td>
-                    `;
-                    tilgungsplanBody.appendChild(row);
-                    
-                    // Feedback-Zeile
-                    const feedbackRow = document.createElement('tr');
-                    feedbackRow.classList.add('feedback-row');
-                    feedbackRow.innerHTML = `
-                        <td></td>
-                        <td id="feedback-k-${v}"></td>
-                        <td id="feedback-z-${v}"></td>
-                        <td id="feedback-t-${v}"></td>
-                        <td id="feedback-a-${v}"></td>
-                    `;
-                    tilgungsplanBody.appendChild(feedbackRow);
-                }
+
+            function resetInputStyles() {
+                const inputs = [inputK0, inputZ1, inputT1, inputA1, inputK1, inputZ2, inputT2, inputA2, inputKv1, inputZv, inputTv, inputAv];
+                inputs.forEach(input => {
+                    input.classList.remove('border-green-500', 'border-red-500');
+                    input.classList.add('border-gray-300');
+                });
             }
-            
-            // Lösung erstellen
-            function createSolutionTable() {
-                let solutionHTML = `
-                    <h4>Musterlösung:</h4>
-                    <p>Bei einem Ratendarlehen ist die jährliche Tilgungsrate konstant und beträgt: T = K₀/n = ${formatEuro(currentTask.k0)} / ${currentTask.n} = ${formatEuro(currentTask.t)}</p>
-                    <p>Die Annuität (Zins + Tilgung) verringert sich jedes Jahr, da der Zinsanteil mit sinkender Restschuld abnimmt.</p>
-                    <p>Hier ist der Tilgungsplan für die ersten 3 Jahre:</p>
-                    <table class="tilgungsplan-table">
-                        <thead>
-                            <tr>
-                                <th>Jahr (v)</th>
-                                <th>Schulden zu Jahresbeginn (K<sub>v-1</sub>) in €</th>
-                                <th>Zinsen (Z<sub>v</sub>) in €</th>
-                                <th>Tilgung (T) in €</th>
-                                <th>Annuität (Z<sub>v</sub> + T) in €</th>
-                                <th>Restschuld am Jahresende (K<sub>v</sub>) in €</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-                
-                // Lösung für die ersten 3 Jahre anzeigen
-                for (let i = 0; i < 3; i++) {
-                    const sol = currentTask.solution[i];
-                    solutionHTML += `
-                        <tr>
-                            <td>${sol.v}</td>
-                            <td>${formatEuro(sol.k)}</td>
-                            <td>${formatEuro(sol.z)}</td>
-                            <td>${formatEuro(sol.t)}</td>
-                            <td>${formatEuro(sol.a)}</td>
-                            <td>${formatEuro(sol.newK)}</td>
-                        </tr>
-                    `;
-                }
-                
-                solutionHTML += `
-                        </tbody>
-                    </table>
-                    <p>Die Berechnungen im Detail:</p>
-                `;
-                
-                // Detaillierte Erklärung für jedes Jahr
-                for (let i = 0; i < 3; i++) {
-                    const sol = currentTask.solution[i];
-                    solutionHTML += `
-                        <h5>Jahr ${sol.v}:</h5>
-                        <p>Schulden zu Jahresbeginn: K<sub>${sol.v-1}</sub> = ${i === 0 ? "K₀" : `K<sub>${sol.v-1}</sub>`} = ${formatEuro(sol.k)}</p>
-                        <p>Zinsen: Z<sub>${sol.v}</sub> = K<sub>${sol.v-1}</sub> · p/100 = ${formatEuro(sol.k)} · ${formatNumber(currentTask.p, 2)}/100 = ${formatEuro(sol.z)}</p>
-                        <p>Tilgung: T = K₀/n = ${formatEuro(currentTask.k0)} / ${currentTask.n} = ${formatEuro(sol.t)}</p>
-                        <p>Annuität: A<sub>${sol.v}</sub> = Z<sub>${sol.v}</sub> + T = ${formatEuro(sol.z)} + ${formatEuro(sol.t)} = ${formatEuro(sol.a)}</p>
-                        <p>Schulden am Ende des Jahres: K<sub>${sol.v}</sub> = K<sub>${sol.v-1}</sub> - T = ${formatEuro(sol.k)} - ${formatEuro(sol.t)} = ${formatEuro(sol.newK)}</p>
-                    `;
-                }
-                
-                solution.innerHTML = solutionHTML;
-            }
-            
-            // Antworten überprüfen
+
             function checkAnswers() {
                 let allCorrect = true;
-                const tolerance = 0.01; // Toleranz für Rundungsfehler
-                
-                // Erste Zeile überprüfen (Jahr 1)
-                const z1Input = parseEuroInput(document.getElementById('z-1').value);
-                const t1Input = parseEuroInput(document.getElementById('t-1').value);
-                const a1Input = parseEuroInput(document.getElementById('a-1').value);
-                const z1Feedback = document.getElementById('feedback-z-1');
-                const t1Feedback = document.getElementById('feedback-t-1');
-                const a1Feedback = document.getElementById('feedback-a-1');
-                
-                const z1Correct = Math.abs(z1Input - currentTask.solution[0].z) < tolerance;
-                const t1Correct = Math.abs(t1Input - currentTask.solution[0].t) < tolerance;
-                const a1Correct = Math.abs(a1Input - currentTask.solution[0].a) < tolerance;
-                
-                z1Feedback.textContent = z1Correct ? "✓" : "✗";
-                z1Feedback.className = z1Correct ? "correct" : "incorrect";
-                
-                t1Feedback.textContent = t1Correct ? "✓" : "✗";
-                t1Feedback.className = t1Correct ? "correct" : "incorrect";
-                
-                a1Feedback.textContent = a1Correct ? "✓" : "✗";
-                a1Feedback.className = a1Correct ? "correct" : "incorrect";
-                
-                if (!z1Correct || !t1Correct || !a1Correct) allCorrect = false;
-                
-                // Weitere Zeilen überprüfen
-                for (let v = 2; v <= 3; v++) {
-                    const kInput = parseEuroInput(document.getElementById(`k-${v}`).value);
-                    const zInput = parseEuroInput(document.getElementById(`z-${v}`).value);
-                    const tInput = parseEuroInput(document.getElementById(`t-${v}`).value);
-                    const aInput = parseEuroInput(document.getElementById(`a-${v}`).value);
-                    
-                    const kFeedback = document.getElementById(`feedback-k-${v}`);
-                    const zFeedback = document.getElementById(`feedback-z-${v}`);
-                    const tFeedback = document.getElementById(`feedback-t-${v}`);
-                    const aFeedback = document.getElementById(`feedback-a-${v}`);
-                    
-                    const kCorrect = Math.abs(kInput - currentTask.solution[v-1].k) < tolerance;
-                    const zCorrect = Math.abs(zInput - currentTask.solution[v-1].z) < tolerance;
-                    const tCorrect = Math.abs(tInput - currentTask.solution[v-1].t) < tolerance;
-                    const aCorrect = Math.abs(aInput - currentTask.solution[v-1].a) < tolerance;
-                    
-                    kFeedback.textContent = kCorrect ? "✓" : "✗";
-                    kFeedback.className = kCorrect ? "correct" : "incorrect";
-                    
-                    zFeedback.textContent = zCorrect ? "✓" : "✗";
-                    zFeedback.className = zCorrect ? "correct" : "incorrect";
-                    
-                    tFeedback.textContent = tCorrect ? "✓" : "✗";
-                    tFeedback.className = tCorrect ? "correct" : "incorrect";
-                    
-                    aFeedback.textContent = aCorrect ? "✓" : "✗";
-                    aFeedback.className = aCorrect ? "correct" : "incorrect";
-                    
-                    if (!kCorrect || !zCorrect || !tCorrect || !aCorrect) allCorrect = false;
-                }
-                
-                // Gesamtfeedback
+                const feedbackMessages = [];
+
+                const inputs = [
+                    { id: 'input-k0', correct: correctValues.k0, label: 'Schulden Jahresbeginn Jahr 1' },
+                    { id: 'input-z1', correct: correctValues.z1, label: 'Zinsen Jahr 1' },
+                    { id: 'input-t1', correct: correctValues.t, label: 'Tilgung Jahr 1' },
+                    { id: 'input-a1', correct: correctValues.a1, label: 'Annuität Jahr 1' },
+                    { id: 'input-k1', correct: correctValues.k1, label: 'Schulden Jahresbeginn Jahr 2' },
+                    { id: 'input-z2', correct: correctValues.z2, label: 'Zinsen Jahr 2' },
+                    { id: 'input-t2', correct: correctValues.t, label: 'Tilgung Jahr 2' },
+                    { id: 'input-a2', correct: correctValues.a2, label: 'Annuität Jahr 2' }
+                ];
+
+                // Add intermediate year inputs to the list
+                 inputs.push(
+                    { id: 'input-kv-1', correct: correctValues.kv1_intermediate, label: `Schulden Jahresbeginn Jahr ${randomYear}` },
+                    { id: 'input-zv', correct: correctValues.zv_intermediate, label: `Zinsen Jahr ${randomYear}` },
+                    { id: 'input-tv', correct: correctValues.tv_intermediate, label: `Tilgung Jahr ${randomYear}` },
+                    { id: 'input-av', correct: correctValues.av_intermediate, label: `Annuität Jahr ${randomYear}` }
+                 );
+
+
+                resetInputStyles(); // Reset styles before checking
+                document.querySelectorAll('.feedback-icon').forEach(icon => icon.innerHTML = ''); // Clear previous icons
+
+                inputs.forEach(item => {
+                    const inputElement = document.getElementById(item.id);
+                    const feedbackIconSpan = document.getElementById(`feedback-${item.id.split('-')[1]}${item.id.split('-')[2] ? '-' + item.id.split('-')[2] : ''}`); // Get corresponding icon span
+
+                    let userAnswer, correctAnswer;
+
+                    userAnswer = parseFloat(inputElement.value).toFixed(2);
+                    correctAnswer = parseFloat(item.correct).toFixed(2);
+
+
+                    if (userAnswer === correctAnswer && !isNaN(userAnswer)) {
+                        feedbackMessages.push(`${item.label}: Korrekt`);
+                        inputElement.classList.remove('border-gray-300', 'border-red-500');
+                        inputElement.classList.add('border-green-500');
+                        feedbackIconSpan.innerHTML = '<i class="fas fa-check-circle correct-icon"></i>'; // Green check icon
+                    } else {
+                        feedbackMessages.push(`${item.label}: Falsch`);
+                        inputElement.classList.remove('border-gray-300', 'border-green-500');
+                        inputElement.classList.add('border-red-500');
+                         feedbackIconSpan.innerHTML = '<i class="fas fa-times-circle incorrect-icon"></i>'; // Red X icon
+                        allCorrect = false;
+                    }
+                });
+
+                feedbackDiv.innerHTML = feedbackMessages.join('<br>');
+
                 if (allCorrect) {
-                    alert("Sehr gut! Alle Antworten sind korrekt! 👍");
+                    feedbackDiv.classList.remove('text-red-500');
+                    feedbackDiv.classList.add('text-green-500');
+                    feedbackDiv.innerHTML += '<br><br>Alle Antworten sind korrekt!';
+                } else {
+                    feedbackDiv.classList.remove('text-green-500');
+                    feedbackDiv.classList.add('text-red-500');
                 }
             }
-            
-            // Event-Listener für Buttons
-            generateTaskBtn.addEventListener('click', function() {
-                generateTask();
-                solution.style.display = "none";
-                showSolutionBtn.textContent = "Musterlösung anzeigen";
-            });
-            
-            checkAnswersBtn.addEventListener('click', checkAnswers);
-            
-            showSolutionBtn.addEventListener('click', function() {
-                solution.style.display = solution.style.display === "none" ? "block" : "none";
-                showSolutionBtn.textContent = solution.style.display === "none" ? 
-                    "Musterlösung anzeigen" : "Musterlösung verbergen";
-            });
-            
-            // Initialisierung: Erste Aufgabe generieren
+
+            function showTip() {
+                let tip = '';
+                const rate = currentRate; // Use stored rate
+                const T = currentT; // Use stored Tilgung
+
+                // Get current values from inputs (even if incorrect) for context in tip
+                const k0_input = parseFloat(inputK0.value);
+                const z1_input = parseFloat(inputZ1.value);
+                const t1_input = parseFloat(inputT1.value);
+                const a1_input = parseFloat(inputA1.value);
+                const k1_input = parseFloat(inputK1.value);
+                const z2_input = parseFloat(inputZ2.value);
+                const t2_input = parseFloat(inputT2.value);
+                const a2_input = parseFloat(inputA2.value);
+                const kv1_intermediate_input = parseFloat(inputKv1.value);
+                const zv_intermediate_input = parseFloat(inputZv.value);
+                const tv_intermediate_input = parseFloat(inputTv.value);
+                const av_intermediate_input = parseFloat(inputAv.value);
+
+
+                switch (activeInputId) {
+                    case 'input-k0':
+                        tip = `Die anfänglichen Schulden (K₀) sind im Aufgabentext angegeben.`;
+                        break;
+                    case 'input-z1':
+                        tip = `Zinsen Jahr 1 (Z₁) = Schulden zu Jahresbeginn Jahr 1 (K₀) * Zinssatz. (K₀ = ${currentK0.toFixed(2)}, Zinssatz = ${(currentRate * 100).toFixed(2)}%)`;
+                        break;
+                    case 'input-t1':
+                    case 'input-t2':
+                    case 'input-tv':
+                         tip = `Die Tilgung (T) ist bei einem Ratendarlehen über die gesamte Laufzeit konstant. T = Anfängliche Schulden (K₀) / Gesamtlaufzeit (n). (K₀ = ${currentK0.toFixed(2)}, n = ${correctValues.n})`; // Assuming correctValues.n is available
+                         break;
+                    case 'input-a1':
+                        tip = `Annuität Jahr 1 (A₁) = Tilgung (T) + Zinsen Jahr 1 (Z₁). (T = ${T.toFixed(2)}, Z₁ = ${z1_input ? z1_input.toFixed(2) : '?'})`;
+                        break;
+                    case 'input-k1':
+                        tip = `Schulden zu Jahresbeginn Jahr 2 (K₁) = Schulden zu Jahresbeginn Jahr 1 (K₀) - Tilgung (T). (K₀ = ${currentK0.toFixed(2)}, T = ${T.toFixed(2)})`;
+                        break;
+                    case 'input-z2':
+                         tip = `Zinsen Jahr 2 (Z₂) = Schulden zu Jahresbeginn Jahr 2 (K₁) * Zinssatz. (K₁ = ${k1_input ? k1_input.toFixed(2) : '?'}, Zinssatz = ${(currentRate * 100).toFixed(2)}%)`;
+                         break;
+                    case 'input-a2':
+                         tip = `Annuität Jahr 2 (A₂) = Tilgung (T) + Zinsen Jahr 2 (Z₂). (T = ${T.toFixed(2)}, Z₂ = ${z2_input ? z2_input.toFixed(2) : '?'})`;
+                         break;
+                    case 'input-kv-1':
+                         tip = `Schulden zu Jahresbeginn Jahr ${randomYear} (Kᵥ₋₁) = Schulden zu Jahresbeginn des Vorjahres - Tilgung (T). Wiederholen Sie diesen Schritt beginnend bei K₀. (T = ${T.toFixed(2)})`;
+                         break;
+                    case 'input-zv':
+                         tip = `Zinsen Jahr ${randomYear} (Zᵥ) = Schulden zu Jahresbeginn Jahr ${randomYear} (Kᵥ₋₁) * Zinssatz. (Kᵥ₋₁ = ${kv1_intermediate_input ? kv1_intermediate_input.toFixed(2) : '?'}, Zinssatz = ${(currentRate * 100).toFixed(2)}%)`;
+                         break;
+                    case 'input-av':
+                         tip = `Annuität Jahr ${randomYear} (Aᵥ) = Tilgung (T) + Zinsen Jahr ${randomYear} (Zᵥ). (T = ${T.toFixed(2)}, Zᵥ = ${zv_intermediate_input ? zv_intermediate_input.toFixed(2) : '?'})`;
+                         break;
+                    default:
+                        tip = 'Wählen Sie ein Feld in der Tabelle aus, um einen Tipp zu erhalten.';
+                }
+
+                tipTextSpan.textContent = tip;
+                tipArea.classList.remove('hidden'); // Show tip area
+            }
+
+            // Event Listeners
+            generateButton.addEventListener('click', generateTask);
+            checkButton.addEventListener('click', checkAnswers);
+            showTipButton.addEventListener('click', showTip); // Add event listener for tip button
+
+
+            // Generate initial task on page load
             generateTask();
         });
     </script>
