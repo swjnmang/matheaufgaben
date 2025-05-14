@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rentenrechnung: Endwert (vorschüssig und nachschüssig)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']], // Explizite Konfiguration für Display Math
+                packages: {'[+]': ['textmacros']}
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        /* Optionale benutzerdefinierte Stile */
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        .formula {
+            font-style: italic;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        /* Stellt sicher, dass MathJax-Elemente korrekt angezeigt werden */
+        mjx-container {
+            /* display: inline-block; */ /* Kann je nach Kontext angepasst werden */
+            line-height: normal; /* Setze line-height zurück auf normal */
+        }
+         /* Zusätzlicher Abstand für die Rechenschritte */
+        /* #solution-text br { */
+            /* line-height: 1.5; */ /* Erhöht den Abstand zwischen Zeilenumbrüchen - DEAKTIVIERT */
+        /* } */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-2xl font-bold mb-4 text-center">Rentenrechnung: Endwert (vorschüssig und nachschüssig)</h1>
+
+        <div id="problem-area" class="mb-6 text-lg">
+            </div>
+
+        <div class="mb-6">
+            <label for="user-answer" class="block text-gray-700 text-sm font-bold mb-2">Deine Antwort:</label>
+            <div class="flex items-center">
+                <input type="number" id="user-answer" step="0.01" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                <span id="answer-unit" class="ml-2 text-gray-700"></span>
+            </div>
+        </div>
+
+        <div class="flex justify-between items-center">
+            <button id="check-button" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                Prüfen
+            </button>
+            <button id="show-solution-button" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                Musterlösung
+            </button>
+            <button id="new-problem-button" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                Neue Aufgabe
+            </button>
+        </div>
+
+        <div id="result-area" class="mt-6 p-4 rounded text-center" style="display: none;">
+            </div>
+
+        <div id="solution-area" class="mt-4 p-4 rounded bg-blue-100 text-blue-800" style="display: none;">
+            <h3 class="font-bold mb-2">Musterlösung:</h3>
+            <p id="solution-text"></p>
+        </div>
+    </div>
+
+    <script>
+        let correctAnswer = 0;
+        let targetVariable = '';
+        let paymentType = ''; // 'vorschuessig' oder 'nachschuessig'
+        let problemData = {}; // Speichert die Werte für die Musterlösung
+
+        // Funktion zur Generierung einer Zufallszahl in einem Bereich
+        function getRandomNumber(min, max, isInteger = true) {
+            const val = Math.random() * (max - min) + min;
+            return isInteger ? Math.floor(val) : parseFloat(val.toFixed(2));
+        }
+
+        // Funktion zur Generierung einer neuen Aufgabe
+        function generateProblem() {
+            // Zufällig auswählen, welche Variable berechnet werden soll
+            const variables = ['Kn', 'n', 'r'];
+            targetVariable = variables[Math.floor(Math.random() * variables.length)];
+
+            // Zufällig auswählen, ob vorschüssig oder nachschüssig
+            const types = ['vorschuessig', 'nachschuessig'];
+            paymentType = types[Math.floor(Math.random() * types.length)];
+
+            let n, p, r, q, Kn;
+
+            // Basiswerte generieren
+            const base_n = getRandomNumber(5, 20); // Jahre
+            const base_p = getRandomNumber(1, 5, false); // Zinssatz in %
+            const base_r = getRandomNumber(100, 1000); // Sparrate
+
+            const base_q = 1 + base_p / 100;
+
+            // Endkapital basierend auf dem Zahlungstyp berechnen
+            let base_Kn;
+            if (paymentType === 'vorschuessig') {
+                base_Kn = base_r * (Math.pow(base_q, base_n) - 1) / (base_q - 1) * base_q;
+            } else { // nachschuessig
+                base_Kn = base_r * (Math.pow(base_q, base_n) - 1) / (base_q - 1);
+            }
+
+            // Werte für die Musterlösung speichern
+            problemData = {
+                n: base_n,
+                p: base_p,
+                r: base_r,
+                q: base_q,
+                Kn: base_Kn,
+                paymentType: paymentType
+            };
+
+            let problemText = '';
+            let answerUnit = '';
+            const timingText = paymentType === 'vorschuessig' ? 'zu Beginn des Jahres' : 'am Ende des Jahres';
+
+
+            // Problem basierend auf der Zielvariable und dem Zahlungstyp erstellen (Textaufgaben)
+            if (targetVariable === 'Kn') {
+                n = base_n;
+                p = base_p;
+                r = base_r;
+                q = base_q;
+                correctAnswer = base_Kn;
+                answerUnit = '€';
+
+                const problemVariations = [
+                    `Du legst jedes Jahr ${r} € auf einem Sparkonto an. Der jährliche Zinssatz beträgt ${p.toFixed(2)} % p.a. Die Einzahlung erfolgt ${timingText}. Welchen Betrag hast du nach ${n} Jahren angespart?`,
+                    `Um für eine größere Anschaffung zu sparen, zahlst du ${n} Jahre lang jährlich ${r} € auf ein Konto ein. Der Zinssatz liegt konstant bei ${p.toFixed(2)} % p.a. Die Rate wird immer ${timingText} überwiesen. Wie hoch ist dein Endkapital nach dieser Zeit?`,
+                    `Ein Sparvertrag sieht vor, dass du ${r} € pro Jahr einzahlst. Der Vertrag läuft über ${n} Jahre und wird mit ${p.toFixed(2)} % p.a. verzinst. Die jährliche Zahlung ist jeweils ${timingText} fällig. Welchen Wert hat dein Vertrag am Ende der Laufzeit?`,
+                    `Du möchtest über ${n} Jahre ein Vermögen aufbauen, indem du jährlich ${r} € investierst. Die Anlage verspricht eine Rendite von ${p.toFixed(2)} % p.a. Die Investition findet ${timingText} statt. Wie viel Geld hast du nach ${n} Jahren?`
+                ];
+                problemText = problemVariations[Math.floor(Math.random() * problemVariations.length)];
+
+            } else if (targetVariable === 'n') {
+                Kn = base_Kn; // Verwende den berechneten Kn, um eine ganzzahlige n zu garantieren
+                p = base_p;
+                r = base_r;
+                q = base_q;
+
+                 // Berechnung der Laufzeit (n) basierend auf dem Zahlungstyp
+                let term;
+                if (paymentType === 'vorschuessig') {
+                     term = (Kn * (q - 1) / (r * q)) + 1;
+                } else { // nachschuessig
+                     term = (Kn * (q - 1) / r) + 1;
+                }
+
+                if (term <= 0) {
+                    console.warn("Ungültige Werte für n-Berechnung, generiere neu.");
+                    generateProblem();
+                    return;
+                }
+
+                correctAnswer = Math.log(term) / Math.log(q);
+
+                answerUnit = 'Jahre';
+
+                const problemVariations = [
+                    `Du möchtest ${Kn.toFixed(2)} € sparen. Jedes Jahr kannst du ${r} € auf einem Konto einzahlen, das einen jährlichen Zinssatz von ${p.toFixed(2)} % p.a. bietet. Die Einzahlung erfolgt ${timingText}. Wie viele Jahre musst du sparen, um dein Ziel zu erreichen? (Runde auf ganze Jahre)`,
+                    `Mit jährlichen Einzahlungen von ${r} € auf ein Konto mit ${p.toFixed(2)} % p.a. Zinsen möchtest du ${Kn.toFixed(2)} € erreichen. Die Rate wird ${timingText} fällig. Wie lange dauert es, bis du diesen Betrag angespart hast? (Runde auf ganze Jahre)`,
+                    `Du hast einen Sparvertrag, bei dem du ${r} € pro Jahr einzahlst (${timingText}). Der Zinssatz beträgt ${p.toFixed(2)} % p.a. Nach wie vielen Jahren erreichst du ein Endkapital von ${Kn.toFixed(2)} €? (Runde auf ganze Jahre)`
+                ];
+                 problemText = problemVariations[Math.floor(Math.random() * problemVariations.length)];
+
+            } else if (targetVariable === 'r') {
+                Kn = base_Kn; // Verwende den berechneten Kn
+                n = base_n;
+                p = base_p;
+                q = base_q;
+
+                 // Berechnung der Sparrate (r) basierend auf dem Zahlungstyp
+                let denominator;
+                if (paymentType === 'vorschuessig') {
+                    denominator = (Math.pow(q, n) - 1) / (q - 1) * q;
+                } else { // nachschuessig
+                    denominator = (Math.pow(q, n) - 1) / (q - 1);
+                }
+
+                if (denominator === 0) {
+                     console.warn("Ungültige Werte für r-Berechnung (Nenner ist 0), generiere neu.");
+                    generateProblem();
+                    return;
+                }
+                correctAnswer = Kn / denominator;
+
+                answerUnit = '€';
+
+                const problemVariations = [
+                    `Du möchtest in ${n} Jahren ${Kn.toFixed(2)} € gespart haben. Dein Sparkonto bietet einen jährlichen Zinssatz von ${p.toFixed(2)} % p.a. Die jährliche Sparrate wird ${timingText} eingezahlt. Wie viel Geld musst du jedes Jahr einzahlen, um dein Ziel zu erreichen?`,
+                    `Um nach ${n} Jahren ein Endkapital von ${Kn.toFixed(2)} € zu besitzen, zahlst du jährlich auf ein Konto mit ${p.toFixed(2)} % p.a. Zinsen ein. Die Zahlung erfolgt ${timingText}. Wie hoch muss die jährliche Sparrate sein?`,
+                    `Ein Ziel ist es, in ${n} Jahren ${Kn.toFixed(2)} € angespart zu haben. Bei einem Zinssatz von ${p.toFixed(2)} % p.a. und jährlicher Einzahlung ${timingText}, wie hoch muss die konstante jährliche Sparrate sein?`
+                ];
+                problemText = problemVariations[Math.floor(Math.random() * problemVariations.length)];
+            }
+
+            // Problem im HTML anzeigen
+            document.getElementById('problem-area').innerHTML = problemText;
+            document.getElementById('user-answer').value = '';
+            document.getElementById('result-area').style.display = 'none';
+            document.getElementById('solution-area').style.display = 'none'; // Musterlösung ausblenden
+            document.getElementById('answer-unit').textContent = answerUnit; // Einheit setzen
+
+            // MathJax nach dem Aktualisieren des Inhalts rendern
+            if (window.MathJax) {
+                MathJax.typesetPromise([document.getElementById('problem-area')]);
+            }
+        }
+
+        // Funktion zur Überprüfung der Antwort
+        function checkAnswer() {
+            const userAnswer = parseFloat(document.getElementById('user-answer').value);
+            const resultArea = document.getElementById('result-area');
+
+            // Toleranz für Gleitkommavergleiche
+            const tolerance = 0.01;
+
+            let isCorrect = false;
+            let feedbackText = '';
+
+            if (isNaN(userAnswer)) {
+                feedbackText = 'Bitte gib eine Zahl ein.';
+                resultArea.className = 'mt-6 p-4 rounded text-center bg-yellow-200 text-yellow-800';
+            } else {
+                if (targetVariable === 'n') {
+                    // Für Jahre, auf ganze Zahl runden und exakt vergleichen
+                    isCorrect = Math.round(userAnswer) === Math.round(correctAnswer);
+                } else {
+                    // Für Geldwerte, mit Toleranz vergleichen
+                    isCorrect = Math.abs(userAnswer - correctAnswer) < tolerance;
+                }
+
+                if (isCorrect) {
+                    feedbackText = 'Richtig!';
+                    resultArea.className = 'mt-6 p-4 rounded text-center bg-green-200 text-green-800';
+                } else {
+                    feedbackText = `Leider falsch.`; // Die richtige Antwort wird in der Musterlösung angezeigt
+                    resultArea.className = 'mt-6 p-4 rounded text-center bg-red-200 text-red-800';
+                }
+            }
+
+            resultArea.innerHTML = feedbackText;
+            resultArea.style.display = 'block';
+
+            // MathJax nach dem Aktualisieren des Inhalts rendern
+            if (window.MathJax) {
+                 MathJax.typesetPromise([document.getElementById('result-area')]);
+            }
+        }
+
+        // Funktion zur Anzeige der Musterlösung (mit detailliertem Rechenweg)
+        function showSolution() {
+            const solutionArea = document.getElementById('solution-area');
+            const solutionText = document.getElementById('solution-text');
+            const unit = document.getElementById('answer-unit').textContent;
+            const { n, p, r, q, Kn, paymentType } = problemData; // Werte aus der Problemgenerierung nutzen
+
+            let solutionLines = []; // Array für die einzelnen Zeilen der Musterlösung
+
+            solutionLines.push(`Die gesuchte Größe (${targetVariable}) ist ${correctAnswer.toFixed(targetVariable === 'n' ? 0 : 2)} ${unit}.`);
+            const timingText = paymentType === 'vorschuessig' ? 'vorschüssig' : 'nachschüssig';
+
+            solutionLines.push(`Rechenweg (${timingText}):`);
+
+            // 1. Gegebene Werte
+            let givenValues = `Gegeben:`;
+            if (targetVariable !== 'Kn') givenValues += ` $K_n = ${Kn.toFixed(2)}$ €`;
+            if (targetVariable !== 'n') givenValues += `, $n = ${n}$ Jahre`;
+            if (targetVariable !== 'r') givenValues += `, $r = ${r}$ €`;
+            givenValues += `, $p = ${p.toFixed(2)}\\% \\text{ p.a.}$, $q = 1 + \\frac{p}{100} = 1 + \\frac{${p.toFixed(2)}}{100} = ${q.toFixed(4)}$.`;
+            solutionLines.push(givenValues);
+
+
+            // 2. Formel
+            const formula = paymentType === 'vorschuessig' ?
+               `Formel (vorschüssig): $$K_n = r \\cdot \\frac{q^n - 1}{q - 1} \\cdot q$$` :
+               `Formel (nachschüssig): $$K_n = r \\cdot \\frac{q^n - 1}{q - 1}$$`;
+            solutionLines.push(formula);
+
+            // 3. Werte einsetzen
+            solutionLines.push(`Werte einsetzen:`);
+            if (targetVariable === 'Kn') {
+                 solutionLines.push(`$$K_n = ${r} \\cdot \\frac{${q.toFixed(4)}^{${n}} - 1}{${q.toFixed(4)} - 1}${paymentType === 'vorschuessig' ? ' \\cdot ' + q.toFixed(4) : ''}$$`);
+            } else if (targetVariable === 'n') {
+                 solutionLines.push(`$$${Kn.toFixed(2)} = ${r} \\cdot \\frac{${q.toFixed(4)}^{n} - 1}{${q.toFixed(4)} - 1}${paymentType === 'vorschuessig' ? ' \\cdot ' + q.toFixed(4) : ''}$$`);
+            } else if (targetVariable === 'r') {
+                 solutionLines.push(`$$${Kn.toFixed(2)} = r \\cdot \\frac{${q.toFixed(4)}^{${n}} - 1}{${q.toFixed(4)} - 1}${paymentType === 'vorschuessig' ? ' \\cdot ' + q.toFixed(4) : ''}$$`);
+            }
+
+
+            // 4. Umformung und Berechnung
+            solutionLines.push(`Umformung nach ${targetVariable === 'Kn' ? 'K_n' : targetVariable === 'n' ? 'n' : 'r'} und Berechnung:`);
+
+            if (targetVariable === 'Kn') {
+                 solutionLines.push(`$$K_n = ${r} \\cdot \\frac{${Math.pow(q, n).toFixed(4)} - 1}{${(q - 1).toFixed(4)}}${paymentType === 'vorschuessig' ? ' \\cdot ' + q.toFixed(4) : ''}$$`);
+                 solutionLines.push(`$$K_n = ${r} \\cdot \\frac{${(Math.pow(q, n) - 1).toFixed(4)}}{${(q - 1).toFixed(4)}}${paymentType === 'vorschuessig' ? ' \\cdot ' + q.toFixed(4) : ''}$$`);
+                 solutionLines.push(`$$K_n \\approx ${r} \\cdot ${( (Math.pow(q, n) - 1) / (q - 1) ).toFixed(4)}${paymentType === 'vorschuessig' ? ' \\cdot ' + q.toFixed(4) : ''}$$`);
+                 solutionLines.push(`$$K_n \\approx ${(r * (Math.pow(q, n) - 1) / (q - 1)).toFixed(4)}${paymentType === 'vorschuessig' ? ' \\cdot ' + q.toFixed(4) : ''}$$`);
+                 solutionLines.push(`$$K_n \\approx ${correctAnswer.toFixed(2)}$$`);
+
+            } else if (targetVariable === 'n') {
+                 const term = paymentType === 'vorschuessig' ? (Kn * (q - 1) / (r * q)) + 1 : (Kn * (q - 1) / r) + 1;
+
+                 if (paymentType === 'vorschuessig') {
+                     solutionLines.push(`$$\\frac{${Kn.toFixed(2)}}{${r} \\cdot ${q.toFixed(4)}} = \\frac{q^n - 1}{${(q - 1).toFixed(4)}}$$`);
+                     solutionLines.push(`$$\\frac{${(Kn / (r * q)).toFixed(4)}}{1} = \\frac{q^n - 1}{${(q - 1).toFixed(4)}}$$`);
+                     solutionLines.push(`$${(Kn / (r * q)).toFixed(4)} \\cdot ${(q - 1).toFixed(4)} = q^n - 1$`); // Inline math here
+                     solutionLines.push(`$${(Kn * (q - 1) / (r * q)).toFixed(4)} = q^n - 1$`); // Inline math here
+                     solutionLines.push(`$${(Kn * (q - 1) / (r * q)).toFixed(4)} + 1 = q^n$`); // Inline math here
+                     solutionLines.push(`$${term.toFixed(4)} = q^n$`); // Inline math here
+                     // Geänderte Darstellung des Logarithmus
+                     solutionLines.push(`$$n = \\log_{${q.toFixed(4)}}(${term.toFixed(4)})$$`);
+                 } else { // nachschuessig
+                     solutionLines.push(`$$\\frac{${Kn.toFixed(2)}}{${r}} = \\frac{q^n - 1}{${(q - 1).toFixed(4)}}$$`);
+                     solutionLines.push(`$${(Kn / r).toFixed(4)} = \\frac{q^n - 1}{${(q - 1).toFixed(4)}}$`); // Inline math here
+                     solutionLines.push(`$${(Kn / r).toFixed(4)} \\cdot ${(q - 1).toFixed(4)} = q^n - 1$`); // Inline math here
+                     solutionLines.push(`$${(Kn * (q - 1) / r).toFixed(4)} = q^n - 1$`); // Inline math here
+                     solutionLines.push(`$${(Kn * (q - 1) / r).toFixed(4)} + 1 = q^n$`); // Inline math here
+                     solutionLines.push(`$${term.toFixed(4)} = q^n$`); // Inline math here
+                      // Geänderte Darstellung des Logarithmus
+                     solutionLines.push(`$$n = \\log_{${q.toFixed(4)}}(${term.toFixed(4)})$$`);
+                 }
+                 solutionLines.push(`$n \\approx ${correctAnswer.toFixed(4)}$`); // Inline math here
+                 solutionLines.push(`Gerundet auf ganze Jahre: $n \\approx ${correctAnswer.toFixed(0)}$ Jahre.`);
+
+            } else if (targetVariable === 'r') {
+                 const annuityFactor = (Math.pow(q, n) - 1) / (q - 1);
+                 const denominatorValue = paymentType === 'vorschuessig' ? annuityFactor * q : annuityFactor;
+
+                 if (paymentType === 'vorschuessig') {
+                     solutionLines.push(`$$${Kn.toFixed(2)} = r \\cdot \\left(\\frac{${q.toFixed(4)}^{${n}} - 1}{${q.toFixed(4)} - 1} \\cdot ${q.toFixed(4)}\\right)$$`);
+                     solutionLines.push(`$$${Kn.toFixed(2)} \\approx r \\cdot ${denominatorValue.toFixed(4)}$$`);
+                 } else { // nachschuessig
+                     solutionLines.push(`$$${Kn.toFixed(2)} = r \\cdot \\frac{${q.toFixed(4)}^{${n}} - 1}{${q.toFixed(4)} - 1}$$`);
+                     solutionLines.push(`$$${Kn.toFixed(2)} \\approx r \\cdot ${denominatorValue.toFixed(4)}$$`);
+                 }
+                 solutionLines.push(`$$r = \\frac{${Kn.toFixed(2)}}{${denominatorValue.toFixed(4)}}$$`);
+                 solutionLines.push(`$$r \\approx ${correctAnswer.toFixed(2)}$$`);
+            }
+
+
+            solutionText.innerHTML = solutionLines.join('<br>'); // Join array elements with single line breaks
+
+            solutionArea.style.display = 'block';
+
+            // MathJax nach dem Aktualisieren des Inhalts rendern
+            if (window.MathJax) {
+                 MathJax.typesetPromise([document.getElementById('solution-area')]);
+            }
+        }
+
+
+        // Event Listener für Buttons
+        document.getElementById('check-button').addEventListener('click', checkAnswer);
+        document.getElementById('new-problem-button').addEventListener('click', generateProblem);
+        document.getElementById('show-solution-button').addEventListener('click', showSolution);
+
+        // Erste Aufgabe beim Laden der Seite generieren
+        // Warten, bis MathJax geladen ist, bevor die erste Aufgabe generiert wird
+        window.onload = function() {
+             if (window.MathJax) {
+                MathJax.startup.promise.then(() => {
+                    generateProblem();
+                });
+            } else {
+                // Fallback, falls MathJax aus irgendeinem Grund nicht geladen wird
+                generateProblem();
+            }
+        };
+
+    </script>
+</body>
+</html>
