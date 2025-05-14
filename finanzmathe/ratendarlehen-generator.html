@@ -69,7 +69,7 @@
                     <tr>
                         <td class="py-2 px-4 border-b">1</td>
                         <td class="py-2 px-4 border-b">
-                            <div class="input-container">
+                             <div class="input-container">
                                 <input type="number" step="0.01" id="input-k0" class="table-input" placeholder="K₀">
                                 <span id="feedback-k0" class="feedback-icon"></span>
                             </div>
@@ -194,21 +194,22 @@
             const intermediateRow = document.getElementById('intermediate-row');
             const separatorRow = document.getElementById('separator-row');
 
+
             const generateButton = document.getElementById('generate-task');
             const checkButton = document.getElementById('check-answers');
-            const showTipButton = document.getElementById('show-tip'); // Get the tip button
+            const showTipButton = document.getElementById('show-tip');
             const feedbackDiv = document.getElementById('feedback');
-            const tipArea = document.getElementById('tip-area'); // Get the tip area
-            const tipTextSpan = document.getElementById('tip-text'); // Get the span for tip text
+            const tipArea = document.getElementById('tip-area');
+            const tipTextSpan = document.getElementById('tip-text');
 
             let correctValues = {};
             let randomYear = 0; // To store the randomly generated intermediate year
             let currentK0 = 0; // To store the generated K0
-            let currentRate = 0; // To store the generated rate
-            let currentT = 0; // To store the calculated Tilgung
+            let currentRate = 0; // Store the exact rate used for calculations
+            let currentN = 0; // Store loan term
+            let calculatedTilgung = 0; // Store the calculated constant Tilgung
 
-            let activeInputId = null; // To track the currently focused input
-
+            let activeInputId = null;
 
             // Alternative task introduction texts
             const introTexts = [
@@ -231,12 +232,10 @@
             allInputs.forEach(input => {
                 input.addEventListener('focus', () => {
                     activeInputId = input.id;
-                    // Clear previous tip when a new input is focused
                     tipArea.classList.add('hidden');
                     tipTextSpan.textContent = '';
                 });
                  input.addEventListener('blur', () => {
-                    // Reset activeInputId after a short delay to allow button clicks
                     setTimeout(() => {
                          if (document.activeElement !== showTipButton) {
                              activeInputId = null;
@@ -249,12 +248,20 @@
             function generateTask() {
                 // Generate random values
                 const k0 = Math.floor(Math.random() * 100000) + 50000; // K0 between 50000 and 150000
-                const n = Math.floor(Math.random() * 22) + 9; // n between 9 and 30 (30 - 9 + 1 = 22)
-                const annualRate = (Math.random() * 0.09) + 0.01; // Rate between 1% and 10%
-                const ratePercent = (annualRate * 100).toFixed(2);
+                const n = Math.floor(Math.random() * 22) + 9; // n between 9 and 30
+                const annualRateRaw = (Math.random() * 0.09) + 0.01; // Rate between 1% and 10%
+
+                // Round the rate to one decimal place for display and calculation
+                const ratePercentRounded = (annualRateRaw * 100).toFixed(1);
+                const exactRate = parseFloat(ratePercentRounded) / 100; // Use this exact rate for calculations
 
                 currentK0 = k0; // Store the generated K0
-                currentRate = annualRate; // Store the generated rate
+                currentRate = exactRate; // Store the exact rate used for calculations
+                currentN = n; // Store the generated loan term
+
+                // Calculate constant Tilgung T using the exactRate (Ratendarlehen)
+                const T = k0 / n;
+                calculatedTilgung = T; // Store the calculated Tilgung
 
                 // Generate a random intermediate year (between 4 and n-1)
                 randomYear = Math.floor(Math.random() * (n - 4)) + 4; // Year between 4 and n-1
@@ -276,47 +283,55 @@
                 loanDetailsText.innerHTML = randomLoanDetailsTemplate
                     .replace('{k0}', formattedK0)
                     .replace('{n}', n)
-                    .replace('{rate}', ratePercent);
+                    .replace('{rate}', ratePercentRounded); // Display the rounded rate
 
 
-                // Calculate correct values
-                const T = k0 / n;
-                currentT = T; // Store the calculated Tilgung
-                const Z1 = k0 * annualRate;
-                const A1 = T + Z1;
-                const K1 = k0 - T;
-                const Z2 = K1 * annualRate;
-                const A2 = T + Z2;
+                // Calculate correct values for Ratendarlehen using the exactRate
+                let currentDebt = k0;
+                let Z1, A1, K1, Z2, A2, K2, Kv_1_intermediate, Zv_intermediate, Av_intermediate;
 
-                // Calculate values for the random intermediate year
-                let Kv_1_intermediate = k0;
+                // Year 1
+                Z1 = currentDebt * exactRate;
+                A1 = T + Z1;
+                K1 = currentDebt - T;
+                currentDebt = K1;
+
+                // Year 2
+                Z2 = currentDebt * exactRate;
+                A2 = T + Z2;
+                K2 = currentDebt - T;
+                currentDebt = K2;
+
+                // Intermediate Year (v)
+                currentDebt = k0; // Reset for iterative calculation to year v-1
                 for (let i = 1; i < randomYear; i++) {
-                    Kv_1_intermediate -= T;
+                    currentDebt -= T;
                 }
-                const Zv_intermediate = Kv_1_intermediate * annualRate;
-                const Av_intermediate = T + Zv_intermediate;
+                Kv_1_intermediate = currentDebt;
+                Zv_intermediate = Kv_1_intermediate * exactRate;
+                Av_intermediate = T + Zv_intermediate;
 
 
                 correctValues = {
-                    k0: k0.toFixed(2), // Store K0 with 2 decimal places for comparison
-                    z1: Z1.toFixed(2),
-                    t: T.toFixed(2),
-                    a1: A1.toFixed(2),
-                    k1: K1.toFixed(2),
-                    z2: Z2.toFixed(2),
-                    a2: A2.toFixed(2),
-                    kv1_intermediate: Kv_1_intermediate.toFixed(2),
-                    zv_intermediate: Zv_intermediate.toFixed(2),
-                    tv_intermediate: T.toFixed(2), // Tilgung is constant
-                    av_intermediate: Av_intermediate.toFixed(2)
+                    k0: k0, // Store K0 as number for precise calculations in tips
+                    z1: Z1,
+                    t: T, // Tilgung is constant
+                    a1: A1,
+                    k1: K1,
+                    z2: Z2,
+                    a2: A2,
+                    kv1_intermediate: Kv_1_intermediate,
+                    zv_intermediate: Zv_intermediate,
+                    tv_intermediate: T, // Tilgung is constant
+                    av_intermediate: Av_intermediate
                 };
 
                 // Clear input fields, feedback icons, and feedback text
                 allInputs.forEach(input => input.value = '');
-                document.querySelectorAll('.feedback-icon').forEach(icon => icon.innerHTML = ''); // Clear icons
+                document.querySelectorAll('.feedback-icon').forEach(icon => icon.innerHTML = '');
                 feedbackDiv.textContent = '';
-                tipArea.classList.add('hidden'); // Hide tip area
-                tipTextSpan.textContent = ''; // Clear tip text
+                tipArea.classList.add('hidden');
+                tipTextSpan.textContent = '';
 
 
                 // Reset input field styles
@@ -334,15 +349,16 @@
             function checkAnswers() {
                 let allCorrect = true;
                 const feedbackMessages = [];
+                const tolerance = 0.02; // Allow a difference of up to 0.01 in either direction
 
                 const inputs = [
                     { id: 'input-k0', correct: correctValues.k0, label: 'Schulden Jahresbeginn Jahr 1' },
                     { id: 'input-z1', correct: correctValues.z1, label: 'Zinsen Jahr 1' },
-                    { id: 'input-t1', correct: correctValues.t, label: 'Tilgung Jahr 1' },
+                    { id: 'input-t1', correct: correctValues.t, label: 'Tilgung Jahr 1' }, // Tilgung is constant
                     { id: 'input-a1', correct: correctValues.a1, label: 'Annuität Jahr 1' },
                     { id: 'input-k1', correct: correctValues.k1, label: 'Schulden Jahresbeginn Jahr 2' },
                     { id: 'input-z2', correct: correctValues.z2, label: 'Zinsen Jahr 2' },
-                    { id: 'input-t2', correct: correctValues.t, label: 'Tilgung Jahr 2' },
+                    { id: 'input-t2', correct: correctValues.t, label: 'Tilgung Jahr 2' }, // Tilgung is constant
                     { id: 'input-a2', correct: correctValues.a2, label: 'Annuität Jahr 2' }
                 ];
 
@@ -350,7 +366,7 @@
                  inputs.push(
                     { id: 'input-kv-1', correct: correctValues.kv1_intermediate, label: `Schulden Jahresbeginn Jahr ${randomYear}` },
                     { id: 'input-zv', correct: correctValues.zv_intermediate, label: `Zinsen Jahr ${randomYear}` },
-                    { id: 'input-tv', correct: correctValues.tv_intermediate, label: `Tilgung Jahr ${randomYear}` },
+                    { id: 'input-tv', correct: correctValues.t, label: `Tilgung Jahr ${randomYear}` }, // Tilgung is constant
                     { id: 'input-av', correct: correctValues.av_intermediate, label: `Annuität Jahr ${randomYear}` }
                  );
 
@@ -360,25 +376,33 @@
 
                 inputs.forEach(item => {
                     const inputElement = document.getElementById(item.id);
-                    const feedbackIconSpan = document.getElementById(`feedback-${item.id.split('-')[1]}${item.id.split('-')[2] ? '-' + item.id.split('-')[2] : ''}`); // Get corresponding icon span
+                    const feedbackIconSpan = document.getElementById(`feedback-${item.id.split('-')[1]}${item.id.split('-')[2] ? '-' + item.id.split('-')[2] : ''}`);
 
-                    let userAnswer, correctAnswer;
+                    const userAnswer = parseFloat(inputElement.value);
+                    const correctAnswer = item.correct; // Use the number for comparison
 
-                    userAnswer = parseFloat(inputElement.value).toFixed(2);
-                    correctAnswer = parseFloat(item.correct).toFixed(2);
-
-
-                    if (userAnswer === correctAnswer && !isNaN(userAnswer)) {
-                        feedbackMessages.push(`${item.label}: Korrekt`);
-                        inputElement.classList.remove('border-gray-300', 'border-red-500');
-                        inputElement.classList.add('border-green-500');
-                        feedbackIconSpan.innerHTML = '<i class="fas fa-check-circle correct-icon"></i>'; // Green check icon
-                    } else {
-                        feedbackMessages.push(`${item.label}: Falsch`);
+                    // Check if input is a valid number
+                    if (isNaN(userAnswer)) {
+                        feedbackMessages.push(`${item.label}: Ungültige Eingabe`);
                         inputElement.classList.remove('border-gray-300', 'border-green-500');
                         inputElement.classList.add('border-red-500');
-                         feedbackIconSpan.innerHTML = '<i class="fas fa-times-circle incorrect-icon"></i>'; // Red X icon
+                        feedbackIconSpan.innerHTML = '<i class="fas fa-times-circle incorrect-icon"></i>';
                         allCorrect = false;
+                    } else {
+                        // Compare with tolerance
+                        if (Math.abs(userAnswer - correctAnswer) < tolerance) {
+                            feedbackMessages.push(`${item.label}: Korrekt`);
+                            inputElement.classList.remove('border-gray-300', 'border-red-500');
+                            inputElement.classList.add('border-green-500');
+                            feedbackIconSpan.innerHTML = '<i class="fas fa-check-circle correct-icon"></i>';
+                        } else {
+                            // Indicate incorrect and show the correct value
+                            feedbackMessages.push(`${item.label}: Falsch (Korrekter Wert: ${correctAnswer.toFixed(2)} €)`);
+                            inputElement.classList.remove('border-gray-300', 'border-green-500');
+                            inputElement.classList.add('border-red-500');
+                            feedbackIconSpan.innerHTML = '<i class="fas fa-times-circle incorrect-icon"></i>';
+                            allCorrect = false;
+                        }
                     }
                 });
 
@@ -396,8 +420,9 @@
 
             function showTip() {
                 let tip = '';
-                const rate = currentRate; // Use stored rate
-                const T = currentT; // Use stored Tilgung
+                const rate = currentRate; // Use the exact rate for calculations
+                const T = calculatedTilgung; // Use stored calculated Tilgung
+                const n = currentN; // Use stored loan term
 
                 // Get current values from inputs (even if incorrect) for context in tip
                 const k0_input = parseFloat(inputK0.value);
@@ -419,46 +444,46 @@
                         tip = `Die anfänglichen Schulden (K₀) sind im Aufgabentext angegeben.`;
                         break;
                     case 'input-z1':
-                        tip = `Zinsen Jahr 1 (Z₁) = Schulden zu Jahresbeginn Jahr 1 (K₀) * Zinssatz. (K₀ = ${currentK0.toFixed(2)}, Zinssatz = ${(currentRate * 100).toFixed(2)}%)`;
+                        tip = `Zinsen Jahr 1 (Z₁) = Schulden zu Jahresbeginn Jahr 1 (K₀) * Zinssatz. (K₀ = ${currentK0.toFixed(2)} €, Zinssatz = ${(currentRate * 100).toFixed(1)}%)`; // Use exactRate, formatted
                         break;
                     case 'input-t1':
                     case 'input-t2':
                     case 'input-tv':
-                         tip = `Die Tilgung (T) ist bei einem Ratendarlehen über die gesamte Laufzeit konstant. T = Anfängliche Schulden (K₀) / Gesamtlaufzeit (n). (K₀ = ${currentK0.toFixed(2)}, n = ${correctValues.n})`; // Assuming correctValues.n is available
+                         tip = `Die Tilgung (T) ist bei einem Ratendarlehen über die gesamte Laufzeit konstant. T = Anfängliche Schulden (K₀) / Gesamtlaufzeit (n). (K₀ = ${currentK0.toFixed(2)} €, n = ${n})`;
                          break;
                     case 'input-a1':
-                        tip = `Annuität Jahr 1 (A₁) = Tilgung (T) + Zinsen Jahr 1 (Z₁). (T = ${T.toFixed(2)}, Z₁ = ${z1_input ? z1_input.toFixed(2) : '?'})`;
+                        tip = `Annuität Jahr 1 (A₁) = Tilgung (T) + Zinsen Jahr 1 (Z₁). (T = ${T.toFixed(2)} €, Z₁ = ${z1_input && !isNaN(z1_input) ? z1_input.toFixed(2) : '?'})`;
                         break;
                     case 'input-k1':
-                        tip = `Schulden zu Jahresbeginn Jahr 2 (K₁) = Schulden zu Jahresbeginn Jahr 1 (K₀) - Tilgung (T). (K₀ = ${currentK0.toFixed(2)}, T = ${T.toFixed(2)})`;
+                        tip = `Schulden zu Jahresbeginn Jahr 2 (K₁) = Schulden zu Jahresbeginn Jahr 1 (K₀) - Tilgung (T). (K₀ = ${currentK0.toFixed(2)} €, T = ${T.toFixed(2)} €)`;
                         break;
                     case 'input-z2':
-                         tip = `Zinsen Jahr 2 (Z₂) = Schulden zu Jahresbeginn Jahr 2 (K₁) * Zinssatz. (K₁ = ${k1_input ? k1_input.toFixed(2) : '?'}, Zinssatz = ${(currentRate * 100).toFixed(2)}%)`;
+                         tip = `Zinsen Jahr 2 (Z₂) = Schulden zu Jahresbeginn Jahr 2 (K₁) * Zinssatz. (K₁ = ${k1_input && !isNaN(k1_input) ? k1_input.toFixed(2) : '?'}, Zinssatz = ${(currentRate * 100).toFixed(1)}%)`; // Use exactRate, formatted
                          break;
                     case 'input-a2':
-                         tip = `Annuität Jahr 2 (A₂) = Tilgung (T) + Zinsen Jahr 2 (Z₂). (T = ${T.toFixed(2)}, Z₂ = ${z2_input ? z2_input.toFixed(2) : '?'})`;
+                         tip = `Annuität Jahr 2 (A₂) = Tilgung (T) + Zinsen Jahr 2 (Z₂). (T = ${T.toFixed(2)} €, Z₂ = ${z2_input && !isNaN(z2_input) ? z2_input.toFixed(2) : '?'})`;
                          break;
                     case 'input-kv-1':
-                         tip = `Schulden zu Jahresbeginn Jahr ${randomYear} (Kᵥ₋₁) = Schulden zu Jahresbeginn des Vorjahres - Tilgung (T). Wiederholen Sie diesen Schritt beginnend bei K₀. (T = ${T.toFixed(2)})`;
+                         tip = `Schulden zu Jahresbeginn Jahr ${randomYear} (Kᵥ₋₁) = Schulden zu Jahresbeginn des Vorjahres - Tilgung (T). Wiederholen Sie diesen Schritt beginnend bei K₀. (T = ${T.toFixed(2)} €)`;
                          break;
                     case 'input-zv':
-                         tip = `Zinsen Jahr ${randomYear} (Zᵥ) = Schulden zu Jahresbeginn Jahr ${randomYear} (Kᵥ₋₁) * Zinssatz. (Kᵥ₋₁ = ${kv1_intermediate_input ? kv1_intermediate_input.toFixed(2) : '?'}, Zinssatz = ${(currentRate * 100).toFixed(2)}%)`;
+                         tip = `Zinsen Jahr ${randomYear} (Zᵥ) = Schulden zu Jahresbeginn Jahr ${randomYear} (Kᵥ₋₁) * Zinssatz. (Kᵥ₋₁ = ${kv1_intermediate_input && !isNaN(kv1_intermediate_input) ? kv1_intermediate_input.toFixed(2) : '?'}, Zinssatz = ${(currentRate * 100).toFixed(1)}%)`; // Use exactRate, formatted
                          break;
                     case 'input-av':
-                         tip = `Annuität Jahr ${randomYear} (Aᵥ) = Tilgung (T) + Zinsen Jahr ${randomYear} (Zᵥ). (T = ${T.toFixed(2)}, Zᵥ = ${zv_intermediate_input ? zv_intermediate_input.toFixed(2) : '?'})`;
+                         tip = `Annuität Jahr ${randomYear} (Aᵥ) = Tilgung (T) + Zinsen Jahr ${randomYear} (Zᵥ). (T = ${T.toFixed(2)} €, Zᵥ = ${zv_intermediate_input && !isNaN(zv_intermediate_input) ? zv_intermediate_input.toFixed(2) : '?'})`;
                          break;
                     default:
                         tip = 'Wählen Sie ein Feld in der Tabelle aus, um einen Tipp zu erhalten.';
                 }
 
                 tipTextSpan.textContent = tip;
-                tipArea.classList.remove('hidden'); // Show tip area
+                tipArea.classList.remove('hidden');
             }
 
             // Event Listeners
             generateButton.addEventListener('click', generateTask);
             checkButton.addEventListener('click', checkAnswers);
-            showTipButton.addEventListener('click', showTip); // Add event listener for tip button
+            showTipButton.addEventListener('click', showTip);
 
 
             // Generate initial task on page load
