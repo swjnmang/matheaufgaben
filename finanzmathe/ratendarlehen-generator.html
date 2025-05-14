@@ -51,7 +51,9 @@
         <h1 class="text-2xl font-bold mb-6 text-center">Aufgabe: Tilgungsplan Ratendarlehen</h1>
 
         <div id="task-description" class="mb-6">
-            <p id="task-intro"></p> <p id="loan-details-text"></p> <p>Füllen Sie die fehlenden Felder in der folgenden Tabelle aus.</p>
+            <p id="task-intro"></p>
+            <p id="loan-details-text"></p>
+            <p id="fill-instructions-text"></p>
         </div>
 
         <div class="overflow-x-auto">
@@ -176,6 +178,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const taskIntroParagraph = document.getElementById('task-intro');
             const loanDetailsText = document.getElementById('loan-details-text');
+            const fillInstructionsText = document.getElementById('fill-instructions-text'); // Get the new paragraph
 
             const inputK0 = document.getElementById('input-k0');
             const inputZ1 = document.getElementById('input-z1');
@@ -284,6 +287,9 @@
                     .replace('{k0}', formattedK0)
                     .replace('{n}', n)
                     .replace('{rate}', ratePercentRounded); // Display the rounded rate
+
+                // Update fill instructions text
+                fillInstructionsText.innerHTML = `Füllen Sie zunächst die fehlenden Felder der ersten beiden Jahre aus.<br> Füllen Sie nun die fehlenden Felder für das ${randomYear}. Jahr aus. Tipp: Es gibt hierfür passende Formeln in der Merkhilfe!`;
 
 
                 // Calculate correct values for Ratendarlehen using the exactRate
