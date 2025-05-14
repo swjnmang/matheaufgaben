@@ -60,9 +60,7 @@
                     <tr>
                         <th class="py-2 px-4 border-b text-left">Jahr (v)</th>
                         <th class="py-2 px-4 border-b text-left">Schulden zu Jahresbeginn in €</th>
-                        <th class="py-2 px-4 border-b text-left">Zinsen in €</th>
-                        <th class="py-2 px-4 border-b text-left">Tilgung in €</th>
-                        <th class="py-2 px-4 border-b text-left">Annuität in €</th>
+                        <th class="py-2 px-4 border-b text-left">Zinsen in €</th> <th class="py-2 px-4 border-b text-left">Tilgung in €</th> <th class="py-2 px-4 border-b text-left">Annuität in €</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -76,14 +74,12 @@
                         </td>
                         <td class="py-2 px-4 border-b">
                              <div class="input-container">
-                                <input type="number" step="0.01" id="input-z1" class="table-input" placeholder="Z₁">
-                                <span id="feedback-z1" class="feedback-icon"></span>
+                                <input type="number" step="0.01" id="input-z1" class="table-input" placeholder="Z₁"> <span id="feedback-z1" class="feedback-icon"></span>
                             </div>
                         </td>
                         <td class="py-2 px-4 border-b">
                             <div class="input-container">
-                                <input type="number" step="0.01" id="input-t1" class="table-input" placeholder="T₁">
-                                <span id="feedback-t1" class="feedback-icon"></span>
+                                <input type="number" step="0.01" id="input-t1" class="table-input" placeholder="T₁"> <span id="feedback-t1" class="feedback-icon"></span>
                             </div>
                         </td>
                         <td class="py-2 px-4 border-b">
@@ -103,14 +99,12 @@
                         </td>
                         <td class="py-2 px-4 border-b">
                             <div class="input-container">
-                                <input type="number" step="0.01" id="input-z2" class="table-input" placeholder="Z₂">
-                                <span id="feedback-z2" class="feedback-icon"></span>
+                                <input type="number" step="0.01" id="input-z2" class="table-input" placeholder="Z₂"> <span id="feedback-z2" class="feedback-icon"></span>
                             </div>
                         </td>
                         <td class="py-2 px-4 border-b">
                             <div class="input-container">
-                                <input type="number" step="0.01" id="input-t2" class="table-input" placeholder="T₂">
-                                <span id="feedback-t2" class="feedback-icon"></span>
+                                <input type="number" step="0.01" id="input-t2" class="table-input" placeholder="T₂"> <span id="feedback-t2" class="feedback-icon"></span>
                             </div>
                         </td>
                         <td class="py-2 px-4 border-b">
@@ -133,14 +127,12 @@
                         </td>
                         <td class="py-2 px-4 border-b">
                             <div class="input-container">
-                                <input type="number" step="0.01" id="input-zv" class="table-input" placeholder="Zᵥ">
-                                <span id="feedback-zv" class="feedback-icon"></span>
+                                <input type="number" step="0.01" id="input-zv" class="table-input" placeholder="Zᵥ"> <span id="feedback-zv" class="feedback-icon"></span>
                             </div>
                         </td>
                         <td class="py-2 px-4 border-b">
                             <div class="input-container">
-                                <input type="number" step="0.01" id="input-tv" class="table-input" placeholder="Tᵥ">
-                                <span id="feedback-tv" class="feedback-icon"></span>
+                                <input type="number" step="0.01" id="input-tv" class="table-input" placeholder="Tᵥ"> <span id="feedback-tv" class="feedback-icon"></span>
                             </div>
                         </td>
                         <td class="py-2 px-4 border-b">
@@ -204,7 +196,7 @@
             let correctValues = {};
             let randomYear = 0;
             let currentK0 = 0;
-            let currentRate = 0;
+            let currentRate = 0; // Store the exact rate used for calculations
             let currentN = 0; // Store loan term
             let calculatedAnnuity = 0; // Store the calculated constant annuity
 
@@ -248,15 +240,18 @@
                 // Generate random values
                 const k0 = Math.floor(Math.random() * 100000) + 50000; // K0 between 50000 and 150000
                 const n = Math.floor(Math.random() * 22) + 9; // n between 9 and 30
-                const annualRate = (Math.random() * 0.09) + 0.01; // Rate between 1% and 10%
-                const ratePercent = (annualRate * 100).toFixed(2);
+                const annualRateRaw = (Math.random() * 0.09) + 0.01; // Rate between 1% and 10%
+
+                // Round the rate to one decimal place for display and calculation
+                const ratePercentRounded = (annualRateRaw * 100).toFixed(1);
+                const exactRate = parseFloat(ratePercentRounded) / 100; // Use this exact rate for calculations
 
                 currentK0 = k0; // Store the generated K0
-                currentRate = annualRate; // Store the generated rate
+                currentRate = exactRate; // Store the exact rate used for calculations
                 currentN = n; // Store the generated loan term
 
-                // Calculate constant annuity A
-                const q = 1 + annualRate;
+                // Calculate constant annuity A using the exactRate
+                const q = 1 + exactRate;
                 const A = k0 * (Math.pow(q, n) * (q - 1)) / (Math.pow(q, n) - 1);
                 calculatedAnnuity = A; // Store the calculated annuity
 
@@ -280,21 +275,21 @@
                 loanDetailsText.innerHTML = randomLoanDetailsTemplate
                     .replace('{k0}', formattedK0)
                     .replace('{n}', n)
-                    .replace('{rate}', ratePercent);
+                    .replace('{rate}', ratePercentRounded); // Display the rounded rate
 
 
-                // Calculate correct values for Annuitätendarlehen
+                // Calculate correct values for Annuitätendarlehen using the exactRate
                 let currentDebt = k0;
                 let Z1, T1, K1, Z2, T2, K2, Kv_1_intermediate, Zv_intermediate, Tv_intermediate, Av_intermediate;
 
                 // Year 1
-                Z1 = currentDebt * annualRate;
+                Z1 = currentDebt * exactRate;
                 T1 = A - Z1;
                 K1 = currentDebt - T1;
                 currentDebt = K1;
 
                 // Year 2
-                Z2 = currentDebt * annualRate;
+                Z2 = currentDebt * exactRate;
                 T2 = A - Z2;
                 K2 = currentDebt - T2;
                 currentDebt = K2;
@@ -302,29 +297,29 @@
                 // Intermediate Year (v)
                 currentDebt = k0; // Reset for iterative calculation to year v-1
                 for (let i = 1; i < randomYear; i++) {
-                    const Zi = currentDebt * annualRate;
+                    const Zi = currentDebt * exactRate;
                     const Ti = A - Zi;
                     currentDebt -= Ti;
                 }
                 Kv_1_intermediate = currentDebt;
-                Zv_intermediate = Kv_1_intermediate * annualRate;
+                Zv_intermediate = Kv_1_intermediate * exactRate;
                 Tv_intermediate = A - Zv_intermediate;
                 Av_intermediate = A; // Annuität is constant
 
 
                 correctValues = {
-                    k0: k0.toFixed(2),
-                    z1: Z1.toFixed(2),
-                    t1: T1.toFixed(2),
-                    a1: A.toFixed(2), // Annuität is constant
-                    k1: K1.toFixed(2),
-                    z2: Z2.toFixed(2),
-                    t2: T2.toFixed(2),
-                    a2: A.toFixed(2), // Annuität is constant
-                    kv1_intermediate: Kv_1_intermediate.toFixed(2),
-                    zv_intermediate: Zv_intermediate.toFixed(2),
-                    tv_intermediate: Tv_intermediate.toFixed(2),
-                    av_intermediate: A.toFixed(2) // Annuität is constant
+                    k0: k0, // Store K0 as number for precise calculations in tips
+                    z1: Z1,
+                    t1: T1,
+                    a1: A, // Annuität is constant
+                    k1: K1,
+                    z2: Z2,
+                    t2: T2,
+                    a2: A, // Annuität is constant
+                    kv1_intermediate: Kv_1_intermediate,
+                    zv_intermediate: Zv_intermediate,
+                    tv_intermediate: Tv_intermediate,
+                    av_intermediate: A // Annuität is constant
                 };
 
                 // Clear input fields, feedback icons, and feedback text
@@ -350,6 +345,7 @@
             function checkAnswers() {
                 let allCorrect = true;
                 const feedbackMessages = [];
+                const tolerance = 0.02; // Allow a difference of up to 0.01 in either direction
 
                 const inputs = [
                     { id: 'input-k0', correct: correctValues.k0, label: 'Schulden Jahresbeginn Jahr 1' },
@@ -378,23 +374,31 @@
                     const inputElement = document.getElementById(item.id);
                     const feedbackIconSpan = document.getElementById(`feedback-${item.id.split('-')[1]}${item.id.split('-')[2] ? '-' + item.id.split('-')[2] : ''}`);
 
-                    let userAnswer, correctAnswer;
+                    const userAnswer = parseFloat(inputElement.value);
+                    const correctAnswer = item.correct; // Use the number for comparison
 
-                    userAnswer = parseFloat(inputElement.value).toFixed(2);
-                    correctAnswer = parseFloat(item.correct).toFixed(2);
-
-
-                    if (userAnswer === correctAnswer && !isNaN(userAnswer)) {
-                        feedbackMessages.push(`${item.label}: Korrekt`);
-                        inputElement.classList.remove('border-gray-300', 'border-red-500');
-                        inputElement.classList.add('border-green-500');
-                        feedbackIconSpan.innerHTML = '<i class="fas fa-check-circle correct-icon"></i>';
-                    } else {
-                        feedbackMessages.push(`${item.label}: Falsch`);
+                    // Check if input is a valid number
+                    if (isNaN(userAnswer)) {
+                        feedbackMessages.push(`${item.label}: Ungültige Eingabe`);
                         inputElement.classList.remove('border-gray-300', 'border-green-500');
                         inputElement.classList.add('border-red-500');
-                         feedbackIconSpan.innerHTML = '<i class="fas fa-times-circle incorrect-icon"></i>';
+                        feedbackIconSpan.innerHTML = '<i class="fas fa-times-circle incorrect-icon"></i>';
                         allCorrect = false;
+                    } else {
+                        // Compare with tolerance
+                        if (Math.abs(userAnswer - correctAnswer) < tolerance) {
+                            feedbackMessages.push(`${item.label}: Korrekt`);
+                            inputElement.classList.remove('border-gray-300', 'border-red-500');
+                            inputElement.classList.add('border-green-500');
+                            feedbackIconSpan.innerHTML = '<i class="fas fa-check-circle correct-icon"></i>';
+                        } else {
+                            // Indicate incorrect and show the correct value
+                            feedbackMessages.push(`${item.label}: Falsch (Korrekter Wert: ${correctAnswer.toFixed(2)} €)`);
+                            inputElement.classList.remove('border-gray-300', 'border-green-500');
+                            inputElement.classList.add('border-red-500');
+                            feedbackIconSpan.innerHTML = '<i class="fas fa-times-circle incorrect-icon"></i>';
+                            allCorrect = false;
+                        }
                     }
                 });
 
@@ -412,7 +416,7 @@
 
             function showTip() {
                 let tip = '';
-                const rate = currentRate;
+                const rate = currentRate; // Use the exact rate for calculations
                 const A = calculatedAnnuity; // Use stored calculated annuity
                 const n = currentN; // Use stored loan term
 
@@ -436,33 +440,36 @@
                         tip = `Die anfänglichen Schulden (K₀) sind im Aufgabentext angegeben.`;
                         break;
                     case 'input-z1':
-                        tip = `Zinsen Jahr 1 (Z₁) = Schulden zu Jahresbeginn Jahr 1 (K₀) * Zinssatz. (K₀ = ${currentK0.toFixed(2)}, Zinssatz = ${(currentRate * 100).toFixed(2)}%)`;
+                        tip = `Zinsen Jahr 1 (Z₁) = Schulden zu Jahresbeginn Jahr 1 (K₀) * Zinssatz. (K₀ = ${currentK0.toFixed(2)} €, Zinssatz = ${(currentRate * 100).toFixed(1)}%)`; // Use exactRate, formatted
                         break;
                     case 'input-t1':
-                         tip = `Tilgung Jahr 1 (T₁) = Annuität (A) - Zinsen Jahr 1 (Z₁). (A = ${A.toFixed(2)}, Z₁ = ${z1_input ? z1_input.toFixed(2) : '?'})`;
+                         tip = `Tilgung Jahr 1 (T₁) = Annuität (A) - Zinsen Jahr 1 (Z₁). (A = ${A.toFixed(2)} €, Z₁ = ${z1_input && !isNaN(z1_input) ? z1_input.toFixed(2) : '?'})`;
                          break;
                     case 'input-a1':
                     case 'input-a2':
                     case 'input-av':
-                         tip = `Die Annuität (A) ist bei einem Annuitätendarlehen über die gesamte Laufzeit konstant. A = K₀ * (qⁿ * (q-1)) / (qⁿ - 1), wobei q = 1 + Zinssatz. (K₀ = ${currentK0.toFixed(2)}, n = ${n}, Zinssatz = ${(currentRate * 100).toFixed(2)}%)`;
+                         tip = `Die Annuität (A) ist bei einem Annuitätendarlehen über die gesamte Laufzeit konstant. A = K₀ * (qⁿ * (q-1)) / (qⁿ - 1), wobei q = 1 + Zinssatz. (K₀ = ${currentK0.toFixed(2)} €, n = ${n}, Zinssatz = ${(currentRate * 100).toFixed(1)}%)`; // Use exactRate, formatted
                          break;
                     case 'input-k1':
-                        tip = `Schulden zu Jahresbeginn Jahr 2 (K₁) = Schulden zu Jahresbeginn Jahr 1 (K₀) - Tilgung Jahr 1 (T₁). (K₀ = ${currentK0.toFixed(2)}, T₁ = ${t1_input ? t1_input.toFixed(2) : '?'})`;
+                        tip = `Schulden zu Jahresbeginn Jahr 2 (K₁) = Schulden zu Jahresbeginn Jahr 1 (K₀) - Tilgung Jahr 1 (T₁). (K₀ = ${currentK0.toFixed(2)} €, T₁ = ${t1_input && !isNaN(t1_input) ? t1_input.toFixed(2) : '?'})`;
                         break;
                     case 'input-z2':
-                         tip = `Zinsen Jahr 2 (Z₂) = Schulden zu Jahresbeginn Jahr 2 (K₁) * Zinssatz. (K₁ = ${k1_input ? k1_input.toFixed(2) : '?'}, Zinssatz = ${(currentRate * 100).toFixed(2)}%)`;
+                         tip = `Zinsen Jahr 2 (Z₂) = Schulden zu Jahresbeginn Jahr 2 (K₁) * Zinssatz. (K₁ = ${k1_input && !isNaN(k1_input) ? k1_input.toFixed(2) : '?'}, Zinssatz = ${(currentRate * 100).toFixed(1)}%)`; // Use exactRate, formatted
                          break;
                     case 'input-t2':
-                         tip = `Tilgung Jahr 2 (T₂) = Annuität (A) - Zinsen Jahr 2 (Z₂). (A = ${A.toFixed(2)}, Z₂ = ${z2_input ? z2_input.toFixed(2) : '?'})`;
+                         tip = `Tilgung Jahr 2 (T₂) = Annuität (A) - Zinsen Jahr 2 (Z₂). (A = ${A.toFixed(2)} €, Z₂ = ${z2_input && !isNaN(z2_input) ? z2_input.toFixed(2) : '?'})`;
                          break;
                     case 'input-kv-1':
-                         tip = `Schulden zu Jahresbeginn Jahr ${randomYear} (Kᵥ₋₁) = Schulden zu Jahresbeginn des Vorjahres - Tilgung des Vorjahres. Wiederholen Sie diesen Schritt beginnend bei K₀. (Zinssatz = ${(currentRate * 100).toFixed(2)}%, A = ${A.toFixed(2)})`;
+                         tip = `Schulden zu Jahresbeginn Jahr ${randomYear} (Kᵥ₋₁) = Schulden zu Jahresbeginn des Vorjahres - Tilgung des Vorjahres. Wiederholen Sie diesen Schritt beginnend bei K₀. (Zinssatz = ${(currentRate * 100).toFixed(1)}%, A = ${A.toFixed(2)} €)`; // Use exactRate, formatted
                          break;
                     case 'input-zv':
-                         tip = `Zinsen Jahr ${randomYear} (Zᵥ) = Schulden zu Jahresbeginn Jahr ${randomYear} (Kᵥ₋₁) * Zinssatz. (Kᵥ₋₁ = ${kv1_intermediate_input ? kv1_intermediate_input.toFixed(2) : '?'}, Zinssatz = ${(currentRate * 100).toFixed(2)}%)`;
+                         tip = `Zinsen Jahr ${randomYear} (Zᵥ) = Schulden zu Jahresbeginn Jahr ${randomYear} (Kᵥ₋₁) * Zinssatz. (Kᵥ₋₁ = ${kv1_intermediate_input && !isNaN(kv1_intermediate_input) ? kv1_intermediate_input.toFixed(2) : '?'}, Zinssatz = ${(currentRate * 100).toFixed(1)}%)`; // Use exactRate, formatted
                          break;
                     case 'input-tv':
-                         tip = `Tilgung Jahr ${randomYear} (Tᵥ) = Annuität (A) - Zinsen Jahr ${randomYear} (Zᵥ). (A = ${A.toFixed(2)}, Zᵥ = ${zv_intermediate_input ? zv_intermediate_input.toFixed(2) : '?'})`;
+                         tip = `Tilgung Jahr ${randomYear} (Tᵥ) = Annuität (A) - Zinsen Jahr ${randomYear} (Zᵥ). (A = ${A.toFixed(2)} €, Zᵥ = ${zv_intermediate_input && !isNaN(zv_intermediate_input) ? zv_intermediate_input.toFixed(2) : '?'})`;
+                         break;
+                    case 'input-av':
+                         tip = `Die Annuität (A) ist bei einem Annuitätendarlehen über die gesamte Laufzeit konstant. A = K₀ * (qⁿ * (q-1)) / (qⁿ - 1), wobei q = 1 + Zinssatz. (K₀ = ${currentK0.toFixed(2)} €, n = ${n}, Zinssatz = ${(currentRate * 100).toFixed(1)}%)`; // Use exactRate, formatted
                          break;
                     default:
                         tip = 'Wählen Sie ein Feld in der Tabelle aus, um einen Tipp zu erhalten.';
