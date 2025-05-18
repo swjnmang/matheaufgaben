@@ -4,395 +4,346 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zinseszins-Aufgabengenerator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']],
+          tags: 'ams' // Für automatische Nummerierung, falls benötigt
+        },
+        svg: {
+          fontCache: 'global'
+        },
+        startup: {}
+      };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
-        .zinseszins-container {
-            font-family: inherit;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            border-radius: 8px;
-            background-color: inherit;
+        body {
+            font-family: 'Inter', sans-serif;
         }
-        .zinseszins-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .zinseszins-button {
-            padding: 8px 16px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            margin: 0 auto;
+        .mathjax-formula {
             display: block;
-        }
-        .zinseszins-button:hover {
-            background-color: #45a049;
-        }
-        .zinseszins-task {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 20px;
-            background-color: #f9f9f9;
-        }
-        .zinseszins-solution {
-            margin-top: 15px;
-            display: none;
-        }
-        .zinseszins-input {
-            margin-top: 15px;
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .zinseszins-input input {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            width: 120px;
-        }
-        .zinseszins-feedback {
-            margin-top: 15px;
-            font-weight: bold;
-        }
-        .zinseszins-correct {
-            color: #4CAF50;
-        }
-        .zinseszins-incorrect {
-            color: #f44336;
-        }
-        .zinseszins-formula {
-            font-style: italic;
-            margin: 15px 0;
-            font-family: 'Times New Roman', Times, serif;
-        }
-        .solution-box {
-            border-left: 4px solid #4CAF50;
-            padding-left: 15px;
-            margin-top: 15px;
-            background-color: #f0f8f0;
-            padding: 10px;
-        }
-        .zinseszins-info {
-            font-style: italic;
-            margin-bottom: 15px;
-            font-size: 0.9em;
-            color: #666;
+            text-align: center;
+            margin: 1rem 0;
+            font-size: 1.1rem;
+            overflow-x: auto; /* Verhindert Überlaufen auf kleinen Bildschirmen */
+            overflow-y: hidden;
+            padding: 0.25rem;
         }
     </style>
 </head>
-<body>
-    <div id="zinseszins-generator" class="zinseszins-container">
-        <div class="zinseszins-header">
-            <h2>Zinseszins-Aufgabengenerator</h2>
-            <p>Übe Aufgaben zur Zinseszinsrechnung mit der Formel K<sub>n</sub> = K<sub>0</sub> · q<sup>n</sup></p>
-            <p class="zinseszins-info">Hinweis: Eurobeträge werden auf 2 Nachkommastellen gerundet.</p>
-        </div>
-        
-        <button id="generate-task" class="zinseszins-button">Neue Aufgabe generieren</button>
-        
-        <div id="task-container" class="zinseszins-task">
-            <div id="task-text"></div>
-            
-            <div class="zinseszins-formula">
-                <p>Zinseszinsformel: K<sub>n</sub> = K<sub>0</sub> · q<sup>n</sup> mit q = 1 + p/100</p>
+<body class="bg-gray-100 text-gray-900 min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div id="zinseszins-generator" class="w-full max-w-3xl bg-white shadow-xl rounded-lg p-6 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-black">Zinseszins-Aufgabengenerator</h1>
+            <p class="text-gray-700 mt-3 text-lg sm:text-xl">Übe Aufgaben zur Zinseszinsrechnung mit Beispielen aus der Praxis.</p>
+            <p class="text-sm text-gray-600 mt-2">Hinweis: Eurobeträge werden auf 2 Nachkommastellen gerundet und kaufmännisch dargestellt. Die Laufzeit wird in ganzen Jahren berechnet.</p>
+        </header>
+
+        <div class="mb-6">
+            <label class="block text-lg font-medium text-gray-800 mb-3">Wähle den Aufgabentyp:</label>
+            <div id="task-buttons-container" class="flex flex-col gap-3">
+                <button data-task-type="random" class="task-type-btn w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-lg shadow transition duration-150 ease-in-out">Zufällige Aufgabe</button>
+                <div id="specific-task-buttons" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <button data-task-type="k_end" class="task-type-btn bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-4 rounded-lg shadow transition duration-150 ease-in-out">Endkapital $K_n$</button>
+                    <button data-task-type="k_start" class="task-type-btn bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-4 rounded-lg shadow transition duration-150 ease-in-out">Anfangskapital $K_0$</button>
+                    <button data-task-type="p" class="task-type-btn bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-4 rounded-lg shadow transition duration-150 ease-in-out">Zinssatz $p$</button>
+                    <button data-task-type="n" class="task-type-btn bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-4 rounded-lg shadow transition duration-150 ease-in-out">Laufzeit $n$</button>
+                </div>
             </div>
-            
-            <div class="zinseszins-input">
-                <label id="input-label" for="user-answer">Deine Antwort:</label>
-                <input type="number" id="user-answer" step="0.01">
-                <button id="check-answer" class="zinseszins-button">Überprüfen</button>
-            </div>
-            
-            <div id="feedback" class="zinseszins-feedback"></div>
-            
-            <button id="show-solution" class="zinseszins-button" style="margin-top: 15px;">Musterlösung anzeigen</button>
-            
-            <div id="solution" class="zinseszins-solution solution-box"></div>
         </div>
+
+        <div id="task-container" class="bg-gray-50 p-6 rounded-lg shadow-inner min-h-[200px]">
+            <div id="task-text" class="text-gray-800 text-base md:text-lg leading-relaxed">
+                Wähle oben einen Aufgabentyp aus, um eine Aufgabe zu generieren.
+            </div>
+
+            <div id="formula-display" class="zinseszins-formula mathjax-formula my-6">
+                Grundformel: $K_n = K_0 \cdot q^n$ mit $q = 1 + \frac{p}{100}$
+            </div>
+
+            <div id="input-area" class="mt-6 hidden">
+                <div class="flex flex-col sm:flex-row items-center gap-3 mb-4">
+                    <label id="input-label" for="user-answer" class="text-gray-700 font-medium whitespace-nowrap">Deine Antwort:</label>
+                    <input type="text" id="user-answer" class="flex-grow p-3 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition duration-150 ease-in-out" placeholder="z.B. 1234,56 oder 1234.56">
+                    <button id="check-answer" class="w-full sm:w-auto bg-gray-700 hover:bg-gray-800 text-white font-semibold py-3 px-6 rounded-lg shadow transition duration-150 ease-in-out">Überprüfen</button>
+                </div>
+            </div>
+
+            <div id="feedback" class="mt-4 p-3 rounded-lg text-center font-semibold text-base">
+                </div>
+
+            <button id="show-solution" class="w-full mt-6 bg-gray-400 hover:bg-gray-500 text-gray-900 font-semibold py-3 px-6 rounded-lg shadow transition duration-150 ease-in-out hidden">
+                Musterlösung anzeigen
+            </button>
+
+            <div id="solution" class="mt-6 p-4 bg-gray-100 border-l-4 border-gray-400 rounded-r-lg text-gray-800 hidden">
+                </div>
+        </div>
+        <footer class="text-center mt-8 text-sm text-gray-500">
+            <p>&copy; <span id="current-year"></span> Zinseszins-Generator</p>
+        </footer>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const taskContainer = document.getElementById('task-container');
             const taskText = document.getElementById('task-text');
             const userAnswer = document.getElementById('user-answer');
             const checkAnswerBtn = document.getElementById('check-answer');
             const showSolutionBtn = document.getElementById('show-solution');
-            const solution = document.getElementById('solution');
+            const solutionDiv = document.getElementById('solution');
             const feedback = document.getElementById('feedback');
             const inputLabel = document.getElementById('input-label');
-            const generateTaskBtn = document.getElementById('generate-task');
-            
-            let currentAnswer = 0;
+            const taskButtonsContainer = document.getElementById('task-buttons-container');
+            const inputArea = document.getElementById('input-area');
+            const formulaDisplay = document.getElementById('formula-display');
+            document.getElementById('current-year').textContent = new Date().getFullYear();
+
+            let currentCorrectAnswer = 0;
             let currentPrecision = 2;
             let currentUnit = "";
-            let currentTaskType = "";
-            
-            // Funktion zum Formatieren von Zahlen mit 2 Nachkommastellen in kaufmännischer Schreibweise
-            function formatEuro(num) {
-                return Number(num).toFixed(2).replace('.', ',') + ' €';
+            let lastClickedTaskTypeButton = null; 
+
+            const taskGenerationFunctions = {
+                'k_end': generateEndCapitalTask,
+                'k_start': generateStartCapitalTask,
+                'p': generateInterestRateTask,
+                'n': generateDurationTask
+            };
+            const specificTaskTypes = Object.keys(taskGenerationFunctions);
+
+            let mathJaxProcessing = MathJax.startup.promise;
+
+            function typesetPageElements(elementsToTypeset) {
+                const elements = Array.isArray(elementsToTypeset) ? elementsToTypeset : [elementsToTypeset];
+                if (elements.length === 0) {
+                    return mathJaxProcessing; 
+                }
+                mathJaxProcessing = mathJaxProcessing.then(() => {
+                    return MathJax.typesetPromise(elements);
+                }).catch((err) => console.error('MathJax typesetting error:', err));
+                return mathJaxProcessing; 
             }
             
-            // Funktion zum Formatieren von Zahlen mit angegebenen Nachkommastellen
-            function formatNumber(num, decimals = 2) {
+            mathJaxProcessing.then(() => {
+                typesetPageElements([formulaDisplay, taskText, ...taskButtonsContainer.querySelectorAll('.task-type-btn')]);
+            });
+
+            taskButtonsContainer.addEventListener('click', function(e) {
+                const clickedButton = e.target.closest('.task-type-btn');
+                if (clickedButton) {
+                    const taskType = clickedButton.dataset.taskType;
+                    setActiveButton(clickedButton); 
+                    lastClickedTaskTypeButton = clickedButton; 
+                    generateNewTask(taskType); 
+                }
+            });
+            
+            function setActiveButton(buttonToActivate) {
+                taskButtonsContainer.querySelectorAll('.task-type-btn').forEach(btn => {
+                    btn.classList.remove('ring-2', 'ring-offset-2', 'ring-gray-500', 'font-bold', 'bg-gray-700', 'text-white');
+                    btn.classList.remove('bg-gray-400'); 
+                    
+                    const type = btn.dataset.taskType;
+                    if (type === "random") {
+                        btn.classList.add('bg-gray-600', 'hover:bg-gray-700', 'text-white');
+                    } else {
+                        btn.classList.add('bg-gray-200', 'hover:bg-gray-300', 'text-gray-800');
+                    }
+                });
+
+                if (buttonToActivate) {
+                    buttonToActivate.classList.add('ring-2', 'ring-offset-2', 'ring-gray-500', 'font-bold');
+                    const type = buttonToActivate.dataset.taskType;
+                    if (type === "random") {
+                        buttonToActivate.classList.remove('bg-gray-600', 'hover:bg-gray-700', 'text-white');
+                        buttonToActivate.classList.add('bg-gray-800', 'text-white'); 
+                    } else {
+                        buttonToActivate.classList.remove('bg-gray-200', 'hover:bg-gray-300', 'text-gray-800');
+                        buttonToActivate.classList.add('bg-gray-400', 'text-gray-900'); 
+                    }
+                }
+            }
+            
+            function formatEuro(num) {
+                let numStr = Number(num).toFixed(2);
+                let parts = numStr.split('.');
+                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                return parts.join(',') + ' €';
+            }
+
+            // For display with comma as decimal separator
+            function formatNumber(num, decimals = 2) { 
                 return Number(num).toFixed(decimals).replace('.', ',');
             }
-            
-            // Funktion zum Zufallszahlen generieren
+
+            // For MathJax internal calculations, use period as decimal separator
+            function formatNumberForMathJax(num, decimals = 2) {
+                return Number(num).toFixed(decimals);
+            }
+
             function getRandomNumber(min, max, decimals = 0) {
                 const factor = Math.pow(10, decimals);
                 return Math.round((Math.random() * (max - min) + min) * factor) / factor;
             }
-            
-            // Funktion zum Überprüfen der Antwort
-            function checkAnswer() {
-                const userValue = parseFloat(userAnswer.value.replace(',', '.'));
-                
+
+            function checkUserAnswer() {
+                const userValueRaw = userAnswer.value.replace(',', '.'); 
+                if (userValueRaw.trim() === "") {
+                    feedback.textContent = "Bitte gib eine Antwort ein.";
+                    feedback.className = "mt-4 p-3 rounded-lg text-center font-semibold text-base bg-yellow-100 border border-yellow-300 text-yellow-700";
+                    return;
+                }
+                const userValue = parseFloat(userValueRaw);
+
                 if (isNaN(userValue)) {
-                    feedback.textContent = "Bitte gib eine gültige Zahl ein.";
-                    feedback.className = "zinseszins-feedback zinseszins-incorrect";
+                    feedback.textContent = "Bitte gib eine gültige Zahl ein (z.B. 1234,56 oder für Jahre eine ganze Zahl wie 5).";
+                    feedback.className = "mt-4 p-3 rounded-lg text-center font-semibold text-base bg-red-50 border border-red-300 text-red-700";
+                    return;
+                }
+
+                let tolerance = 0.0101; 
+                if (currentUnit === "%") { tolerance = 0.0051; }
+                else if (currentUnit === "Jahre") { 
+                    tolerance = 0.01; 
+                } 
+                
+                const isCorrect = Math.abs(userValue - currentCorrectAnswer) < tolerance;
+
+                if (isCorrect) {
+                    feedback.textContent = "Richtig! 👍 Sehr gut gemacht!";
+                    feedback.className = "mt-4 p-3 rounded-lg text-center font-semibold text-base bg-green-50 border border-green-300 text-green-700";
+                    showSolutionBtn.classList.add('hidden'); 
+                } else {
+                    let correctAnswerFormatted = currentUnit === "€" ? formatEuro(currentCorrectAnswer) : formatNumber(currentCorrectAnswer, currentPrecision) + (currentUnit === "%" ? " %" : " " + currentUnit);
+                    if (currentUnit === "€") correctAnswerFormatted = correctAnswerFormatted.replace(' €', '');
+
+                    feedback.textContent = `Leider falsch. Die korrekte Antwort ist ${correctAnswerFormatted}${currentUnit === "€" ? " €" : ""}. Versuche es noch einmal oder schaue dir die Lösung an.`;
+                    feedback.className = "mt-4 p-3 rounded-lg text-center font-semibold text-base bg-red-50 border border-red-300 text-red-700";
+                    showSolutionBtn.classList.remove('hidden'); 
+                }
+            }
+
+            function setInputPlaceholderAndStep(unit) {
+                if (unit === "Jahre") {
+                    userAnswer.placeholder = "z.B. 5";
+                } else {
+                    userAnswer.placeholder = "z.B. 1234,56 oder 1234.56";
+                }
+                // userAnswer.step is not very relevant for type="text" but doesn't harm
+            }
+
+            function generateEndCapitalTask() {
+                const K0 = getRandomNumber(500, 20000, 2); 
+                const p_val = getRandomNumber(0.5, 8, 2);    
+                const q_val = 1 + (p_val / 100);          
+                const n_val = getRandomNumber(2, 15);     
+                const Kn = K0 * Math.pow(q_val, n_val);
+                currentCorrectAnswer = parseFloat(Kn.toFixed(2)); 
+                currentPrecision = 2; currentUnit = "€";
+                setInputPlaceholderAndStep(currentUnit);
+                taskText.innerHTML = `
+                    <p class="mb-2">Frau Müller eröffnet bei ihrer Bank ein Festgeldkonto und zahlt <strong>${formatEuro(K0)}</strong> ein. Die Bank bietet ihr für eine Laufzeit von <strong>${n_val} Jahren</strong> einen jährlichen Zinssatz von <strong>${formatNumber(p_val, 2)}\\%</strong>.</p>
+                    <p class="font-semibold text-gray-700">Welchen Betrag $K_n$ kann Frau Müller am Ende der Laufzeit von ihrem Konto abheben?</p>`;
+                solutionDiv.innerHTML = `<h4 class="text-lg font-semibold mb-2 text-gray-700">Lösungsweg für Endkapital $K_n$:</h4><p>1. Zinsfaktor $q$ berechnen:</p><div class="mathjax-formula"> $q = 1 + \\frac{p}{100} = 1 + \\frac{${formatNumberForMathJax(p_val, 2)}}{100} = ${formatNumberForMathJax(q_val, 4)}$ </div><p>2. Werte in die Zinseszinsformel $K_n = K_0 \\cdot q^n$ einsetzen:</p><div class="mathjax-formula"> $K_n = ${formatNumberForMathJax(K0, 2)} \\cdot (${formatNumberForMathJax(q_val, 4)})^{${n_val}}$ </div><div class="mathjax-formula"> $K_n = ${formatNumberForMathJax(K0, 2)} \\cdot ${formatNumberForMathJax(Math.pow(q_val, n_val), 6)}$ </div><div class="mathjax-formula"> $K_n \\approx ${formatEuro(Kn)}$ </div><p class="mt-2 font-semibold">Frau Müller kann ${formatEuro(Kn)} abheben.</p>`;
+                inputLabel.innerHTML = `Endkapital $K_n$ (in ${currentUnit}):`; 
+                typesetPageElements([taskText, inputLabel]);
+            }
+
+            function generateStartCapitalTask() {
+                const Kn_val = getRandomNumber(1000, 25000, 2); const p_val = getRandomNumber(0.5, 8, 2); const q_val = 1 + (p_val / 100); const n_val = getRandomNumber(2, 15);
+                const K0_calc = Kn_val / Math.pow(q_val, n_val);
+                currentCorrectAnswer = parseFloat(K0_calc.toFixed(2)); currentPrecision = 2; currentUnit = "€";
+                setInputPlaceholderAndStep(currentUnit);
+                taskText.innerHTML = `
+                    <p class="mb-2">Herr Schmidt möchte in <strong>${n_val} Jahren</strong> über ein Kapital von <strong>${formatEuro(Kn_val)}</strong> für eine größere Anschaffung verfügen. Seine Bank bietet ihm einen Sparvertrag mit einem jährlichen Zinssatz von <strong>${formatNumber(p_val, 2)}\\%</strong> an.</p>
+                    <p class="font-semibold text-gray-700">Welchen Betrag $K_0$ müsste Herr Schmidt heute einmalig anlegen, um sein Ziel zu erreichen?</p>`;
+                solutionDiv.innerHTML = `<h4 class="text-lg font-semibold mb-2 text-gray-700">Lösungsweg für Anfangskapital $K_0$:</h4><p>1. Zinsfaktor $q$ berechnen:</p><div class="mathjax-formula"> $q = 1 + \\frac{p}{100} = 1 + \\frac{${formatNumberForMathJax(p_val, 2)}}{100} = ${formatNumberForMathJax(q_val, 4)}$ </div><p>2. Formel $K_n = K_0 \\cdot q^n$ nach $K_0$ umstellen: $K_0 = \\frac{K_n}{q^n}$</p><p>3. Werte einsetzen:</p><div class="mathjax-formula"> $K_0 = \\frac{${formatNumberForMathJax(Kn_val, 2)}}{(${formatNumberForMathJax(q_val, 4)})^{${n_val}}}$ </div><div class="mathjax-formula"> $K_0 = \\frac{${formatNumberForMathJax(Kn_val, 2)}}{${formatNumberForMathJax(Math.pow(q_val, n_val), 6)}}$ </div><div class="mathjax-formula"> $K_0 \\approx ${formatEuro(K0_calc)}$ </div><p class="mt-2 font-semibold">Herr Schmidt müsste ${formatEuro(K0_calc)} anlegen.</p>`;
+                inputLabel.innerHTML = `Anfangskapital $K_0$ (in ${currentUnit}):`;
+                typesetPageElements([taskText, inputLabel]);
+            }
+
+            function generateInterestRateTask() {
+                const K0_val = getRandomNumber(500, 15000, 2); const n_val = getRandomNumber(2, 12); const p_target = getRandomNumber(0.5, 7.5, 2); const q_target = 1 + (p_target / 100);
+                const Kn_calc = K0_val * Math.pow(q_target, n_val);
+                currentCorrectAnswer = parseFloat(p_target.toFixed(2)); currentPrecision = 2; currentUnit = "%";
+                setInputPlaceholderAndStep(currentUnit);
+                taskText.innerHTML = `
+                    <p class="mb-2">Vor <strong>${n_val} Jahren</strong> hat Familie Meier einen Betrag von <strong>${formatEuro(K0_val)}</strong> in einen Investmentfonds eingezahlt. Heute beträgt der Wert des Fondsanteils <strong>${formatEuro(Kn_calc)}</strong>.</p>
+                    <p class="font-semibold text-gray-700">Welchen durchschnittlichen jährlichen Zinssatz $p$ hat die Geldanlage von Familie Meier erzielt?</p>`;
+                solutionDiv.innerHTML = `<h4 class="text-lg font-semibold mb-2 text-gray-700">Lösungsweg für Zinssatz $p$:</h4><p>1. Formel $K_n = K_0 \\cdot q^n$ nach $q$ umstellen:</p><div class="mathjax-formula"> $q^n = \\frac{K_n}{K_0}$ </div><div class="mathjax-formula"> $q = \\sqrt[n]{\\frac{K_n}{K_0}} = \\left(\\frac{${formatNumberForMathJax(Kn_calc,2)}}{${formatNumberForMathJax(K0_val,2)}}\\right)^{\\frac{1}{n}}$ </div><p>2. Werte für $q$ einsetzen:</p><div class="mathjax-formula"> $q = \\left(\\frac{${formatNumberForMathJax(Kn_calc,2)}}{${formatNumberForMathJax(K0_val,2)}}\\right)^{\\frac{1}{${n_val}}} = \\left(${formatNumberForMathJax(Kn_calc/K0_val, 6)}\\right)^{\\frac{1}{${n_val}}} \\approx ${formatNumberForMathJax(Math.pow(Kn_calc/K0_val, 1/n_val), 6)}$ </div><p>3. Zinssatz $p$ aus $q$ berechnen: $p = (q - 1) \\cdot 100$</p><div class="mathjax-formula"> $p = (${formatNumberForMathJax(Math.pow(Kn_calc/K0_val, 1/n_val), 6)} - 1) \\cdot 100 \\approx ${formatNumber(p_target, 2)} \\%$ </div><p class="mt-2 font-semibold">Die Geldanlage erzielte einen durchschnittlichen jährlichen Zinssatz von ca. ${formatNumber(p_target, 2)}\\%.</p>`;
+                inputLabel.innerHTML = `Zinssatz $p$ (in ${currentUnit}):`;
+                typesetPageElements([taskText, inputLabel]);
+            }
+
+            function generateDurationTask() {
+                const K0_val = getRandomNumber(500, 10000, 2); const p_val = getRandomNumber(1, 10, 1); const q_val = 1 + (p_val / 100); const n_target = getRandomNumber(2, 20); 
+                const Kn_calc = K0_val * Math.pow(q_val, n_target); 
+                currentCorrectAnswer = n_target; currentPrecision = 0; currentUnit = "Jahre";
+                setInputPlaceholderAndStep(currentUnit);
+                taskText.innerHTML = `
+                    <p class="mb-2">Ein junger Sparer legt <strong>${formatEuro(K0_val)}</strong> auf einem Konto an, das mit <strong>${formatNumber(p_val, 1)}\\%</strong> pro Jahr verzinst wird. Er möchte wissen, wann sein Guthaben auf <strong>${formatEuro(Kn_calc)}</strong> angewachsen sein wird, um sich einen lang gehegten Wunsch zu erfüllen.</p>
+                    <p class="font-semibold text-gray-700">Nach wie vielen Jahren $n$ (ganze Zahl) erreicht der Sparer sein Ziel?</p>`;
+                solutionDiv.innerHTML = `<h4 class="text-lg font-semibold mb-2 text-gray-700">Lösungsweg für Laufzeit $n$:</h4><p>1. Zinsfaktor $q$ berechnen:</p><div class="mathjax-formula"> $q = 1 + \\frac{p}{100} = 1 + \\frac{${formatNumberForMathJax(p_val, 1)}}{100} = ${formatNumberForMathJax(q_val, 4)}$ </div><p>2. Formel $K_n = K_0 \\cdot q^n$ nach $n$ umstellen:</p><div class="mathjax-formula"> $q^n = \\frac{K_n}{K_0} = \\frac{${formatNumberForMathJax(Kn_calc,2)}}{${formatNumberForMathJax(K0_val,2)}} = ${formatNumberForMathJax(Kn_calc/K0_val, 6)}$</div><p>Logarithmieren auf beiden Seiten (z.B. mit dem natürlichen Logarithmus $\\ln$):</p><div class="mathjax-formula"> $\\ln(q^n) = \\ln\\left(\\frac{K_n}{K_0}\\right)$ </div><div class="mathjax-formula"> $n \\cdot \\ln(q) = \\ln\\left(\\frac{K_n}{K_0}\\right)$ </div><div class="mathjax-formula"> $n = \\frac{\\ln\\left(\\frac{K_n}{K_0}\\right)}{\\ln(q)}$ </div><p>3. Werte einsetzen:</p><div class="mathjax-formula"> $n = \\frac{\\ln(${formatNumberForMathJax(Kn_calc/K0_val, 6)})}{\\ln(${formatNumberForMathJax(q_val, 4)})}$ </div><div class="mathjax-formula"> $n \\approx \\frac{${formatNumberForMathJax(Math.log(Kn_calc/K0_val), 6)}}{${formatNumberForMathJax(Math.log(q_val), 6)}} \\approx ${formatNumber(Math.log(Kn_calc/K0_val) / Math.log(q_val), 0)}$ Jahre</div><p class="mt-2 font-semibold">Der Sparer erreicht sein Ziel nach ${n_target} Jahren.</p>`; // formatNumber for n to 0 decimals
+                inputLabel.innerHTML = `Laufzeit $n$ (in ganzen Jahren):`; 
+                typesetPageElements([taskText, inputLabel]);
+            }
+            
+            function generateNewTask(taskTypeToUse) {
+                if (!taskTypeToUse && !lastClickedTaskTypeButton) { 
+                    taskText.innerHTML = '<p class="text-red-500 font-semibold">Bitte wähle zuerst einen Aufgabentyp aus!</p>';
+                    typesetPageElements([taskText]);
+                    inputArea.classList.add('hidden');
+                    showSolutionBtn.classList.add('hidden');
+                    solutionDiv.classList.add('hidden'); solutionDiv.innerHTML = '';
+                    feedback.textContent = '';
                     return;
                 }
                 
-                const tolerance = Math.pow(10, -currentPrecision);
-                const isCorrect = Math.abs(userValue - currentAnswer) < tolerance;
+                let typeForGeneration = taskTypeToUse || (lastClickedTaskTypeButton ? lastClickedTaskTypeButton.dataset.taskType : 'random');
+
+                let actualTaskKey = typeForGeneration;
+                if (typeForGeneration === 'random') {
+                    const randomIndex = Math.floor(Math.random() * specificTaskTypes.length);
+                    actualTaskKey = specificTaskTypes[randomIndex];
+                }
                 
-                if (isCorrect) {
-                    feedback.textContent = "Richtig! 👍";
-                    feedback.className = "zinseszins-feedback zinseszins-correct";
+                feedback.textContent = "";
+                feedback.className = "mt-4 p-3 rounded-lg text-center font-semibold text-base"; 
+                solutionDiv.style.display = "none"; solutionDiv.innerHTML = ''; 
+                showSolutionBtn.classList.add('hidden'); 
+                showSolutionBtn.textContent = "Musterlösung anzeigen";
+                userAnswer.value = ""; 
+                inputArea.classList.remove('hidden'); 
+
+                if (taskGenerationFunctions[actualTaskKey]) {
+                    taskGenerationFunctions[actualTaskKey]();
                 } else {
-                    feedback.textContent = `Leider falsch. Versuche es noch einmal oder schaue dir die Lösung an.`;
-                    feedback.className = "zinseszins-feedback zinseszins-incorrect";
+                    taskText.innerHTML = '<p>Interner Fehler: Ungültiger Aufgabentyp.</p>';
+                    typesetPageElements([taskText]);
                 }
             }
-            
-            // Aufgabentyp: Endkapital gesucht
-            function generateEndCapitalTask() {
-                currentTaskType = "k_end";
-                
-                // Parameter generieren
-                const k0 = getRandomNumber(1000, 10000);
-                const p = getRandomNumber(1, 10, 2);
-                const q = 1 + (p / 100);
-                const n = getRandomNumber(2, 10);
-                
-                const kn = k0 * Math.pow(q, n);
-                currentAnswer = kn;
-                currentPrecision = 2;
-                currentUnit = "€";
-                
-                // Aufgabentext erstellen
-                taskText.innerHTML = `
-                    <p>Ein Kapital von ${formatEuro(k0)} wird für ${n} Jahre zu einem Zinssatz von ${formatNumber(p, 2)} % pro Jahr angelegt.</p>
-                    <p><strong>Wie groß ist das Endkapital K<sub>n</sub>?</strong></p>
-                    <p>Gegeben:</p>
-                    <ul>
-                        <li>Anfangskapital K<sub>0</sub> = ${formatEuro(k0)}</li>
-                        <li>Zinssatz p = ${formatNumber(p, 2)} %</li>
-                        <li>Laufzeit n = ${n} Jahre</li>
-                    </ul>
-                `;
-                
-                // Lösung erstellen
-                solution.innerHTML = `
-                    <h4>Lösung:</h4>
-                    <p>Wir berechnen zuerst den Zinsfaktor q:</p>
-                    <p>q = 1 + p/100 = 1 + ${formatNumber(p, 2)}/100 = ${formatNumber(q, 4)}</p>
-                    <p>Dann setzen wir die gegebenen Werte in die Zinseszinsformel ein:</p>
-                    <p>K<sub>n</sub> = K<sub>0</sub> · q<sup>n</sup></p>
-                    <p>K<sub>n</sub> = ${formatEuro(k0)} · ${formatNumber(q, 4)}<sup>${n}</sup></p>
-                    <p>K<sub>n</sub> = ${formatEuro(k0)} · ${formatNumber(Math.pow(q, n), 4)}</p>
-                    <p>K<sub>n</sub> = ${formatEuro(kn)}</p>
-                    <p>Das Endkapital beträgt ${formatEuro(kn)}.</p>
-                `;
-                
-                // Eingabefeld beschriften
-                inputLabel.textContent = "Endkapital K_n (€):";
-            }
-            
-            // Aufgabentyp: Anfangskapital gesucht
-            function generateStartCapitalTask() {
-                currentTaskType = "k_start";
-                
-                // Parameter generieren
-                const kn = getRandomNumber(1500, 15000);
-                const p = getRandomNumber(1, 10, 2);
-                const q = 1 + (p / 100);
-                const n = getRandomNumber(2, 10);
-                
-                const k0 = kn / Math.pow(q, n);
-                currentAnswer = k0;
-                currentPrecision = 2;
-                currentUnit = "€";
-                
-                // Aufgabentext erstellen
-                taskText.innerHTML = `
-                    <p>Ein Kapital wird für ${n} Jahre zu einem Zinssatz von ${formatNumber(p, 2)} % pro Jahr angelegt. 
-                    Nach Ablauf der Zeit beträgt das Kapital ${formatEuro(kn)}.</p>
-                    <p><strong>Wie groß war das Anfangskapital K<sub>0</sub>?</strong></p>
-                    <p>Gegeben:</p>
-                    <ul>
-                        <li>Endkapital K<sub>n</sub> = ${formatEuro(kn)}</li>
-                        <li>Zinssatz p = ${formatNumber(p, 2)} %</li>
-                        <li>Laufzeit n = ${n} Jahre</li>
-                    </ul>
-                `;
-                
-                // Lösung erstellen
-                solution.innerHTML = `
-                    <h4>Lösung:</h4>
-                    <p>Wir berechnen zuerst den Zinsfaktor q:</p>
-                    <p>q = 1 + p/100 = 1 + ${formatNumber(p, 2)}/100 = ${formatNumber(q, 4)}</p>
-                    <p>Dann stellen wir die Zinseszinsformel nach K<sub>0</sub> um:</p>
-                    <p>K<sub>n</sub> = K<sub>0</sub> · q<sup>n</sup></p>
-                    <p>K<sub>0</sub> = K<sub>n</sub> / q<sup>n</sup></p>
-                    <p>K<sub>0</sub> = ${formatEuro(kn)} / ${formatNumber(q, 4)}<sup>${n}</sup></p>
-                    <p>K<sub>0</sub> = ${formatEuro(kn)} / ${formatNumber(Math.pow(q, n), 4)}</p>
-                    <p>K<sub>0</sub> = ${formatEuro(k0)}</p>
-                    <p>Das Anfangskapital betrug ${formatEuro(k0)}.</p>
-                `;
-                
-                // Eingabefeld beschriften
-                inputLabel.textContent = "Anfangskapital K_0 (€):";
-            }
-            
-            // Aufgabentyp: Zinssatz gesucht
-            function generateInterestRateTask() {
-                currentTaskType = "p";
-                
-                // Parameter generieren
-                const k0 = getRandomNumber(1000, 10000);
-                const n = getRandomNumber(2, 10);
-                const p = getRandomNumber(1, 10, 2);
-                const q = 1 + (p / 100);
-                const kn = k0 * Math.pow(q, n);
-                
-                currentAnswer = p;
-                currentPrecision = 2;
-                currentUnit = "%";
-                
-                // Aufgabentext erstellen
-                taskText.innerHTML = `
-                    <p>Ein Kapital von ${formatEuro(k0)} wird für ${n} Jahre angelegt. 
-                    Nach Ablauf der Zeit beträgt das Kapital ${formatEuro(kn)}.</p>
-                    <p><strong>Wie hoch war der jährliche Zinssatz p in Prozent?</strong></p>
-                    <p>Gegeben:</p>
-                    <ul>
-                        <li>Anfangskapital K<sub>0</sub> = ${formatEuro(k0)}</li>
-                        <li>Endkapital K<sub>n</sub> = ${formatEuro(kn)}</li>
-                        <li>Laufzeit n = ${n} Jahre</li>
-                    </ul>
-                `;
-                
-                // Lösung erstellen
-                solution.innerHTML = `
-                    <h4>Lösung:</h4>
-                    <p>Wir stellen die Zinseszinsformel nach q um:</p>
-                    <p>K<sub>n</sub> = K<sub>0</sub> · q<sup>n</sup></p>
-                    <p>q<sup>n</sup> = K<sub>n</sub> / K<sub>0</sub></p>
-                    <p>q<sup>n</sup> = ${formatEuro(kn)} / ${formatEuro(k0)} = ${formatNumber(kn / k0, 4)}</p>
-                    <p>q = (K<sub>n</sub> / K<sub>0</sub>)<sup>1/n</sup> = ${formatNumber(kn / k0, 4)}<sup>1/${n}</sup> = ${formatNumber(Math.pow(kn / k0, 1/n), 4)}</p>
-                    <p>p = (q - 1) · 100 = (${formatNumber(Math.pow(kn / k0, 1/n), 4)} - 1) · 100 = ${formatNumber(p, 2)} %</p>
-                    <p>Der jährliche Zinssatz betrug ${formatNumber(p, 2)} %.</p>
-                `;
-                
-                // Eingabefeld beschriften
-                inputLabel.textContent = "Zinssatz p (%):";
-            }
-            
-            // Aufgabentyp: Laufzeit gesucht
-            function generateDurationTask() {
-                currentTaskType = "n";
-                
-                // Parameter generieren
-                const k0 = getRandomNumber(1000, 10000);
-                const p = getRandomNumber(1, 10, 2);
-                const q = 1 + (p / 100);
-                const n = getRandomNumber(2, 10);
-                const kn = k0 * Math.pow(q, n);
-                
-                currentAnswer = n;
-                currentPrecision = 0;
-                currentUnit = "Jahre";
-                
-                // Aufgabentext erstellen
-                taskText.innerHTML = `
-                    <p>Ein Kapital von ${formatEuro(k0)} wird zu einem jährlichen Zinssatz von ${formatNumber(p, 2)} % angelegt. 
-                    Nach einigen Jahren beträgt das Kapital ${formatEuro(kn)}.</p>
-                    <p><strong>Wie lange wurde das Kapital angelegt (in Jahren)?</strong></p>
-                    <p>Gegeben:</p>
-                    <ul>
-                        <li>Anfangskapital K<sub>0</sub> = ${formatEuro(k0)}</li>
-                        <li>Endkapital K<sub>n</sub> = ${formatEuro(kn)}</li>
-                        <li>Zinssatz p = ${formatNumber(p, 2)} %</li>
-                    </ul>
-                `;
-                
-                // Lösung erstellen
-                solution.innerHTML = `
-                    <h4>Lösung:</h4>
-                    <p>Wir berechnen zuerst den Zinsfaktor q:</p>
-                    <p>q = 1 + p/100 = 1 + ${formatNumber(p, 2)}/100 = ${formatNumber(q, 4)}</p>
-                    <p>Dann stellen wir die Zinseszinsformel nach n um:</p>
-                    <p>K<sub>n</sub> = K<sub>0</sub> · q<sup>n</sup></p>
-                    <p>q<sup>n</sup> = K<sub>n</sub> / K<sub>0</sub></p>
-                    <p>q<sup>n</sup> = ${formatEuro(kn)} / ${formatEuro(k0)} = ${formatNumber(kn / k0, 4)}</p>
-                    <p>Wir nehmen den Logarithmus auf beiden Seiten:</p>
-                    <p>log(q<sup>n</sup>) = log(${formatNumber(kn / k0, 4)})</p>
-                    <p>n · log(q) = log(${formatNumber(kn / k0, 4)})</p>
-                    <p>n = log(${formatNumber(kn / k0, 4)}) / log(${formatNumber(q, 4)})</p>
-                    <p>n = ${formatNumber(Math.log(kn / k0) / Math.log(q), 4)} ≈ ${n}</p>
-                    <p>Die Laufzeit betrug ${n} Jahre.</p>
-                `;
-                
-                // Eingabefeld beschriften
-                inputLabel.textContent = "Laufzeit n (Jahre):";
-            }
-            
-            // Funktion zum Generieren einer zufälligen Aufgabe
-            function generateRandomTask() {
-                // Zurücksetzen des Feedbacks und der Lösung
-                feedback.textContent = "";
-                feedback.className = "zinseszins-feedback";
-                solution.style.display = "none";
-                userAnswer.value = "";
-                
-                // Zufälligen Aufgabentyp auswählen
-                const taskTypes = [
-                    generateEndCapitalTask, 
-                    generateStartCapitalTask, 
-                    generateInterestRateTask, 
-                    generateDurationTask
-                ];
-                
-                const randomTaskType = taskTypes[Math.floor(Math.random() * taskTypes.length)];
-                randomTaskType();
-            }
-            
-            // Event-Listener für Buttons
-            generateTaskBtn.addEventListener('click', generateRandomTask);
-            
-            checkAnswerBtn.addEventListener('click', checkAnswer);
+
+            checkAnswerBtn.addEventListener('click', checkUserAnswer);
             
             showSolutionBtn.addEventListener('click', function() {
-                solution.style.display = solution.style.display === "none" ? "block" : "none";
-                showSolutionBtn.textContent = solution.style.display === "none" ? "Musterlösung anzeigen" : "Musterlösung verbergen";
-            });
-            
-            // Enter-Taste für die Antwortprüfung
-            userAnswer.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    checkAnswer();
+                const isSolutionVisible = solutionDiv.style.display === "block";
+                solutionDiv.style.display = isSolutionVisible ? "none" : "block";
+                showSolutionBtn.textContent = isSolutionVisible ? "Musterlösung anzeigen" : "Musterlösung verbergen";
+                 if (!isSolutionVisible) { 
+                    typesetPageElements([solutionDiv]);
                 }
             });
+
+            userAnswer.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') { checkUserAnswer(); }
+            });
             
-            // Initialisierung: Erste Aufgabe generieren
-            generateRandomTask();
+            taskText.innerHTML = '<p class="text-gray-600">Wähle oben einen Aufgabentyp aus, um eine Aufgabe zu generieren.</p>';
+            typesetPageElements([taskText]);
         });
     </script>
 </body>
