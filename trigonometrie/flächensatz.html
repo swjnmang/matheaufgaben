@@ -69,14 +69,21 @@
         #task-sketch {
             text-align: center;
             margin-bottom: 20px;
+            /* Ensure container allows flex/block layout for SVG */
+            display: block;
+            width: 100%; /* Ensure container takes available width */
+            overflow: hidden; /* Hide potential overflow */
         }
 
         #task-sketch svg {
             max-width: 100%; /* SVG responsiv machen */
-            height: auto;
+            height: auto; /* Höhe automatisch anpassen */
+            display: block; /* SVG als Block-Element behandeln */
+            margin: 0 auto; /* Zentrieren des SVG */
             border: 1px dashed #ccc; /* Gestrichelter Rand um die Skizze */
             padding: 10px;
             background-color: #fff;
+            box-sizing: border-box; /* Include padding in element's total width and height */
         }
 
         #solution {
@@ -111,6 +118,16 @@
              padding-bottom: 5px; /* Add some padding */
          }
     </style>
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]},
+        // Ensure the AMSmath package is loaded for \text
+        TeX: { extensions: ["AMSmath.js", "AMSsymbols.js"] }
+      });
+    </script>
+    <script type="text/javascript" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
 </head>
 <body>
 
@@ -192,16 +209,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to create SVG sketch based on angles and known/unknown elements
     function createTriangleSketch(angles, sides, formulaType, unknownElement) {
-        const svgWidth = 350; // Increased width slightly
-        const svgHeight = 250; // Increased height slightly
+        const svgBaseWidth = 350; // Base width for internal calculations
+        const svgBaseHeight = 250; // Base height for internal calculations
         const padding = 30;
 
         // Approximate vertex positions based on angles for a rough shape
         // Vertex A at bottom-left
-        const pointA = { x: padding, y: svgHeight - padding };
+        const pointA = { x: padding, y: svgBaseHeight - padding };
 
         // Vertex B at bottom-right
-        const pointB = { x: svgWidth - padding, y: svgHeight - padding };
+        const pointB = { x: svgBaseWidth - padding, y: svgBaseHeight - padding };
 
         // Vertex C position calculation (more dynamic)
         // We'll use the angles to determine the direction from A and B
@@ -209,77 +226,42 @@ document.addEventListener('DOMContentLoaded', () => {
         const angleA_rad = angles.alpha_rad; // Angle at A
         const angleB_rad = angles.beta_rad;  // Angle at B
 
-        // Calculate position of C relative to A and B
-        // Using a fixed base length for the drawing, not the actual side 'c'
-        const baseLengthForDrawing = svgWidth - 2 * padding;
-        const cx_relative_to_A = baseLengthForDrawing * Math.cos(angleA_rad);
-        const cy_relative_to_A = baseLengthForDrawing * Math.sin(angleA_rad);
+        const tanA = Math.tan(-angleA_rad); // Negative for SVG y-coords
+        const tanB = Math.tan(Math.PI + angleB_rad); // Adjusted for SVG y-coords
 
-        // We need to adjust the y-coordinate based on the height.
-        // A simple way to get a point that roughly corresponds to the angles:
-        // Calculate the height of the triangle if 'c' was the base
-        const height = (sides.a * sides.b * Math.sin(angles.gamma_rad)) / sides.c; // Using actual side lengths for height calc
-
-        // Find the point on the base 'c' where the altitude from C meets
-        // This is complex, let's simplify the vertex C placement based on angles
-        // A more robust way: place A and B, then find C using angles
-        // Let A = (0,0), B = (c, 0). Then C = (b*cos(alpha), b*sin(alpha))
-        // Scale this to our SVG canvas
-        const scaleFactor = (svgWidth - 2 * padding) / sides.c; // Scale based on side c (AB)
-
-        const scaled_a = sides.a * scaleFactor;
-        const scaled_b = sides.b * scaleFactor;
-        const scaled_c = sides.c * scaleFactor;
-
-        // Position A at (padding, svgHeight - padding)
-        // Position B at (padding + scaled_c, svgHeight - padding)
-        // Position C at (padding + scaled_b * Math.cos(Math.PI - angles.alpha_rad), svgHeight - padding - scaled_b * Math.sin(Math.PI - angles.alpha_rad))
-        // Need to be careful with angles and coordinate systems. Let's use a simpler approach for visual representation.
-
-        // Simplified approach: Place A and B, then place C based on angles from A and B
-        // Angle at A (alpha) is measured from AB towards AC
-        // Angle at B (beta) is measured from BA towards BC
-        // In SVG coordinates (y increases downwards), we need to adjust angles.
-        const angleA_svg = -angleA_rad; // Negative because y is downwards
-        const angleB_svg = Math.PI + angleB_rad; // From B towards C
-
-        // Let's find the intersection of two lines starting from A and B with the given angles
-        // Line from A: y - pointA.y = tan(angleA_svg) * (x - pointA.x)
-        // Line from B: y - pointB.y = tan(angleB_svg) * (x - pointB.x)
-
-        // Solving for x and y:
-        // y = tan(angleA_svg) * (x - pointA.x) + pointA.y
-        // y = tan(angleB_svg) * (x - pointB.x) + pointB.y
-
-        // tan(angleA_svg) * (x - pointA.x) + pointA.y = tan(angleB_svg) * (x - pointB.x) + pointB.y
-        // tan(angleA_svg) * x - tan(angleA_svg) * pointA.x + pointA.y = tan(angleB_svg) * x - tan(angleB_svg) * pointB.x + pointB.y
-        // x * (tan(angleA_svg) - tan(angleB_svg)) = tan(angleA_svg) * pointA.x - pointA.y - tan(angleB_svg) * pointB.x + pointB.y
-        // x = (tan(angleA_svg) * pointA.x - pointA.y - tan(angleB_svg) * pointB.x + pointB.y) / (tan(angleA_svg) - tan(angleB_svg))
-
-        // Handle vertical lines (angle is close to 90 or 270 degrees) - unlikely with our angle constraints
-
-        const tanA = Math.tan(angleA_svg);
-        const tanB = Math.tan(angleB_svg);
-
-        let pointC = { x: svgWidth / 2, y: padding }; // Default fallback
+        let pointC = { x: svgBaseWidth / 2, y: padding }; // Default fallback
 
         if (Math.abs(tanA - tanB) > 1e-6) { // Avoid division by zero if lines are parallel
              pointC.x = (tanA * pointA.x - pointA.y - tanB * pointB.x + pointB.y) / (tanA - tanB);
              pointC.y = tanA * (pointC.x - pointA.x) + pointA.y;
         }
 
-
         const points = [pointA, pointB, pointC];
 
-        let svgContent = `<svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" xmlns="http://www.w3.org/2000/svg">`;
+        // Calculate the bounding box of the triangle points to set the viewBox
+        const minX = Math.min(points[0].x, points[1].x, points[2].x);
+        const minY = Math.min(points[0].y, points[1].y, points[2].y);
+        const maxX = Math.max(points[0].x, points[1].x, points[2].x);
+        const maxY = Math.max(points[0].y, points[1].y, points[2].y);
+
+        const viewBoxX = minX - padding/2; // Add some padding to the viewBox
+        const viewBoxY = minY - padding/2;
+        const viewBoxWidth = (maxX - minX) + padding;
+        const viewBoxHeight = (maxY - minY) + padding;
+
+
+        // Set explicit width and height but rely on viewBox and CSS for scaling
+        let svgContent = `<svg width="${svgBaseWidth}" height="${svgBaseHeight}" viewBox="${viewBoxX} ${viewBoxY} ${viewBoxWidth} ${viewBoxHeight}" style="max-width: 100%; height: auto; display: block; margin: 0 auto;" xmlns="http://www.w3.org/2000/svg">`;
+
 
         // Draw triangle lines
         svgContent += `<polygon points="${points[0].x},${points[0].y} ${points[1].x},${points[1].y} ${points[2].x},${points[2].y}" style="fill:none;stroke:black;stroke-width:1.5" />`;
 
         // Add vertex labels (A, B, C)
-        svgContent += `<text x="${points[0].x - 10}" y="${points[0].y + 15}" font-size="14" text-anchor="middle" fill="#333">A</text>`;
-        svgContent += `<text x="${points[1].x + 10}" y="${points[1].y + 15}" font-size="14" text-anchor="middle" fill="#333">B</text>`;
-        svgContent += `<text x="${points[2].x}" y="${points[2].y - 10}" font-size="14" text-anchor="middle" fill="#333">C</text>`;
+        svgContent += `<text x="${points[0].x - 5}" y="${points[0].y + 10}" font-size="14" text-anchor="end" fill="#333">A</text>`;
+        svgContent += `<text x="${points[1].x + 5}" y="${points[1].y + 10}" font-size="14" text-anchor="start" fill="#333">B</text>`;
+        svgContent += `<text x="${points[2].x}" y="${points[2].y - 5}" font-size="14" text-anchor="middle" fill="#333">C</text>`;
+
 
         // Calculate midpoints for side labels (approximate positions)
         const midAB = { x: (points[0].x + points[1].x) / 2, y: (points[0].y + points[1].y) / 2 + 8 };
@@ -490,7 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
              solutionSteps.push({
                 heading: "Schritt 2: Werte einsetzen",
-                text: `Setzen Sie die gegebenen Werte in die Formel ein:
+                text: `Setzen Sie die gegebenen Werte ein:
                 $$A = \\frac{1}{2} \cdot ${side1Value} \text{ cm} \cdot ${side2Value} \text{ cm} \cdot \\sin(${angleValue}^\circ)$$`
             });
              solutionSteps.push({
@@ -620,9 +602,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Show the toggle button
         toggleSolutionBtn.style.display = 'block';
 
-        // Re-render MathJax
+        // Re-render MathJax for the updated content
+        // Use a slightly different approach to queue typesetting
         if (window.MathJax) {
-            window.MathJax.Hub.Queue(["Typeset", MathJax.Hub, "task-container"]);
+             MathJax.Hub.Queue(["Typeset", MathJax.Hub, taskDescriptionDiv]);
+             MathJax.Hub.Queue(["Typeset", MathJax.Hub, taskSketchDiv]); // Typeset SVG content too
+             MathJax.Hub.Queue(["Typeset", MathJax.Hub, solutionDiv]);
         }
     }
 
@@ -632,6 +617,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (solutionDiv.style.display === 'none') {
             solutionDiv.style.display = 'block';
             toggleSolutionBtn.textContent = 'Lösung verbergen';
+             // Typeset solution when shown
+            if (window.MathJax) {
+                 MathJax.Hub.Queue(["Typeset", MathJax.Hub, solutionDiv]);
+            }
         } else {
             solutionDiv.style.display = 'none';
             toggleSolutionBtn.textContent = 'Lösung anzeigen';
