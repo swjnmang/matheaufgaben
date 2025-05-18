@@ -105,19 +105,22 @@
         function formatPercentage(p) { return p.toFixed(1).replace('.', ',') + ' %'; }
 
         function generateTaskParameters(taskType) {
-            // Parameter generation logic (kept concise for brevity, same as previous working version)
             let n, p, K0, Kn, r, q, result;
             p = randomFloat(1.75, 7.5, 2); 
             q = 1 + (p / 100);
 
+            // Ensure n is at least 5 for all relevant cases
             if (taskType.includes("kapitalmehrung")) {
-                n = randomInt(3, 15); K0 = randomInt(5000, 50000); r = randomInt(500, 5000);
+                n = randomInt(5, 15); // Changed from randomInt(3, 15)
+                K0 = randomInt(5000, 50000); 
+                r = randomInt(500, 5000);
                 result = (taskType === "vorschüssige_kapitalmehrung") ?
                     K0 * Math.pow(q, n) + r * q * ((Math.pow(q, n) - 1) / (q - 1)) :
                     K0 * Math.pow(q, n) + r * ((Math.pow(q, n) - 1) / (q - 1));
                 Kn = result;
             } else if (taskType.includes("_k0")) { 
-                n = randomInt(3, 15); r = randomInt(1000, 8000);
+                n = randomInt(5, 15); // Changed from randomInt(3, 15)
+                r = randomInt(1000, 8000);
                 let temp_K0;
                 do {
                     Kn = randomInt(0, 10000);
@@ -127,7 +130,9 @@
                 } while (temp_K0 <= 0 || temp_K0 < r );
                 K0 = temp_K0; result = K0;
             } else if (taskType.includes("_kn")) { 
-                n = randomInt(3, 15); K0 = randomInt(20000, 100000); r = randomInt(1000, 8000);
+                n = randomInt(5, 15); // Changed from randomInt(3, 15)
+                K0 = randomInt(20000, 100000); 
+                r = randomInt(1000, 8000);
                 let temp_Kn;
                 do {
                     temp_Kn = (taskType === "vorschüssige_kapitalminderung_kn") ?
@@ -136,8 +141,9 @@
                     if (temp_Kn < 0) { K0 = randomInt(K0 + 10000, K0 + 50000); p = randomFloat(1.75, 7.5, 2); q = 1 + (p / 100); }
                 } while (temp_Kn < 0);
                 Kn = temp_Kn; result = Kn;
-            } else if (taskType.includes("_n")) {
-                n = randomInt(5, 20); result = n; 
+            } else if (taskType.includes("_n")) { // When n is sought, it's already set to randomInt(5, 20)
+                n = randomInt(5, 20); 
+                result = n; 
                 let temp_Kn;
                 do {
                     K0 = randomInt(30000, 150000); r = randomInt(2000, Math.min(10000, K0 / n * 0.9));
@@ -157,7 +163,10 @@
                 } while (temp_Kn < 0);
                 Kn = temp_Kn;
             } else if (taskType.includes("_r")) { 
-                n = randomInt(3, 15); K0 = randomInt(20000, 100000); p = randomFloat(1.75, 7.5, 2); q = 1 + (p / 100);
+                n = randomInt(5, 15); // Changed from randomInt(3, 15)
+                K0 = randomInt(20000, 100000); 
+                p = randomFloat(1.75, 7.5, 2); 
+                q = 1 + (p / 100);
                 let temp_r;
                 do {
                     Kn = randomFloat(0, K0 * Math.pow(q,n) * 0.95, 2); 
@@ -185,7 +194,6 @@
         }
         
         function generateTaskText(task) {
-            // Task text generation logic (same as previous)
             const { n, p, K0, Kn, r, taskType } = task;
             const p_f = formatPercentage(p);
             const K0_f = K0 !== undefined ? formatCurrency(K0) : "";
