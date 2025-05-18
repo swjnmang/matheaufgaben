@@ -26,9 +26,17 @@
     <div class="container mx-auto max-w-3xl bg-white rounded-lg shadow-lg p-6">
         <h1 class="text-2xl font-bold mb-6 text-center">Aufgabengenerator: Kapitalmehrung und Kapitalminderung</h1>
 
-        <div class="task-controls mb-6 flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
-            <button id="newTaskBtn" class="px-6 py-3 rounded-md text-white font-semibold bg-green-600 hover:bg-green-700 transition">Neue Aufgabe</button>
-            <button id="showSolutionBtn" class="secondary px-6 py-3 rounded-md text-white font-semibold bg-blue-600 hover:bg-blue-700 transition">Lösung anzeigen</button>
+        <div class="task-controls mb-6 flex flex-col space-y-3">
+             <div class="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
+                <button id="randomTaskBtn" class="px-6 py-3 rounded-md text-white font-semibold bg-green-600 hover:bg-green-700 transition">Zufällige Aufgabe</button>
+                <button id="showSolutionBtn" class="secondary px-6 py-3 rounded-md text-white font-semibold bg-blue-600 hover:bg-blue-700 transition">Lösung anzeigen</button>
+            </div>
+            <div class="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4 mt-4">
+                <button class="task-category-btn px-4 py-2 rounded-md text-sm font-medium bg-gray-300 text-gray-800 hover:bg-gray-400 transition" data-task-category="kn_gesucht">K<sub>n</sub> gesucht</button>
+                <button class="task-category-btn px-4 py-2 rounded-md text-sm font-medium bg-gray-300 text-gray-800 hover:bg-gray-400 transition" data-task-category="k0_gesucht">K<sub>0</sub> gesucht</button>
+                <button class="task-category-btn px-4 py-2 rounded-md text-sm font-medium bg-gray-300 text-gray-800 hover:bg-gray-400 transition" data-task-category="r_gesucht">r gesucht</button>
+                <button class="task-category-btn px-4 py-2 rounded-md text-sm font-medium bg-gray-300 text-gray-800 hover:bg-gray-400 transition" data-task-category="n_gesucht">n gesucht</button>
+            </div>
         </div>
 
         <div class="task-container mb-6 p-5 bg-gray-50 border-l-4 border-green-500 rounded-md">
@@ -38,7 +46,7 @@
 
         <div class="form-group mb-6">
             <label for="userAnswer" class="block text-gray-700 font-semibold mb-2">Deine Lösung:</label>
-            <input type="text" id="userAnswer" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Gib dein Ergebnis ein (z.B. 1534,28)">
+            <input type="text" id="userAnswer" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Gib dein Ergebnis ein">
         </div>
 
         <button id="checkAnswerBtn" class="w-full px-6 py-3 rounded-md text-white font-semibold bg-blue-600 hover:bg-blue-700 transition mb-4">Antwort überprüfen</button>
@@ -51,24 +59,46 @@
         // Globale Variable für aktuelle Aufgabe
         let currentTask = {};
 
-        // Aufgabentypen
-        const taskTypes = [
+        // Alle möglichen Aufgabentypen
+        const allTaskTypes = [
             "vorschüssige_kapitalmehrung",
             "nachschüssige_kapitalmehrung",
             "vorschüssige_kapalminderung_k0", // Kapitalminderung, K0 gesucht
             "nachschüssige_kapalminderung_k0", // Kapitalminderung, K0 gesucht
             "vorschüssige_kapalminderung_kn", // Kapitalminderung, Kn gesucht
-            "nachschüssige_kapalminderung_kn" // Kapitalminderung, Kn gesucht
+            "nachschüssige_kapalminderung_kn", // Kapitalminderung, Kn gesucht
+            "vorschüssige_kapalminderung_n",  // Kapitalminderung, n gesucht
+            "nachschüssige_kapalminderung_n", // Kapitalminderung, n gesucht
+            "vorschüssige_kapalminderung_r",  // Kapitalminderung, r gesucht
+            "nachschüssige_kapalminderung_r"  // Kapitalminderung, r gesucht
         ];
+
+        // Kategorien von Aufgabentypen nach gesuchter Größe
+        const taskCategories = {
+            "kn_gesucht": ["vorschüssige_kapitalmehrung", "nachschüssige_kapitalmehrung", "vorschüssige_kapalminderung_kn", "nachschüssige_kapalminderung_kn"],
+            "k0_gesucht": ["vorschüssige_kapalminderung_k0", "nachschüssige_kapalminderung_k0"],
+            "r_gesucht": ["vorschüssige_kapalminderung_r", "nachschüssige_kapalminderung_r"],
+            "n_gesucht": ["vorschüssige_kapalminderung_n", "nachschüssige_kapalminderung_n"]
+        };
+
 
         // Initialisierung nach Laden des DOM
         document.addEventListener("DOMContentLoaded", function() {
             // Event-Listener für Buttons
-            document.getElementById("newTaskBtn").addEventListener("click", generateNewTask);
+            document.getElementById("randomTaskBtn").addEventListener("click", () => generateNewTask()); // Zufällige Aufgabe aus allen Typen
             document.getElementById("checkAnswerBtn").addEventListener("click", checkAnswer);
             document.getElementById("showSolutionBtn").addEventListener("click", showSolution);
 
-            // Erste Aufgabe generieren
+            // Event-Listener für spezifische Aufgabentyp-Buttons
+            document.querySelectorAll(".task-category-btn").forEach(btn => {
+                btn.addEventListener("click", function() {
+                    const taskCategory = this.getAttribute("data-task-category");
+                    generateNewTask(taskCategory); // Generiere Aufgabe aus spezifischer Kategorie
+                });
+            });
+
+
+            // Erste Aufgabe generieren (zufällig aus allen Typen)
             generateNewTask();
         });
 
@@ -126,15 +156,14 @@
 
             // Parameterbereiche (jetzt gemischt, basierend auf früheren Mittel/Schwer)
             p = randomFloat(1.75, 7.5, 2); // Intern weiterhin mit 2 Dezimalstellen rechnen
-            n = randomInt(3, 15);
-
             q = 1 + (p / 100);
 
-            // Generiere K0, Kn, r basierend auf Aufgabentyp und stelle sinnvolle Werte sicher
+            // Generiere Parameter basierend auf dem gesuchten Wert
             if (taskType.includes("kapitalmehrung")) {
+                 // K0, r, n gegeben; Kn gesucht (Kapitalmehrung)
+                 n = randomInt(3, 15);
                  K0 = randomInt(5000, 50000);
                  r = randomInt(500, 5000);
-                 // Kn wird berechnet
                  if (taskType === "vorschüssige_kapitalmehrung") {
                     result = K0 * Math.pow(q, n) + r * q * ((Math.pow(q, n) - 1) / (q - 1));
                 } else { // nachschüssige_kapitalmehrung
@@ -142,68 +171,135 @@
                 }
                 Kn = result; // Kn ist das Ergebnis
 
-            } else if (taskType.includes("_k0")) { // Kapitalminderung, K0 gesucht
-                 // Für Kapitalminderung (Auszahlung vom Konto), K0 gesucht
-                 // Wir brauchen Kn und r als Gegebenheiten.
-                 // Kn muss >= 0 sein und K0 muss positiv berechenbar sein.
-                 let annuityPresentValue;
-                 if (taskType === "vorschüssige_kapalminderung_k0") {
-                     r = randomInt(1000, 8000); // Jährliche Auszahlung
-                     // K0 = (Kn + r * q * (qⁿ - 1)/(q - 1)) / qⁿ
-                     // Um K0 positiv zu halten, muss Kn + r * q * (...) > 0 sein.
-                     // Da r, q, n positiv sind, ist r * q * (...) positiv.
-                     // Wir müssen nur sicherstellen, dass Kn nicht zu negativ ist, falls wir negative Kn zulassen würden (was wir nicht tun).
-                     // Kn muss mindestens 0 sein, also generieren wir Kn >= 0.
-                     Kn = randomInt(0, 10000); // Endkapital kann 0 sein, aber nicht negativ
-                     annuityPresentValue = r * q * ((Math.pow(q, n) - 1) / (q - 1));
-                     result = (Kn + annuityPresentValue) / Math.pow(q, n);
+            } else if (taskType.includes("_k0")) {
+                 // Kn, r, n, p gegeben; K0 gesucht (Kapitalminderung)
+                 n = randomInt(3, 15);
+                 r = randomInt(1000, 8000); // Jährliche Auszahlung
+                 // Generiere Kn und K0 so, dass K0 positiv berechenbar ist
+                 let temp_K0;
+                 do {
+                    Kn = randomInt(0, 10000); // Endkapital kann 0 sein, aber nicht negativ
+                    let annuityPresentValue;
+                    if (taskType === "vorschüssige_kapalminderung_k0") {
+                         annuityPresentValue = r * q * ((Math.pow(q, n) - 1) / (q - 1));
+                         temp_K0 = (Kn + annuityPresentValue) / Math.pow(q, n);
+                     } else { // nachschüssige_kapalminderung_k0
+                         annuityPresentValue = r * ((Math.pow(q, n) - 1) / (q - 1));
+                         temp_K0 = (Kn + annuityPresentValue) / Math.pow(q, n);
+                     }
+                 } while (temp_K0 <= 0); // Wiederhole, falls K0 nicht positiv ist
 
-                 } else { // nachschüssige_kapalminderung_k0
-                     r = randomInt(1000, 8000); // Jährliche Auszahlung
-                     // K0 = (Kn + r * (qⁿ - 1)/(q - 1)) / qⁿ
-                     Kn = randomInt(0, 10000); // Endkapital kann 0 sein, aber nicht negativ
-                     annuityPresentValue = r * ((Math.pow(q, n) - 1) / (q - 1));
-                     result = (Kn + annuityPresentValue) / Math.pow(q, n);
-                 }
-                 K0 = result; // K0 ist das Ergebnis
+                 K0 = temp_K0; // K0 ist das Ergebnis
+                 result = K0;
 
-            } else if (taskType.includes("_kn")) { // Kapitalminderung, Kn gesucht
-                // Für Kapitalminderung (Auszahlung vom Konto), Kn gesucht
-                // Wir brauchen K0 und r als Gegebenheiten.
-                // Kn muss > 0 sein.
+            } else if (taskType.includes("_kn")) {
+                // K0, r, n, p gegeben; Kn gesucht (Kapitalminderung)
+                 n = randomInt(3, 15);
                  K0 = randomInt(20000, 100000); // Startkapital
                  r = randomInt(1000, 8000); // Jährliche Auszahlung
 
-                 if (taskType === "vorschüssige_kapalminderung_kn") {
-                    // K_n = K_0 * q^n - r * q * (q^n - 1) / (q - 1)
-                    result = K0 * Math.pow(q, n) - r * q * ((Math.pow(q, n) - 1) / (q - 1));
-                 } else { // nachschüssige_kapalminderung_kn
-                    // K_n = K_0 * q^n - r * (q^n - 1) / (q - 1)
-                    result = K0 * Math.pow(q, n) - r * ((Math.pow(q, n) - 1) / (q - 1));
-                 }
-
-                 // Stelle sicher, dass Kn > 0 ist. Wenn nicht, generiere Parameter neu.
-                 while (result <= 0) {
-                     console.warn("Generated Kn <= 0. Regenerating parameters.");
-                     // Reduziere r oder erhöhe K0, um ein positives Kn zu gewährleisten
-                     K0 = randomInt(K0, K0 + 50000); // Erhöhe K0
-                     r = randomInt(1000, r > 1000 ? r - 500 : 1000); // Reduziere r, aber nicht unter 1000
-                     p = randomFloat(1.75, 7.5, 2); // Auch p neu würfeln
-                     n = randomInt(3, 15); // Auch n neu würfeln
-                     q = 1 + (p / 100);
-
+                 let temp_Kn;
+                 do {
                      if (taskType === "vorschüssige_kapalminderung_kn") {
-                         result = K0 * Math.pow(q, n) - r * q * ((Math.pow(q, n) - 1) / (q - 1));
+                        temp_Kn = K0 * Math.pow(q, n) - r * q * ((Math.pow(q, n) - 1) / (q - 1));
                      } else { // nachschüssige_kapalminderung_kn
-                         result = K0 * Math.pow(q, n) - r * ((Math.pow(q, n) - 1) / (q - 1));
+                        temp_Kn = K0 * Math.pow(q, n) - r * ((Math.pow(q, n) - 1) / (q - 1));
                      }
+                     // Wenn Kn <= 0, erhöhe K0 oder reduziere r und versuche es erneut
+                     if (temp_Kn <= 0) {
+                         console.warn("Generated Kn <= 0. Adjusting parameters and regenerating.");
+                         K0 = randomInt(K0, K0 + 50000); // Erhöhe K0
+                         r = randomInt(1000, r > 1000 ? r - 500 : 1000); // Reduziere r, aber nicht unter 1000
+                         p = randomFloat(1.75, 7.5, 2); // Auch p neu würfeln
+                         q = 1 + (p / 100);
+                         n = randomInt(3, 15); // Auch n neu würfeln
+                     }
+                 } while (temp_Kn <= 0);
+
+                 Kn = temp_Kn; // Kn ist das Ergebnis
+                 result = Kn;
+
+            } else if (taskType.includes("_n")) {
+                // K0, Kn, r, p gegeben; n gesucht (Kapitalminderung)
+                // Generiere K0, Kn, r, p so, dass ein sinnvolles, positives, ganzzahliges n existiert.
+                // Dies ist am einfachsten, indem man n, p, K0, r generiert und Kn berechnet,
+                // und dann die Aufgabe mit diesen Werten stellt.
+                n = randomInt(5, 20); // Generiere ein ganzzahliges n als Ergebnis
+                K0 = randomInt(30000, 150000); // Startkapital
+                r = randomInt(2000, 10000); // Jährliche Auszahlung
+                p = randomFloat(1.75, 7.5, 2); // Zinssatz
+                q = 1 + (p / 100);
+
+                let calculated_Kn;
+                if (taskType === "vorschüssige_kapalminderung_n") {
+                    calculated_Kn = K0 * Math.pow(q, n) - r * q * ((Math.pow(q, n) - 1) / (q - 1));
+                } else { // nachschüssige_kapalminderung_n
+                    calculated_Kn = K0 * Math.pow(q, n) - r * ((Math.pow(q, n) - 1) / (q - 1));
+                }
+
+                // Stelle sicher, dass das berechnete Kn >= 0 ist.
+                 while (calculated_Kn < 0) {
+                     console.warn("Generated Kn < 0 for 'calculate n' task. Adjusting parameters and regenerating.");
+                     n = randomInt(5, 20); // Neues n
+                     K0 = randomInt(30000, 150000); // Neues K0
+                     r = randomInt(2000, r > 2000 ? r - 500 : 2000); // Reduziere r
+                     p = randomFloat(1.75, 7.5, 2); // Neues p
+                     q = 1 + (p / 100);
+                     if (taskType === "vorschüssige_kapalminderung_n") {
+                        calculated_Kn = K0 * Math.pow(q, n) - r * q * ((Math.pow(q, n) - 1) / (q - 1));
+                    } else { // nachschüssige_kapalminderung_n
+                        calculated_Kn = K0 * Math.pow(q, n) - r * ((Math.pow(q, n) - 1) / (q - 1));
+                    }
                  }
-                 Kn = result; // Kn ist das Ergebnis
+                 Kn = calculated_Kn; // Dieses Kn wird in der Aufgabe verwendet
+                 result = n; // Das Ergebnis ist das ursprünglich generierte n
+
+            } else if (taskType.includes("_r")) {
+                // K0, Kn, n, p gegeben; r gesucht (Kapitalminderung)
+                 n = randomInt(3, 15);
+                 K0 = randomInt(20000, 100000); // Startkapital
+                 // Generiere Kn so, dass 0 <= Kn < K0 * q^n ist, damit r positiv ist
+                 let max_Kn_for_positive_r = K0 * Math.pow(q, n);
+                 Kn = randomFloat(0, max_Kn_for_positive_r * 0.9, 2); // Kn muss kleiner sein als K0*q^n für positive r
+
+                 // Berechne r basierend auf der umgestellten Formel
+                 let temp_r;
+                 if (taskType === "vorschüssige_kapalminderung_r") {
+                     // r = (K0 * q^n - Kn) * (q - 1) / (q * (q^n - 1))
+                     temp_r = (K0 * Math.pow(q, n) - Kn) * (q - 1) / (q * (Math.pow(q, n) - 1));
+                 } else { // nachschüssige_kapalminderung_r
+                     // r = (K0 * q^n - Kn) * (q - 1) / (q^n - 1)
+                     temp_r = (K0 * Math.pow(q, n) - Kn) * (q - 1) / (Math.pow(q, n) - 1);
+                 }
+
+                 // Stelle sicher, dass r positiv und sinnvoll ist
+                 while (temp_r <= 0 || temp_r > 15000) { // Begrenze r nach oben
+                      console.warn("Generated r out of range. Adjusting parameters and regenerating.");
+                      n = randomInt(3, 15); // Neues n
+                      K0 = randomInt(20000, 100000); // Neues K0
+                      p = randomFloat(1.75, 7.5, 2); // Neues p
+                      q = 1 + (p / 100);
+                      max_Kn_for_positive_r = K0 * Math.pow(q, n);
+                      Kn = randomFloat(0, max_Kn_for_positive_r * 0.9, 2); // Neues Kn
+
+                      if (taskType === "vorschüssige_kapalminderung_r") {
+                          temp_r = (K0 * Math.pow(q, n) - Kn) * (q - 1) / (q * (Math.pow(q, n) - 1));
+                      } else { // nachschüssige_kapalminderung_r
+                          temp_r = (K0 * Math.pow(q, n) - Kn) * (q - 1) / (Math.pow(q, n) - 1);
+                      }
+                 }
+                 r = temp_r; // r ist das Ergebnis
+                 result = r;
             }
 
 
-            // Ergebnisse auf 2 Dezimalstellen runden
-            result = Math.round(result * 100) / 100;
+            // Ergebnisse auf 2 Dezimalstellen runden, außer bei n (ganze Zahl) und p (1 Dezimalstelle für Anzeige)
+            if (!taskType.includes("_n")) {
+                result = Math.round(result * 100) / 100;
+            } else {
+                 result = Math.round(result); // n ist eine ganze Zahl
+            }
+
             K0 = Math.round(K0 * 100) / 100;
             Kn = Math.round(Kn * 100) / 100;
             r = Math.round(r * 100) / 100;
@@ -225,14 +321,14 @@
             if (taskType === "vorschüssige_kapitalmehrung") {
                 const scenarios = [
                     `Stell dir vor, du legst ein Startkapital von ${formatCurrency(K0)} € an. Dazu sparst du zu Beginn jedes Jahres ${formatCurrency(r)} € zusätzlich. Dein Geld wächst mit einem jährlichen Zinssatz von ${p_formatted}. Wie viel Geld hast du nach ${n} Jahren angespart?`,
-                    `Ein findiger Investor startet mit ${formatCurrency(K0)} €. Er beschließt, zu Jahresbeginn immer ${formatCurrency(r)} € auf sein Konto einzuzahlen. Bei einem Zinssatz von ${p_formatted} pro Jahr, wie hoch ist sein Kapital am Ende von ${n} Jahren?`,
+                    `Ein findiger Investor startet mit ${formatCurrency(K0)} €. Er beschließt, zu Jahresbeginn immer ${formatCurrency(r)} € auf sein Konto einzahlen. Bei einem Zinssatz von ${p_formatted} pro Jahr, wie hoch ist sein Kapital am Ende von ${n} Jahren?`,
                     `Du möchtest für eine größere Anschaffung sparen. Du beginnst mit ${formatCurrency(K0)} € und zahlst vorschüssig, also zu Beginn jedes Jahres, ${formatCurrency(r)} € ein. Dein Sparbuch verzinst sich mit ${p_formatted} jährlich. Welchen Betrag hast du nach ${n} Jahren erreicht?`
                 ];
                 text = scenarios[randomInt(0, scenarios.length - 1)];
 
             } else if (taskType === "nachschüssige_kapitalmehrung") {
                  const scenarios = [
-                    `Du hast ein Anfangskapital von ${formatCurrency(K0)} €. Am Ende jedes Jahres schaffst du es, ${formatCurrency(r)} € zusätzlich einzuzahlen. Dein Kapital wird mit ${p_formatted} pro Jahr verzinst. Welchen Endbetrag erreichst du nach ${n} Jahren?`,
+                    `Du hast ein Anfangskapital von ${formatCurrency(K0)} €. Am Ende jedes Jahres schaffst du es, ${formatCurrency(r)} € zusätzlich einzahlen. Dein Kapital wird mit ${p_formatted} pro Jahr verzinst. Welchen Endbetrag erreichst du nach ${n} Jahren?`,
                     `Eine clevere Sparerin legt ${formatCurrency(K0)} € an. Sie zahlt am Ende jedes Jahres konsequent ${formatCurrency(r)} € ein. Bei einem Zinssatz von ${p_formatted} jährlich, wie viel Geld hat sie nach ${n} Jahren auf dem Konto?`,
                     `Beginnend mit ${formatCurrency(K0)} €, zahlst du nachschüssig, also am Ende jedes Jahres, ${formatCurrency(r)} € auf dein Konto ein. Der jährliche Zinssatz beträgt ${p_formatted}. Berechne das Endkapital nach ${n} Jahren.`
                 ];
@@ -249,7 +345,7 @@
             } else if (taskType === "nachschüssige_kapalminderung_k0") { // Kapitalminderung, K0 gesucht
                  const scenarios = [
                     `Ein Konto mit einem unbekannten Anfangskapital zahlt am Ende jedes Jahres ${formatCurrency(r)} € aus. Das verbleibende Kapital wird mit ${p_formatted} pro Jahr verzinst. Nach ${n} Jahren beträgt der Kontostand noch ${formatCurrency(Kn)} €. Wie hoch war das Startkapital?`,
-                    `Eine Familie entnimmt ${n} Jahre lang am Ende jedes Jahres ${formatCurrency(r)} € von ihrem Sparkonto. Das Konto verzinst sich mit ${p_formatted} jährlich. Nach ${n} Jahren sind noch ${formatCurrency(Kn)} € auf dem Konto. Welchen Betrag hatten sie ursprünglich angelegt?`,
+                    `Eine Familie entnimmt ${n} Jahre lang am Ende jedes Jahres ${formatCurrency(r)} € von ihrem Sparkonto, das mit ${p_formatted} jährlich verzinst wird. Ursprünglich waren ${formatCurrency(K0)} € auf dem Konto. Nach ${n} Jahren sind noch ${formatCurrency(Kn)} € übrig. Welchen Betrag hatten sie ursprünglich angelegt?`,
                     `Du hebst über ${n} Jahre nachschüssig, also am Ende jedes Jahres, ${formatCurrency(r)} € von deinem Konto ab. Der Zinssatz beträgt ${p_formatted} pro Jahr. Nach ${n} Jahren bleiben ${formatCurrency(Kn)} € übrig. Berechne das ursprüngliche Kapital.`
                 ];
                 text = scenarios[randomInt(0, scenarios.length - 1)];
@@ -268,6 +364,34 @@
                     `Eine Familie hat ${formatCurrency(K0)} € auf ihrem Sparkonto. Sie entnimmt ${n} Jahre lang am Ende jedes Jahres ${formatCurrency(r)} €. Das Konto verzinst sich mit ${p_formatted} jährlich. Welchen Betrag haben sie nach ${n} Jahren noch auf dem Konto?`,
                     `Du hast ${formatCurrency(K0)} € auf deinem Konto und hebst über ${n} Jahre nachschüssig, also am Ende jedes Jahres, ${formatCurrency(r)} € ab. Der Zinssatz beträgt ${p_formatted} pro Jahr. Berechne das Endkapital nach ${n} Jahren.`
                 ];
+                 text = scenarios[randomInt(0, scenarios.length - 1)];
+            } else if (taskType === "vorschüssige_kapalminderung_n") { // Kapitalminderung, n gesucht
+                 const scenarios = [
+                     `Von einem Konto mit ${formatCurrency(K0)} € werden zu Beginn jedes Jahres ${formatCurrency(r)} € entnommen. Das restliche Kapital wird mit ${p_formatted} pro Jahr verzinst. Nach wie vielen Jahren sind noch ${formatCurrency(Kn)} € auf dem Konto?`,
+                     `Eine Stiftung wurde mit ${formatCurrency(K0)} € ausgestattet. Sie zahlt zu Beginn jedes Jahres ${formatCurrency(r)} € aus. Das verbleibende Kapital wird mit ${p_formatted} jährlich verzinst. Nach wie vielen Jahren ist der Kontostand auf ${formatCurrency(Kn)} € gesunken?`,
+                     `Du hast ${formatCurrency(K0)} € auf deinem Konto und hebst zu Beginn jedes Jahres ${formatCurrency(r)} € ab. Der Zinssatz beträgt ${p_formatted} pro Jahr. Nach wie vielen Jahren verbleiben ${formatCurrency(Kn)} € auf dem Konto?`
+                 ];
+                 text = scenarios[randomInt(0, scenarios.length - 1)];
+            } else if (taskType === "nachschüssige_kapalminderung_n") { // Kapitalminderung, n gesucht
+                 const scenarios = [
+                     `Ein Konto mit ${formatCurrency(K0)} € zahlt am Ende jedes Jahres ${formatCurrency(r)} € aus. Das restliche Kapital wird mit ${p_formatted} pro Jahr verzinst. Nach wie vielen Jahren beträgt der Kontostand noch ${formatCurrency(Kn)} €?`,
+                     `Eine Familie entnimmt am Ende jedes Jahres ${formatCurrency(r)} € von ihrem Sparkonto, das mit ${p_formatted} jährlich verzinst wird. Ursprünglich waren ${formatCurrency(K0)} € auf dem Konto. Nach wie vielen Jahren sind noch ${formatCurrency(Kn)} € übrig?`,
+                     `Du hast ${formatCurrency(K0)} € auf deinem Konto und hebst am Ende jedes Jahres ${formatCurrency(r)} € ab. Der Zinssatz beträgt ${p_formatted} pro Jahr. Nach wie vielen Jahren verbleiben ${formatCurrency(Kn)} € auf dem Konto?`
+                 ];
+                 text = scenarios[randomInt(0, scenarios.length - 1)];
+            } else if (taskType === "vorschüssige_kapalminderung_r") { // Kapitalminderung, r gesucht
+                 const scenarios = [
+                     `Von einem Konto mit ${formatCurrency(K0)} € werden über ${n} Jahre zu Beginn jedes Jahres feste Beträge entnommen. Das restliche Kapital wird mit ${p_formatted} pro Jahr verzinst. Nach ${n} Jahren sind noch ${formatCurrency(Kn)} € auf dem Konto. Wie hoch war der jährlich entnommene Betrag?`,
+                     `Eine Stiftung wurde mit ${formatCurrency(K0)} € ausgestattet. Sie zahlt über ${n} Jahre zu Beginn jedes Jahres einen festen Betrag aus. Das verbleibende Kapital wird mit ${p_formatted} jährlich verzinst. Nach ${n} Jahren ist der Kontostand auf ${formatCurrency(Kn)} € gesunken. Wie hoch war die jährliche Auszahlung?`,
+                     `Du hast ${formatCurrency(K0)} € auf deinem Konto und möchtest über ${n} Jahre zu Beginn jedes Jahres einen festen Betrag abheben. Der Zinssatz beträgt ${p_formatted} pro Jahr. Nach ${n} Jahren verbleiben ${formatCurrency(Kn)} € auf dem Konto. Wie hoch war der jährliche Auszahlungsbetrag?`
+                 ];
+                 text = scenarios[randomInt(0, scenarios.length - 1)];
+            } else if (taskType === "nachschüssige_kapalminderung_r") { // Kapitalminderung, r gesucht
+                 const scenarios = [
+                     `Ein Konto mit ${formatCurrency(K0)} € zahlt über ${n} Jahre am Ende jedes Jahres feste Beträge aus. Das restliche Kapital wird mit ${p_formatted} pro Jahr verzinst. Nach ${n} Jahren beträgt der Kontostand noch ${formatCurrency(Kn)} €. Wie hoch war der jährlich ausgezahlte Betrag?`,
+                     `Eine Familie entnimmt über ${n} Jahre am Ende jedes Jahres einen festen Betrag von ihrem Sparkonto, das mit ${p_formatted} jährlich verzinst wird. Ursprünglich waren ${formatCurrency(K0)} € auf dem Konto. Nach ${n} Jahren sind noch ${formatCurrency(Kn)} € übrig. Wie hoch war der jährliche Entnahmebetrag?`,
+                     `Du hast ${formatCurrency(K0)} € auf deinem Konto und hebst über ${n} Jahre nachschüssig, also am Ende jedes Jahres, ${formatCurrency(r)} € ab. Der Zinssatz beträgt ${p_formatted} pro Jahr. Berechne den jährlichen Auszahlungsbetrag.`
+                 ];
                  text = scenarios[randomInt(0, scenarios.length - 1)];
             }
 
@@ -289,7 +413,7 @@
                 solutionText = `
                     <h3 class="text-lg font-semibold mb-2">Lösung: Vorschüssige Kapitalmehrung</h3>
                     <p>Bei der vorschüssigen Kapitalmehrung wird das Anfangskapital verzinst und zusätzlich zu Beginn jedes Jahres eine Rate eingezahlt.</p>
-                    <p class="math"><strong>Formel:</strong> K<sub>n</sub> = K<sub>0</sub> * q<sup>n</sup> + r * q * ((q<sup>n</sup> - 1) / (q - 1))</p>
+                    <p class="math"><strong>Formel:</strong> K<sub>n</sub> = K<sub>0</sub> * q<sup>n</sup> + r * q * (q<sup>n</sup> - 1) / (q - 1)</p>
                     <p><strong>Gegeben:</strong> K<sub>0</sub> = ${formatCurrency(K0)} €, n = ${n} Jahre, p = ${p_formatted}, r = ${formatCurrency(r)} €</p>
                     <p><strong>Berechnung:</strong></p>
                     <p class="math">q = 1 + p/100 = 1 + ${formatCurrency(p)}/100 = ${q_formatted}</p>
@@ -301,7 +425,7 @@
                 solutionText = `
                     <h3 class="text-lg font-semibold mb-2">Lösung: Nachschüssige Kapitalmehrung</h3>
                     <p>Bei der nachschüssigen Kapitalmehrung wird das Anfangskapital verzinst und zusätzlich am Ende jedes Jahres eine Rate eingezahlt.</p>
-                    <p class="math"><strong>Formel:</strong> K<sub>n</sub> = K<sub>0</sub> * q<sup>n</sup> + r * ((q<sup>n</sup> - 1) / (q - 1))</p>
+                    <p class="math"><strong>Formel:</strong> K<sub>n</sub> = K<sub>0</sub> * q<sup>n</sup> + r * (q<sup>n</sup> - 1) / (q - 1)</p>
                     <p><strong>Gegeben:</strong> K<sub>0</sub> = ${formatCurrency(K0)} €, n = ${n} Jahre, p = ${p_formatted}, r = ${formatCurrency(r)} €</p>
                     <p><strong>Berechnung:</strong></p>
                     <p class="math">q = 1 + p/100 = 1 + ${formatCurrency(p)}/100 = ${q_formatted}</p>
@@ -310,7 +434,7 @@
                     <p class="math"><strong>Ergebnis:</strong> Das Endkapital beträgt ${formatCurrency(result)} €.</p>
                 `;
             } else if (taskType === "vorschüssige_kapalminderung_k0") { // Kapitalminderung, K0 gesucht
-                 const annuityTerm = r * q * ((Math.pow(q, n) - 1) / (q - 1)); // Berechnung des Rentenbarwerts
+                 const annuityTerm = r * q * ((Math.pow(q, n) - 1) / (q - 1)); // Berechnung des Rentenendwerts der Auszahlungen
                  const annuityTerm_formatted = formatCurrency(annuityTerm); // Formatierung für Anzeige
                  const q_pow_n = Math.pow(q, n);
                  const q_pow_n_formatted = q_pow_n.toFixed(4);
@@ -319,26 +443,25 @@
                     <h3 class="text-lg font-semibold mb-2">Lösung: Vorschüssige Kapitalminderung (Auszahlung vom Konto - K₀ gesucht)</h3>
                     <p>Bei der vorschüssigen Kapitalminderung (durch Auszahlungen) wird vom verzinsten Kapital zu Beginn jedes Jahres eine Rate entnommen.</p>
                      <p>Wir verwenden die allgemeine Formel für das Endkapital K<sub>n</sub>:</p>
-                     <p class="math"><strong>Formel:</strong> K<sub>n</sub> = K<sub>0</sub> * q<sup>n</sup> - r * q * ((q<sup>n</sup> - 1) / (q - 1))</p>
+                     <p class="math"><strong>Formel:</strong> K<sub>n</sub> = K<sub>0</sub> * q<sup>n</sup> - r * q * (q<sup>n</sup> - 1) / (q - 1)</p>
                     <p><strong>Gegeben:</strong> K<sub>n</sub> = ${formatCurrency(Kn)} €, n = ${n} Jahre, p = ${p_formatted}, r = ${formatCurrency(r)} €</p>
                     <p><strong>Berechnung:</strong></p>
                     <p class="math">q = 1 + p/100 = 1 + ${formatCurrency(p)}/100 = ${q_formatted}</p>
                     <p>Wir setzen die bekannten Werte in die Formel ein:</p>
                     <p class="math">${formatCurrency(Kn)} = K<sub>0</sub> * ${q_formatted}<sup>${n}</sup> - ${formatCurrency(r)} * ${q_formatted} * ((${q_formatted}<sup>${n}</sup> - 1) / (${q_formatted} - 1))</p>
                     <p>Zuerst berechnen wir den Rentenendwert der Auszahlungen:</p>
-                    <p class="math">r * q * ((q<sup>n</sup> - 1) / (q - 1)) = ${formatCurrency(r)} * ${q_formatted} * ((${q_formatted}<sup>${n}</sup> - 1) / (${q_formatted} - 1)) = ${annuityTerm_formatted} €</p>
+                    <p class="math">r * q * (q<sup>n</sup> - 1) / (q - 1) = ${formatCurrency(r)} * ${q_formatted} * ((${q_formatted}<sup>${n}</sup> - 1) / (${q_formatted} - 1)) = ${annuityTerm_formatted} €</p>
                     <p>Nun setzen wir diesen Wert in die Gleichung ein:</p>
                     <p class="math">${formatCurrency(Kn)} = K<sub>0</sub> * ${q_pow_n_formatted} - ${annuityTerm_formatted}</p>
                      <p>Jetzt stellen wir die Formel nach K<sub>0</sub> um:</p>
                      <p class="math">${formatCurrency(Kn)} + ${annuityTerm_formatted} = K<sub>0</sub> * ${q_pow_n_formatted}</p>
                      <p class="math">K<sub>0</sub> = (${formatCurrency(Kn)} + ${annuityTerm_formatted}) / ${q_pow_n_formatted}</p>
-                     <p class="math">K<sub>0</sub> = (${formatCurrency(Kn) + " + " + annuityTerm_formatted}) / ${q_pow_n_formatted}</p>
                      <p class="math">K<sub>0</sub> = ${formatCurrency(Kn + annuityTerm)} / ${q_pow_n_formatted}</p>
                      <p class="math">K<sub>0</sub> = ${formatCurrency(result)} €</p>
                     <p class="math"><strong>Ergebnis:</strong> Das ursprüngliche Kapital betrug ${formatCurrency(result)} €.</p>
                 `;
             } else if (taskType === "nachschüssige_kapalminderung_k0") { // Kapitalminderung, K0 gesucht
-                 const annuityTerm = r * ((Math.pow(q, n) - 1) / (q - 1)); // Berechnung des Rentenbarwerts
+                 const annuityTerm = r * ((Math.pow(q, n) - 1) / (q - 1)); // Berechnung des Rentenendwerts der Auszahlungen
                  const annuityTerm_formatted = formatCurrency(annuityTerm); // Formatierung für Anzeige
                  const q_pow_n = Math.pow(q, n);
                  const q_pow_n_formatted = q_pow_n.toFixed(4);
@@ -347,21 +470,20 @@
                     <h3 class="text-lg font-semibold mb-2">Lösung: Nachschüssige Kapitalminderung (Auszahlung vom Konto - K₀ gesucht)</h3>
                     <p>Bei der nachschüssigen Kapitalminderung (durch Auszahlungen) wird vom verzinsten Kapital am Ende jedes Jahres eine Rate entnommen.</p>
                     <p>Wir verwenden die allgemeine Formel für das Endkapital K<sub>n</sub>:</p>
-                    <p class="math"><strong>Formel:</strong> K<sub>n</sub> = K<sub>0</sub> * q<sup>n</sup> - r * ((q<sup>n</sup> - 1) / (q - 1))</p>
+                    <p class="math"><strong>Formel:</strong> K<sub>n</sub> = K<sub>0</sub> * q<sup>n</sup> - r * (q<sup>n</sup> - 1) / (q - 1)</p>
                     <p><strong>Gegeben:</strong> K<sub>n</sub> = ${formatCurrency(Kn)} €, n = ${n} Jahre, p = ${p_formatted}, r = ${formatCurrency(r)} €</p>
                     <p><strong>Berechnung:</strong></p>
                     <p class="math">q = 1 + p/100 = 1 + ${formatCurrency(p)}/100 = ${q_formatted}</p>
                     <p>Wir setzen die bekannten Werte in die Formel ein:</p>
                     <p class="math">${formatCurrency(Kn)} = K<sub>0</sub> * ${q_formatted}<sup>${n}</sup> - ${formatCurrency(r)} * ((${q_formatted}<sup>${n}</sup> - 1) / (${q_formatted} - 1))</p>
                     <p>Zuerst berechnen wir den Rentenendwert der Auszahlungen:</p>
-                    <p class="math">r * ((q<sup>n</sup> - 1) / (q - 1)) = ${formatCurrency(r)} * ((${q_formatted}<sup>${n}</sup> - 1) / (${q_formatted} - 1)) = ${annuityTerm_formatted} €</p>
+                    <p class="math">r * (q<sup>n</sup> - 1) / (q - 1) = ${formatCurrency(r)} * ((${q_formatted}<sup>${n}</sup> - 1) / (${q_formatted} - 1)) = ${annuityTerm_formatted} €</p>
                      <p>Nun setzen wir diesen Wert in die Gleichung ein:</p>
                     <p class="math">${formatCurrency(Kn)} = K<sub>0</sub> * ${q_pow_n_formatted} - ${annuityTerm_formatted}</p>
                      <p>Jetzt stellen wir die Formel nach K<sub>0</sub> um:</p>
                      <p class="math">${formatCurrency(Kn)} + ${annuityTerm_formatted} = K<sub>0</sub> * ${q_pow_n_formatted}</p>
                      <p class="math">K<sub>0</sub> = (${formatCurrency(Kn)} + ${annuityTerm_formatted}) / ${q_pow_n_formatted}</p>
-                      <p class="math">K<sub>0</sub> = (${formatCurrency(Kn) + " + " + annuityTerm_formatted}) / ${q_pow_n_formatted}</p>
-                     <p class="math">K<sub>0</sub> = ${formatCurrency(Kn + annuityTerm)} / ${q_pow_n_formatted}</p>
+                      <p class="math">K<sub>0</sub> = ${formatCurrency(Kn + annuityTerm)} / ${q_pow_n_formatted}</p>
                      <p class="math">K<sub>0</sub> = ${formatCurrency(result)} €</p>
                     <p class="math"><strong>Ergebnis:</strong> Das ursprüngliche Kapital betrug ${formatCurrency(result)} €.</p>
                 `;
@@ -369,7 +491,7 @@
                 solutionText = `
                     <h3 class="text-lg font-semibold mb-2">Lösung: Vorschüssige Kapitalminderung (Auszahlung vom Konto - Kₙ gesucht)</h3>
                     <p>Bei der vorschüssigen Kapitalminderung (durch Auszahlungen) wird vom verzinsten Kapital zu Beginn jedes Jahres eine Rate entnommen.</p>
-                    <p class="math"><strong>Formel:</strong> K<sub>n</sub> = K<sub>0</sub> * q<sup>n</sup> - r * q * ((q<sup>n</sup> - 1) / (q - 1))</p>
+                    <p class="math"><strong>Formel:</strong> K<sub>n</sub> = K<sub>0</sub> * q<sup>n</sup> - r * q * (q<sup>n</sup> - 1) / (q - 1)</p>
                     <p><strong>Gegeben:</strong> K<sub>0</sub> = ${formatCurrency(K0)} €, n = ${n} Jahre, p = ${p_formatted}, r = ${formatCurrency(r)} €</p>
                     <p><strong>Berechnung:</strong></p>
                     <p class="math">q = 1 + p/100 = 1 + ${formatCurrency(p)}/100 = ${q_formatted}</p>
@@ -381,13 +503,149 @@
                 solutionText = `
                     <h3 class="text-lg font-semibold mb-2">Lösung: Nachschüssige Kapitalminderung (Auszahlung vom Konto - Kₙ gesucht)</h3>
                     <p>Bei der nachschüssigen Kapitalminderung (durch Auszahlungen) wird vom verzinsten Kapital am Ende jedes Jahres eine Rate entnommen.</p>
-                    <p class="math"><strong>Formel:</strong> K<sub>n</sub> = K<sub>0</sub> * q<sup>n</sup> - r * ((q<sup>n</sup> - 1) / (q - 1))</p>
+                    <p class="math"><strong>Formel:</strong> K<sub>n</sub> = K<sub>0</sub> * q<sup>n</sup> - r * (q<sup>n</sup> - 1) / (q - 1)</p>
                     <p><strong>Gegeben:</strong> K<sub>0</sub> = ${formatCurrency(K0)} €, n = ${n} Jahre, p = ${p_formatted}, r = ${formatCurrency(r)} €</p>
                     <p><strong>Berechnung:</strong></p>
                     <p class="math">q = 1 + p/100 = 1 + ${formatCurrency(p)}/100 = ${q_formatted}</p>
                     <p class="math">K<sub>n</sub> = ${formatCurrency(K0)} * ${q_formatted}<sup>${n}</sup> - ${formatCurrency(r)} * ((${q_formatted}<sup>${n}</sup> - 1) / (${q_formatted} - 1))</p>
                     <p class="math">K<sub>n</sub> = ${formatCurrency(result)} €</p>
                     <p class="math"><strong>Ergebnis:</strong> Das Endkapital beträgt ${formatCurrency(result)} €.</p>
+                `;
+            } else if (taskType === "vorschüssige_kapalminderung_n") { // Kapitalminderung, n gesucht
+                 const q_pow_n_val = Math.pow(q, n); // Der Wert von q^n für die Berechnungsschritte
+                 const term1 = K0 * q_pow_n_val; // K0 * q^n
+                 const term2_numerator = r * q * (q_pow_n_val - 1); // r * q * (q^n - 1)
+                 const term2_denominator = (q - 1); // (q - 1)
+                 const term2 = term2_numerator / term2_denominator; // r * q * (q^n - 1) / (q - 1)
+
+                 // Logarithmus-Basis und Argumente für die Umstellung
+                 const log_arg_numerator = Kn * (q - 1) - r * q;
+                 const log_arg_denominator = K0 * (q - 1) - r * q;
+                 const log_arg_value = log_arg_numerator / log_arg_denominator;
+
+
+                 solutionText = `
+                    <h3 class="text-lg font-semibold mb-2">Lösung: Vorschüssige Kapitalminderung (Auszahlung vom Konto - n gesucht)</h3>
+                    <p>Bei der vorschüssigen Kapitalminderung (durch Auszahlungen) wird vom verzinsten Kapital zu Beginn jedes Jahres eine Rate entnommen.</p>
+                     <p>Wir verwenden die allgemeine Formel für das Endkapital K<sub>n</sub>:</p>
+                     <p class="math"><strong>Formel:</strong> K<sub>n</sub> = K<sub>0</sub> * q<sup>n</sup> - r * q * (q<sup>n</sup> - 1) / (q - 1)</p>
+                    <p><strong>Gegeben:</strong> K<sub>0</sub> = ${formatCurrency(K0)} €, K<sub>n</sub> = ${formatCurrency(Kn)} €, p = ${p_formatted}, r = ${formatCurrency(r)} €</p>
+                    <p><strong>Berechnung:</strong></p>
+                    <p class="math">q = 1 + p/100 = 1 + ${formatCurrency(p)}/100 = ${q_formatted}</p>
+                    <p>Wir setzen die bekannten Werte in die Formel ein:</p>
+                    <p class="math">${formatCurrency(Kn)} = ${formatCurrency(K0)} * q<sup>n</sup> - ${formatCurrency(r)} * ${q_formatted} * (q<sup>n</sup> - 1) / (${q_formatted} - 1)</p>
+                    <p>Wir stellen die Formel nach q<sup>n</sup> um:</p>
+                    <p class="math">${formatCurrency(Kn)} * (${q_formatted} - 1) = ${formatCurrency(K0)} * q<sup>n</sup> * (${q_formatted} - 1) - ${formatCurrency(r)} * ${q_formatted} * (q<sup>n</sup> - 1)</p>
+                    <p class="math">${formatCurrency(Kn * (q - 1))} = ${formatCurrency(K0 * (q - 1))} * q<sup>n</sup> - (${formatCurrency(r * q)} * q<sup>n</sup> - ${formatCurrency(r * q)})</p>
+                    <p class="math">${formatCurrency(Kn * (q - 1))} = ${formatCurrency(K0 * (q - 1))} * q<sup>n</sup> - ${formatCurrency(r * q)} * q<sup>n</sup> + ${formatCurrency(r * q)}</p>
+                    <p class="math">${formatCurrency(Kn * (q - 1))} - ${formatCurrency(r * q)} = q<sup>n</sup> * (${formatCurrency(K0 * (q - 1))} - ${formatCurrency(r * q)})</p>
+                     <p class="math">q<sup>n</sup> = (${formatCurrency(Kn * (q - 1) - r * q)}) / (${formatCurrency(K0 * (q - 1) - r * q)})</p>
+                     <p class="math">${q_formatted}<sup>n</sup> = ${log_arg_value.toFixed(4)}</p>
+                     <p>Um n zu berechnen, verwenden wir den Logarithmus:</p>
+                     <p class="math">n = log(q<sup>n</sup>) / log(q)</p>
+                     <p class="math">n = log(${log_arg_value.toFixed(4)}) / log(${q_formatted})</p>
+                     <p class="math">n = ${Math.log(log_arg_value).toFixed(4)} / ${Math.log(q).toFixed(4)}</p>
+                     <p class="math">n = ${result}</p>
+                    <p class="math"><strong>Ergebnis:</strong> Die Laufzeit beträgt ${result} Jahre.</p>
+                `;
+            } else if (taskType === "nachschüssige_kapalminderung_n") { // Kapitalminderung, n gesucht
+                 const q_pow_n_val = Math.pow(q, n); // Der Wert von q^n für die Berechnungsschritte
+                 const term1 = K0 * q_pow_n_val; // K0 * q^n
+                 const term2_numerator = r * (q_pow_n_val - 1); // r * (q^n - 1)
+                 const term2_denominator = (q - 1); // (q - 1)
+                 const term2 = term2_numerator / term2_denominator; // r * (q^n - 1) / (q - 1)
+
+                 // Logarithmus-Basis und Argumente für die Umstellung
+                 const log_arg_numerator = Kn * (q - 1) - r;
+                 const log_arg_denominator = K0 * (q - 1) - r;
+                 const log_arg_value = log_arg_numerator / log_arg_denominator;
+
+
+                 solutionText = `
+                    <h3 class="text-lg font-semibold mb-2">Lösung: Nachschüssige Kapitalminderung (Auszahlung vom Konto - n gesucht)</h3>
+                    <p>Bei der nachschüssigen Kapitalminderung (durch Auszahlungen) wird vom verzinsten Kapital am Ende jedes Jahres eine Rate entnommen.</p>
+                    <p>Wir verwenden die allgemeine Formel für das Endkapital K<sub>n</sub>:</p>
+                    <p class="math"><strong>Formel:</strong> K<sub>n</sub> = K<sub>0</sub> * q<sup>n</sup> - r * (q<sup>n</sup> - 1) / (q - 1)</p>
+                    <p><strong>Gegeben:</strong> K<sub>0</sub> = ${formatCurrency(K0)} €, K<sub>n</sub> = ${formatCurrency(Kn)} €, p = ${p_formatted}, r = ${formatCurrency(r)} €</p>
+                    <p><strong>Berechnung:</strong></p>
+                    <p class="math">q = 1 + p/100 = 1 + ${formatCurrency(p)}/100 = ${q_formatted}</p>
+                    <p>Wir setzen die bekannten Werte in die Formel ein:</p>
+                    <p class="math">${formatCurrency(Kn)} = ${formatCurrency(K0)} * q<sup>n</sup> - ${formatCurrency(r)} * (q<sup>n</sup> - 1) / (${q_formatted} - 1)</p>
+                    <p>Wir stellen die Formel nach q<sup>n</sup> um:</p>
+                    <p class="math">${formatCurrency(Kn)} * (${q_formatted} - 1) = ${formatCurrency(K0)} * q<sup>n</sup> * (${q_formatted} - 1) - ${formatCurrency(r)} * (q<sup>n</sup> - 1)</p>
+                     <p class="math">${formatCurrency(Kn * (q - 1))} = ${formatCurrency(K0 * (q - 1))} * q<sup>n</sup> - ${formatCurrency(r)} * q<sup>n</sup> + ${formatCurrency(r)}</p>
+                     <p class="math">${formatCurrency(Kn * (q - 1))} - ${formatCurrency(r)} = q<sup>n</sup> * (${formatCurrency(K0 * (q - 1))} - ${formatCurrency(r)})</p>
+                     <p class="math">q<sup>n</sup> = (${formatCurrency(Kn * (q - 1) - r)}) / (${formatCurrency(K0 * (q - 1) - r)})</p>
+                     <p class="math">${q_formatted}<sup>n</sup> = ${log_arg_value.toFixed(4)}</p>
+                     <p>Um n zu berechnen, verwenden wir den Logarithmus:</p>
+                     <p class="math">n = log(q<sup>n</sup>) / log(q)</p>
+                     <p class="math">n = log(${log_arg_value.toFixed(4)}) / log(${q_formatted})</p>
+                     <p class="math">n = ${Math.log(log_arg_value).toFixed(4)} / ${Math.log(q).toFixed(4)}</p>
+                     <p class="math">n = ${result}</p>
+                    <p class="math"><strong>Ergebnis:</strong> Die Laufzeit beträgt ${result} Jahre.</p>
+                `;
+            } else if (taskType === "vorschüssige_kapalminderung_r") { // Kapitalminderung, r gesucht
+                const term1 = K0 * Math.pow(q, n); // K0 * q^n
+                const term1_formatted = formatCurrency(term1);
+                const term2_denominator = q * ((Math.pow(q, n) - 1) / (q - 1)); // q * (q^n - 1) / (q - 1)
+                const term2_denominator_formatted = term2_denominator.toFixed(4);
+
+
+                solutionText = `
+                    <h3 class="text-lg font-semibold mb-2">Lösung: Vorschüssige Kapitalminderung (Auszahlung vom Konto - r gesucht)</h3>
+                    <p>Bei der vorschüssigen Kapitalminderung (durch Auszahlungen) wird vom verzinsten Kapital zu Beginn jedes Jahres eine Rate entnommen.</p>
+                    <p>Wir verwenden die allgemeine Formel für das Endkapital K<sub>n</sub>:</p>
+                    <p class="math"><strong>Formel:</strong> K<sub>n</sub> = K<sub>0</sub> * q<sup>n</sup> - r * q * (q<sup>n</sup> - 1) / (q - 1)</p>
+                    <p><strong>Gegeben:</strong> K<sub>0</sub> = ${formatCurrency(K0)} €, K<sub>n</sub> = ${formatCurrency(Kn)} €, n = ${n} Jahre, p = ${p_formatted}</p>
+                    <p><strong>Berechnung:</strong></p>
+                    <p class="math">q = 1 + p/100 = 1 + ${formatCurrency(p)}/100 = ${q_formatted}</p>
+                    <p>Wir setzen die bekannten Werte in die Formel ein:</p>
+                    <p class="math">${formatCurrency(Kn)} = ${formatCurrency(K0)} * ${q_formatted}<sup>${n}</sup> - r * ${q_formatted} * ((${q_formatted}<sup>${n}</sup> - 1) / (${q_formatted} - 1))</p>
+                    <p>Zuerst berechnen wir den Wert des Anfangskapitals nach ${n} Jahren ohne Auszahlungen:</p>
+                    <p class="math">K<sub>0</sub> * q<sup>n</sup> = ${formatCurrency(K0)} * ${q_formatted}<sup>${n}</sup> = ${term1_formatted} €</p>
+                    <p>Nun setzen wir diesen Wert in die Gleichung ein:</p>
+                    <p class="math">${formatCurrency(Kn)} = ${term1_formatted} - r * ${q_formatted} * ((${q_formatted}<sup>${n}</sup> - 1) / (${q_formatted} - 1))</p>
+                     <p>Wir stellen die Formel nach r um:</p>
+                     <p class="math">r * q * (q<sup>n</sup> - 1) / (q - 1) = ${term1_formatted} - ${formatCurrency(Kn)}</p>
+                     <p class="math">r * ${q_formatted} * ((${q_formatted}<sup>${n}</sup> - 1) / (${q_formatted} - 1)) = ${formatCurrency(term1 - Kn)}</p>
+                     <p>Zuerst berechnen wir den Faktor vor r:</p>
+                     <p class="math">q * (q<sup>n</sup> - 1) / (q - 1) = ${q_formatted} * ((${q_formatted}<sup>${n}</sup> - 1) / (${q_formatted} - 1)) = ${term2_denominator_formatted}</p>
+                     <p>Nun setzen wir diesen Faktor ein:</p>
+                     <p class="math">r * ${term2_denominator_formatted} = ${formatCurrency(term1 - Kn)}</p>
+                     <p class="math">r = (${formatCurrency(term1 - Kn)}) / ${term2_denominator_formatted}</p>
+                     <p class="math">r = ${formatCurrency(result)} €</p>
+                    <p class="math"><strong>Ergebnis:</strong> Die jährliche Auszahlung betrug ${formatCurrency(result)} €.</p>
+                `;
+            } else if (taskType === "nachschüssige_kapalminderung_r") { // Kapitalminderung, r gesucht
+                 const term1 = K0 * Math.pow(q, n); // K0 * q^n
+                 const term1_formatted = formatCurrency(term1);
+                 const term2_denominator = (Math.pow(q, n) - 1) / (q - 1); // (q^n - 1) / (q - 1)
+                 const term2_denominator_formatted = term2_denominator.toFixed(4);
+
+                solutionText = `
+                    <h3 class="text-lg font-semibold mb-2">Lösung: Nachschüssige Kapitalminderung (Auszahlung vom Konto - r gesucht)</h3>
+                    <p>Bei der nachschüssigen Kapitalminderung (durch Auszahlungen) wird vom verzinsten Kapital am Ende jedes Jahres eine Rate entnommen.</p>
+                    <p>Wir verwenden die allgemeine Formel für das Endkapital K<sub>n</sub>:</p>
+                    <p class="math"><strong>Formel:</strong> K<sub>n</sub> = K<sub>0</sub> * q<sup>n</sup> - r * (q<sup>n</sup> - 1) / (q - 1)</p>
+                    <p><strong>Gegeben:</strong> K<sub>0</sub> = ${formatCurrency(K0)} €, K<sub>n</sub> = ${formatCurrency(Kn)} €, n = ${n} Jahre, p = ${p_formatted}</p>
+                    <p><strong>Berechnung:</strong></p>
+                    <p class="math">q = 1 + p/100 = 1 + ${formatCurrency(p)}/100 = ${q_formatted}</p>
+                    <p>Wir setzen die bekannten Werte in die Formel ein:</p>
+                    <p class="math">${formatCurrency(Kn)} = ${formatCurrency(K0)} * ${q_formatted}<sup>${n}</sup> - r * ((${q_formatted}<sup>${n}</sup> - 1) / (${q_formatted} - 1))</p>
+                    <p>Zuerst berechnen wir den Wert des Anfangskapitals nach ${n} Jahren ohne Auszahlungen:</p>
+                    <p class="math">K<sub>0</sub> * q<sup>n</sup> = ${formatCurrency(K0)} * ${q_formatted}<sup>${n}</sup> = ${term1_formatted} €</p>
+                     <p>Nun setzen wir diesen Wert in die Gleichung ein:</p>
+                    <p class="math">${formatCurrency(Kn)} = ${term1_formatted} - r * ((${q_formatted}<sup>${n}</sup> - 1) / (${q_formatted} - 1))</p>
+                     <p>Wir stellen die Formel nach r um:</p>
+                     <p class="math">r * (q<sup>n</sup> - 1) / (q - 1) = ${term1_formatted} - ${formatCurrency(Kn)}</p>
+                      <p class="math">r * ((${q_formatted}<sup>${n}</sup> - 1) / (${q_formatted} - 1)) = ${formatCurrency(term1 - Kn)}</p>
+                      <p>Zuerst berechnen wir den Faktor vor r:</p>
+                     <p class="math">(q<sup>n</sup> - 1) / (q - 1) = ((${q_formatted}<sup>${n}</sup> - 1) / (${q_formatted} - 1)) = ${term2_denominator_formatted}</p>
+                     <p>Nun setzen wir diesen Faktor ein:</p>
+                     <p class="math">r * ${term2_denominator_formatted} = ${formatCurrency(term1 - Kn)}</p>
+                     <p class="math">r = (${formatCurrency(term1 - Kn)}) / ${term2_denominator_formatted}</p>
+                     <p class="math">r = ${formatCurrency(result)} €</p>
+                    <p class="math"><strong>Ergebnis:</strong> Die jährliche Auszahlung betrug ${formatCurrency(result)} €.</p>
                 `;
             }
 
@@ -397,10 +655,19 @@
 
         /**
          * Generiert eine neue Aufgabe und aktualisiert die Anzeige.
+         * @param {string|undefined} specificTaskCategory - Optional: Die spezifische Kategorie von Aufgabentypen, die generiert werden soll ('kn_gesucht', 'k0_gesucht', 'r_gesucht', 'n_gesucht').
          */
-        function generateNewTask() {
-            // Zufälligen Aufgabentyp wählen
-            const taskType = taskTypes[randomInt(0, taskTypes.length - 1)];
+        function generateNewTask(specificTaskCategory) {
+            let taskType;
+            if (specificTaskCategory && taskCategories[specificTaskCategory]) {
+                // Wähle zufälligen Aufgabentyp aus der spezifischen Kategorie
+                const categoryTypes = taskCategories[specificTaskCategory];
+                taskType = categoryTypes[randomInt(0, categoryTypes.length - 1)];
+            } else {
+                // Wähle zufälligen Aufgabentyp aus allen Typen (für "Zufällige Aufgabe")
+                taskType = allTaskTypes[randomInt(0, allTaskTypes.length - 1)];
+            }
+
 
             // Parameter für die Aufgabe generieren
             currentTask = generateTaskParameters(taskType);
@@ -417,6 +684,14 @@
 
             // Lösungstext generieren (wird erst bei Bedarf angezeigt)
             document.getElementById("solution").innerHTML = generateSolutionText(currentTask);
+
+            // Platzhaltertext für die Eingabe mit der korrekten Einheit setzen
+            const userAnswerInput = document.getElementById("userAnswer");
+            if (currentTask.taskType.includes("_n")) {
+                userAnswerInput.placeholder = "Gib die Anzahl der Jahre ein (z.B. 10)";
+            } else {
+                userAnswerInput.placeholder = "Gib den Betrag in € ein (z.B. 1534,28)";
+            }
         }
 
         /**
@@ -444,8 +719,13 @@
                 return; // Beende die Funktion hier
             }
 
-            // Überprüfen mit Toleranz für Rundungsfehler (z.B. 0.01 €)
-            const isCorrect = Math.abs(userValue - currentTask.result) < 0.01;
+            // Überprüfen mit Toleranz für Rundungsfehler (z.B. 0.01 € für Geld, 0.1 für Jahre)
+            let tolerance = 0.01;
+            if (currentTask.taskType.includes("_n")) { // Bei Jahren ist eine geringere Genauigkeit oft akzeptabel
+                 tolerance = 0.1;
+            }
+
+            const isCorrect = Math.abs(userValue - currentTask.result) < tolerance;
 
             // Feedback anzeigen
             resultMessage.style.display = "block";
@@ -454,7 +734,8 @@
                 resultMessage.textContent = "Richtig! Deine Antwort ist korrekt.";
             } else {
                 resultMessage.className = "result incorrect p-4 rounded-md text-center bg-red-200 text-red-800";
-                resultMessage.textContent = `Leider falsch. Versuche es noch einmal oder schau dir die Lösung an. Das korrekte Ergebnis wäre ${formatCurrency(currentTask.result)} €.`;
+                let correctAnswerFormatted = currentTask.taskType.includes("_n") ? Math.round(currentTask.result) + " Jahre" : formatCurrency(currentTask.result) + " €";
+                resultMessage.textContent = `Leider falsch. Versuche es noch einmal oder schau dir die Lösung an. Das korrekte Ergebnis wäre ${correctAnswerFormatted}.`;
             }
         }
 
