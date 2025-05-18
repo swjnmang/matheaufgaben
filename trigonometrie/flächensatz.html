@@ -464,7 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         if (problemType === 0) { // Find Area
-            taskDescription = `Berechnen Sie den Flächeninhalt eines Dreiecks mit den Seitenlängen $${side1} = ${side1Value}\text{ cm}$ und $${side2} = ${side2Value}\text{ cm}$ sowie dem eingeschlossenen Winkel $${angle} = ${angleValue}^\circ$.`;
+            taskDescription = `Berechnen Sie den Flächeninhalt eines Dreiecks mit den Seitenlängen $${side1} = ${side1Value}$ und $${side2} = ${side2Value}$ sowie dem eingeschlossenen Winkel $${angle} = ${angleValue}^\circ$.`;
             solutionSteps.push({
                 heading: "Schritt 1: Formel aufschreiben",
                 text: `Der Flächeninhalt eines Dreiecks kann mit der Formel berechnet werden, wenn zwei Seiten und der eingeschlossene Winkel bekannt sind:
@@ -473,12 +473,12 @@ document.addEventListener('DOMContentLoaded', () => {
              solutionSteps.push({
                 heading: "Schritt 2: Werte einsetzen",
                 text: `Setzen Sie die gegebenen Werte ein:
-                $$A = \\frac{1}{2} \cdot ${side1Value} \text{ cm} \cdot ${side2Value} \text{ cm} \cdot \\sin(${angleValue}^\circ)$$`
+                $$A = \\frac{1}{2} \cdot ${side1Value} \cdot ${side2Value} \cdot \\sin(${angleValue}^\circ)$$`
             });
              solutionSteps.push({
                 heading: "Schritt 3: Berechnen",
                 text: `Berechnen Sie den Flächeninhalt:
-                $$A \\approx ${roundedArea}\text{ cm}^2$$`
+                $$A \\approx ${roundedArea}$$`
             });
             sketchSVG = createTriangleSketch(angles, roundedSides, angle, null); // Area is unknown, but we show all knowns
 
@@ -495,7 +495,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const areaValue = roundedArea;
 
 
-            taskDescription = `Ein Dreieck hat den Flächeninhalt $A = ${areaValue}\text{ cm}^2$. Eine Seite hat die Länge $${knownSide} = ${knownSideValue}\text{ cm}$, und der eingeschlossene Winkel beträgt $${angle} = ${angleValue}^\circ$. Berechnen Sie die Länge der Seite $${unknownSide}$.`;
+            taskDescription = `Ein Dreieck hat den Flächeninhalt $A = ${areaValue}$. Eine Seite hat die Länge $${knownSide} = ${knownSideValue}$, und der eingeschlossene Winkel beträgt $${angle} = ${angleValue}^\circ$. Berechnen Sie die Länge der Seite $${unknownSide}$.`;
             unknownElement = `unknown-side-${unknownSide}`;
 
             solutionSteps.push({
@@ -511,12 +511,12 @@ document.addEventListener('DOMContentLoaded', () => {
              solutionSteps.push({
                 heading: "Schritt 3: Werte einsetzen",
                 text: `Setzen Sie die gegebenen Werte ein:
-                $$${unknownSide} = \\frac{2 \cdot ${areaValue} \text{ cm}^2}{${knownSideValue} \text{ cm} \cdot \\sin(${angleValue}^\circ)}$$`
+                $$${unknownSide} = \\frac{2 \cdot ${areaValue}}{${knownSideValue} \cdot \\sin(${angleValue}^\circ)}$$`
             });
              solutionSteps.push({
                 heading: "Schritt 4: Berechnen",
                 text: `Berechnen Sie die Länge der Seite:
-                $$${unknownSide} \\approx ${unknownSideValue}\text{ cm}$$`
+                $$${unknownSide} \\approx ${unknownSideValue}$$`
             });
 
             sketchSVG = createTriangleSketch(angles, roundedSides, angle, unknownElement);
@@ -546,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
              // Check which possible angle is the correct one based on the original generated angle
              if (Math.abs(possibleAngle1 - angleValue) < Math.abs(possibleAngle2 - angleValue)) {
                  // The principal angle is the correct one
-                  solutionExplanation = `$$ \\sin(${angle}) = \\frac{2A}{${side1}${side2}} = \\frac{2 \cdot ${areaValue} \text{ cm}^2}{${side1Value} \text{ cm} \cdot ${side2Value} \text{ cm}} \\approx ${round(sin_angle_clamped, 3)}$$
+                  solutionExplanation = `$$ \\sin(${angle}) = \\frac{2A}{${side1}${side2}} = \\frac{2 \cdot ${areaValue}}{${side1Value} \cdot ${side2Value}} \\approx ${round(sin_angle_clamped, 3)}$$
                   Nun verwenden wir die Umkehrfunktion, den Arkussinus ($\arcsin$):
                   $$ ${angle} = \\arcsin\\left(${round(sin_angle_clamped, 3)}\\right) \\approx ${possibleAngle1}^\circ$$
                   Da der Winkel im Dreieck zwischen $0^\circ$ und $180^\circ$ liegen muss und $\\sin(${angle})$ positiv ist, gibt es potenziell auch die Lösung $180^\circ - ${possibleAngle1}^\circ = ${possibleAngle2}^\circ$.
@@ -554,7 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
              } else {
                   // The supplementary angle (180 - angle) is the correct one
-                 solutionExplanation = `$$ \\sin(${angle}) = \\frac{2A}{${side1}${side2}} = \\frac{2 \cdot ${areaValue} \text{ cm}^2}{${side1Value} \text{ cm} \cdot ${side2Value} \text{ cm}} \\approx ${round(sin_angle_clamped, 3)}$$
+                 solutionExplanation = `$$ \\sin(${angle}) = \\frac{2A}{${side1}${side2}} = \\frac{2 \cdot ${areaValue}}{${side1Value} \cdot ${side2Value}} \\approx ${round(sin_angle_clamped, 3)}$$
                  Nun verwenden wir die Umkehrfunktion, den Arkussinus ($\arcsin$):
                  $$ ${angle} = \\arcsin\\left(${round(sin_angle_clamped, 3)}\\right) \\approx ${possibleAngle1}^\circ$$
                  Für einen Winkel im Dreieck, der zwischen $0^\circ$ und $180^\circ$ liegt und denselben Sinuswert hat, gibt es auch die Lösung $180^\circ - ${possibleAngle1}^\circ = ${possibleAngle2}^\circ$.
@@ -562,7 +562,7 @@ document.addEventListener('DOMContentLoaded', () => {
              }
 
 
-            taskDescription = `Ein Dreieck hat den Flächeninhalt $A = ${areaValue}\text{ cm}^2$. Zwei Seiten, die den Winkel $${angle}$ einschließen, haben die Längen $${side1} = ${side1Value}\text{ cm}$ und $${side2} = ${side2Value}\text{ cm}$. Berechnen Sie die Größe des Winkels $${angle}$.`;
+            taskDescription = `Ein Dreieck hat den Flächeninhalt $A = ${areaValue}$. Zwei Seiten, die den Winkel $${angle}$ einschließen, haben die Längen $${side1} = ${side1Value}$ und $${side2} = ${side2Value}$. Berechnen Sie die Größe des Winkels $${angle}$.`;
             unknownElement = `unknown-angle-${angle}`;
 
              solutionSteps.push({
