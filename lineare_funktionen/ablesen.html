@@ -26,6 +26,27 @@
             box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
             border: 1px solid #e0e0e0;
             text-align: center;
+            transition: all 0.3s ease-in-out;
+            box-sizing: border-box;
+        }
+        /* CSS for simulated fullscreen for the whole container */
+        #task-generator-container.fullscreen-active {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            max-width: none;
+            z-index: 9999;
+            margin: 0;
+            border-radius: 0;
+            border: none;
+            overflow-y: auto;
+            /* New flex properties for centering */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         #task-generator-container h2 {
             color: #333;
@@ -62,6 +83,11 @@
             overflow: hidden;
             border: 1px solid #dcdcdc;
             background-color: white;
+        }
+        /* In fullscreen, ggb-container should not take full width to be centered */
+        #task-generator-container.fullscreen-active #ggb-container {
+            width: 80%;
+            max-width: 90vh; /* Limit width based on height for better aspect ratio */
         }
         #task-text {
             font-size: 1.1em;
@@ -228,14 +254,13 @@
         ggbApplet.reset();
         ggbApplet.evalCommand(`f(x) = ${correctM}*x + ${correctT}`);
         
-        // Find two integer points for the slope triangle
         p1.x = 0;
         p1.y = correctT;
 
         if (Number.isInteger(m)) {
             p2.x = 1;
             p2.y = correctM + correctT;
-        } else { // Fraction or decimal
+        } else { 
             let denominator = 1;
             if (Math.abs(correctM * 2) % 1 === 0) denominator = 2;
             if (Math.abs(correctM * 4) % 1 === 0) denominator = 4;
@@ -304,34 +329,26 @@
         solutionDiv.style.display = 'block';
         document.getElementById('show-answer-btn').disabled = true;
     }
-
+    
+    // Vollbild-Funktion für den gesamten Container
     function toggleFullscreen() {
-        const elem = document.getElementById('ggb-container');
-        if (!document.fullscreenElement) {
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen();
-            } else if (elem.webkitRequestFullscreen) { /* Safari */
-                elem.webkitRequestFullscreen();
-            }
-        } else {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            }
-        }
-    }
-
-    document.addEventListener('fullscreenchange', () => {
+        const taskContainer = document.getElementById('task-generator-container');
         const fullscreenButton = document.getElementById('fullscreen-btn');
-        if (document.fullscreenElement) {
+        
+        taskContainer.classList.toggle('fullscreen-active');
+
+        if (taskContainer.classList.contains('fullscreen-active')) {
             fullscreenButton.textContent = 'Vollbild beenden';
         } else {
             fullscreenButton.textContent = 'Vollbild';
         }
-        // Force GeoGebra to resize after a short delay
+
+        // GeoGebra zwingen, sich an die neue Größe anzupassen
         setTimeout(() => {
            if(ggbApplet) window.dispatchEvent(new Event('resize'));
         }, 100);
-    });
+    }
+
 
     // GeoGebra Applet Initialisierung
     var params = {
@@ -357,4 +374,5 @@
 
 </body>
 </html>
+
 
