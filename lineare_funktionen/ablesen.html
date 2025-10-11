@@ -61,6 +61,7 @@
             border-radius: 8px;
             overflow: hidden;
             border: 1px solid #dcdcdc;
+            background-color: white;
         }
         #task-text {
             font-size: 1.1em;
@@ -132,6 +133,7 @@
         }
         .check-button { background: linear-gradient(145deg, #28a745, #218838); }
         .secondary-button { background: linear-gradient(145deg, #6c757d, #5a6268); }
+        .fullscreen-button { background: linear-gradient(145deg, #34495e, #2c3e50); }
     </style>
 </head>
 <body>
@@ -161,6 +163,7 @@
         <button class="generator-button" onclick="generateNewTask()">Neue Aufgabe</button>
         <button class="generator-button check-button" id="check-btn" onclick="checkSolution()">Lösung prüfen</button>
         <button class="generator-button secondary-button" id="show-answer-btn" onclick="showAnswer()">Lösung anzeigen</button>
+        <button class="generator-button fullscreen-button" id="fullscreen-btn" onclick="toggleFullscreen()">Vollbild</button>
     </div>
 
     <div id="solution-output" style="display: none;"></div>
@@ -233,7 +236,6 @@
             p2.x = 1;
             p2.y = correctM + correctT;
         } else { // Fraction or decimal
-            // Find denominator to get integer x step
             let denominator = 1;
             if (Math.abs(correctM * 2) % 1 === 0) denominator = 2;
             if (Math.abs(correctM * 4) % 1 === 0) denominator = 4;
@@ -244,8 +246,8 @@
 
         ggbApplet.evalCommand(`P1=(${p1.x}, ${p1.y})`);
         ggbApplet.evalCommand(`P2=(${p2.x}, ${p2.y})`);
-        ggbApplet.setVisible('P1', false); // Punkt ausblenden mit API-Methode
-        ggbApplet.setVisible('P2', false); // Punkt ausblenden mit API-Methode
+        ggbApplet.setVisible('P1', false); 
+        ggbApplet.setVisible('P2', false); 
 
         solutionSteps = `
             <strong>1. y-Achsenabschnitt t ablesen:</strong><br>
@@ -274,7 +276,6 @@
 
         let mUser, tUser;
         try {
-            // Allow fractions like 2/3 in input
             mUser = eval(mUserInput);
             tUser = eval(tUserInput);
         } catch (e) {
@@ -304,6 +305,34 @@
         document.getElementById('show-answer-btn').disabled = true;
     }
 
+    function toggleFullscreen() {
+        const elem = document.getElementById('ggb-container');
+        if (!document.fullscreenElement) {
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) { /* Safari */
+                elem.webkitRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+        const fullscreenButton = document.getElementById('fullscreen-btn');
+        if (document.fullscreenElement) {
+            fullscreenButton.textContent = 'Vollbild beenden';
+        } else {
+            fullscreenButton.textContent = 'Vollbild';
+        }
+        // Force GeoGebra to resize after a short delay
+        setTimeout(() => {
+           if(ggbApplet) window.dispatchEvent(new Event('resize'));
+        }, 100);
+    });
+
     // GeoGebra Applet Initialisierung
     var params = {
         "appName": "classic", 
@@ -315,7 +344,7 @@
         "perspective": "G", // This forces Graphics View only
         "useBrowserForJS": true,
         "appletOnLoad": function(api) {
-            ggbApplet = api; // API-Objekt korrekt zuweisen
+            ggbApplet = api; 
             setDifficulty('easy');
         }
     };
