@@ -87,7 +87,7 @@
             border-radius: 8px;
             border: 1px solid #ccc;
             font-size: 1em;
-            width: 80px;
+            width: 200px; /* Breiter für den ganzen Term */
             text-align: center;
             font-family: inherit;
         }
@@ -157,7 +157,7 @@
                 font-size: 1.2em;
             }
             .equation-input {
-                width: 70px;
+                width: 70%;
             }
              #ggb-container {
                 width: 100%; /* Auf Mobilgeräten volle Breite nutzen */
@@ -189,7 +189,7 @@
     <div id="task-text">Bestimme die Funktionsgleichung der abgebildeten Geraden.</div>
 
     <div id="solution-input-container">
-        y = <input type="text" id="m-input" class="equation-input" placeholder="m"> x + <input type="text" id="t-input" class="equation-input" placeholder="t">
+        y = <input type="text" id="term-input" class="equation-input" placeholder="z.B. 3x+4">
     </div>
     
     <div id="feedback-output"></div>
@@ -226,8 +226,7 @@
 
         // Reset UI
         document.getElementById('feedback-output').textContent = '';
-        document.getElementById('m-input').value = '';
-        document.getElementById('t-input').value = '';
+        document.getElementById('term-input').value = '';
         document.getElementById('solution-output').style.display = 'none';
         document.getElementById('show-answer-btn').disabled = true;
 
@@ -283,6 +282,16 @@
         ggbApplet.setVisible('P1', false); 
         ggbApplet.setVisible('P2', false); 
 
+        let finalEquation = `y = `;
+        if(correctM === 1) finalEquation += 'x';
+        else if(correctM === -1) finalEquation += '-x';
+        else if(correctM !== 0) finalEquation += `${correctM}x`;
+
+        if(correctT > 0 && correctM !== 0) finalEquation += ` + ${correctT}`;
+        else if(correctT < 0) finalEquation += ` - ${Math.abs(correctT)}`;
+        else if(correctT > 0 && correctM === 0) finalEquation += `${correctT}`;
+
+
         solutionSteps = `
             <strong>1. y-Achsenabschnitt t ablesen:</strong><br>
             Die Gerade schneidet die y-Achse beim Wert ${correctT}. Also ist t = ${correctT}.<br><br>
@@ -291,7 +300,7 @@
             Änderung in x-Richtung: ${p2.x - p1.x}<br>
             Änderung in y-Richtung: ${p2.y - p1.y}<br>
             m = (y-Änderung) / (x-Änderung) = ${correctM}<br><br>
-            <strong>Funktionsgleichung: y = ${correctM}x + ${correctT}</strong>
+            <strong>Funktionsgleichung: ${finalEquation}</strong>
         `;
     }
 
@@ -299,34 +308,57 @@
         const feedback = document.getElementById('feedback-output');
         const showAnswerBtn = document.getElementById('show-answer-btn');
         
-        const mUserInput = document.getElementById('m-input').value.replace(',', '.');
-        const tUserInput = document.getElementById('t-input').value.replace(',', '.');
+        // Sanitize user input for more flexibility
+        let userInput = document.getElementById('term-input').value
+            .replace(/\s/g, '')      // 1. Remove all spaces
+            .replace(',', '.')       // 2. Replace comma with dot for decimals
+            .replace(/−|–/g, '-')    // 3. Standardize minus signs/hyphens
+            .replace(/\*x/i, 'x');   // 4. Handle multiplication sign (e.g., 3*x)
 
-        if (mUserInput === '' || tUserInput === '') {
-            feedback.textContent = 'Bitte fülle beide Felder (m und t) aus.';
+        if (userInput === '') {
+            feedback.textContent = 'Bitte gib den Funktionsterm ein.';
             feedback.className = 'incorrect';
             return;
         }
 
-        let mUser, tUser;
-        try {
-            mUser = eval(mUserInput);
-            tUser = eval(tUserInput);
-        } catch (e) {
-             feedback.textContent = 'Deine Eingabe ist ungültig. Gib Zahlen oder Brüche (z.B. 2/3) ein.';
-             feedback.className = 'incorrect';
-             return;
+        let userM = 0;
+        let userT = 0;
+
+        const xTermRegex = /(-?\d*\.?\d*)x/i;
+        const match = userInput.match(xTermRegex);
+
+        if (match) {
+            let m_str = match[1];
+            if (m_str === '') userM = 1;
+            else if (m_str === '-') userM = -1;
+            else userM = parseFloat(m_str);
+            
+            let t_str = userInput.replace(match[0], '');
+            if (t_str === '' || t_str === '+') userT = 0;
+            else userT = parseFloat(t_str);
+        } else {
+            userM = 0;
+            try {
+                userT = parseFloat(userInput);
+            } catch (e) {
+                feedback.textContent = 'Deine Eingabe ist ungültig.';
+                feedback.className = 'incorrect';
+                return;
+            }
         }
-        
-        const isMCorrect = Math.abs(mUser - correctM) < 0.01;
-        const isTCorrect = Math.abs(tUser - correctT) < 0.01;
+
+        if (isNaN(userM)) userM = 0;
+        if (isNaN(userT)) userT = 0;
+
+        const isMCorrect = Math.abs(userM - correctM) < 0.01;
+        const isTCorrect = Math.abs(userT - correctT) < 0.01;
 
         if (isMCorrect && isTCorrect) {
             feedback.textContent = 'Richtig! Perfekt!';
             feedback.className = 'correct';
             showAnswerBtn.disabled = true;
         } else {
-            feedback.textContent = 'Leider nicht ganz richtig. Überprüfe deine Werte!';
+            feedback.textContent = 'Leider nicht ganz richtig. Überprüfe deinen Funktionsterm!';
             feedback.className = 'incorrect';
             showAnswerBtn.disabled = false;
         }
