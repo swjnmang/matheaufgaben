@@ -151,6 +151,7 @@
         }
         .check-button { background: linear-gradient(145deg, #28a745, #218838); }
         .secondary-button { background: linear-gradient(145deg, #6c757d, #5a6268); }
+        .video-button { background: linear-gradient(145deg, #ff0000, #cc0000); } /* Distinct color for video */
     </style>
 </head>
 <body>
@@ -185,6 +186,7 @@
         <button class="generator-button" onclick="generateNewTask()">Neue Aufgabe</button>
         <button class="generator-button check-button" id="check-btn" onclick="checkSolution()">Lösung prüfen</button>
         <button class="generator-button secondary-button" id="show-answer-btn" onclick="showAnswer()">Lösung anzeigen</button>
+        <button class="generator-button video-button" onclick="openVideo()">Erklärvideo</button>
     </div>
 
     <div id="solution-output" style="display: none;"></div>
@@ -350,6 +352,10 @@
         solutionDiv.innerHTML = solutionSteps;
         solutionDiv.style.display = 'block';
         document.getElementById('show-answer-btn').disabled = true;
+    }
+
+    function openVideo() {
+        window.open("https://youtu.be/W14DzAUEMCA?si=Mxaz6IO3p8T-N_A", "_blank");
     }
 
     window.onload = function() {
