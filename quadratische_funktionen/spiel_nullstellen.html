@@ -143,11 +143,11 @@
         }
 
         function generateQuadraticFunction() {
-            // NEU: 'a' ist jetzt ein zufälliger Wert mit max. einer Nachkommastelle.
-            const a = -(Math.floor(Math.random() * 6) + 5) / 10; // Ergibt Werte von -0.5 bis -1.0
+            // 'a' ist jetzt ein fester ganzzahliger Wert.
+            const a = -1;
             let x1, x2;
             do {
-                // KORREKTUR: Nullstellen werden jetzt im Bereich von -9 bis 9 generiert.
+                // Nullstellen werden jetzt im Bereich von -9 bis 9 generiert.
                 x1 = Math.floor(Math.random() * 19) - 9; 
                 x2 = Math.floor(Math.random() * 19) - 9;
             } while (x1 === x2 && Math.random() < 0.5); // Nur die Prüfung auf doppelte Nullstellen bleibt.
@@ -155,9 +155,18 @@
             const b = -a * (x1 + x2);
             const c = a * x1 * x2;
             
-            let b_text = b === 0 ? "" : (b > 0 ? ` + ${b.toFixed(1)}x` : ` - ${Math.abs(b).toFixed(1)}x`);
-            let c_text = c === 0 ? "" : (c > 0 ? ` + ${c.toFixed(1)}` : ` - ${Math.abs(c).toFixed(1)}`);
-            let a_text = a.toFixed(1);
+            // Formatierung für ganzzahlige Werte
+            let a_text = a === -1 ? "-" : (a === 1 ? "" : `${a}`);
+            let b_text = "";
+            if (b !== 0) {
+                if (Math.abs(b) === 1) {
+                    b_text = b > 0 ? " + x" : " - x";
+                } else {
+                    b_text = b > 0 ? ` + ${b}x` : ` - ${Math.abs(b)}x`;
+                }
+            }
+            
+            let c_text = c === 0 ? "" : (c > 0 ? ` + ${c}` : ` - ${Math.abs(c)}`);
 
             equationEl.innerHTML = `y = ${a_text}x²${b_text}${c_text}`;
             
@@ -319,8 +328,4 @@
     </script>
 </body>
 </html>
-
-
-
-
 
