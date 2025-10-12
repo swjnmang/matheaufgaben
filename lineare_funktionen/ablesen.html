@@ -21,7 +21,7 @@
             border-radius: 12px;
             padding: 25px 30px;
             width: 100%;
-            max-width: 600px;
+            max-width: 750px; /* Breiter gemacht für die Buttons */
             margin: 20px;
             box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
             border: 1px solid #e0e0e0;
@@ -29,25 +29,7 @@
             transition: all 0.3s ease-in-out;
             box-sizing: border-box;
         }
-        /* CSS for simulated fullscreen for the whole container */
-        #task-generator-container.fullscreen-active {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            max-width: none;
-            z-index: 9999;
-            margin: 0;
-            border-radius: 0;
-            border: none;
-            overflow-y: auto;
-            /* New flex properties for centering */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
+        
         #task-generator-container h2 {
             color: #333;
             margin-bottom: 20px;
@@ -84,11 +66,7 @@
             border: 1px solid #dcdcdc;
             background-color: white;
         }
-        /* In fullscreen, ggb-container should not take full width to be centered */
-        #task-generator-container.fullscreen-active #ggb-container {
-            width: 80%;
-            max-width: 90vh; /* Limit width based on height for better aspect ratio */
-        }
+        
         #task-text {
             font-size: 1.1em;
             line-height: 1.6;
@@ -159,7 +137,35 @@
         }
         .check-button { background: linear-gradient(145deg, #28a745, #218838); }
         .secondary-button { background: linear-gradient(145deg, #6c757d, #5a6268); }
-        .fullscreen-button { background: linear-gradient(145deg, #34495e, #2c3e50); }
+        .video-button { background: linear-gradient(145deg, #ff0000, #cc0000); } 
+
+        /* Responsive Anpassungen */
+        @media (max-width: 640px) {
+            #task-generator-container {
+                padding: 15px;
+                margin: 10px;
+                max-width: 100%;
+            }
+            #task-generator-container h2 {
+                font-size: 1.3em;
+            }
+            .difficulty-button, .generator-button {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+            #solution-input-container {
+                font-size: 1.2em;
+            }
+            .equation-input {
+                width: 70px;
+            }
+        }
+        @media (max-width: 480px) {
+             #solution-input-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -189,7 +195,7 @@
         <button class="generator-button" onclick="generateNewTask()">Neue Aufgabe</button>
         <button class="generator-button check-button" id="check-btn" onclick="checkSolution()">Lösung prüfen</button>
         <button class="generator-button secondary-button" id="show-answer-btn" onclick="showAnswer()">Lösung anzeigen</button>
-        <button class="generator-button fullscreen-button" id="fullscreen-btn" onclick="toggleFullscreen()">Vollbild</button>
+        <button class="generator-button video-button" onclick="openVideo()">Erklärvideo</button>
     </div>
 
     <div id="solution-output" style="display: none;"></div>
@@ -330,25 +336,10 @@
         document.getElementById('show-answer-btn').disabled = true;
     }
     
-    // Vollbild-Funktion für den gesamten Container
-    function toggleFullscreen() {
-        const taskContainer = document.getElementById('task-generator-container');
-        const fullscreenButton = document.getElementById('fullscreen-btn');
-        
-        taskContainer.classList.toggle('fullscreen-active');
-
-        if (taskContainer.classList.contains('fullscreen-active')) {
-            fullscreenButton.textContent = 'Vollbild beenden';
-        } else {
-            fullscreenButton.textContent = 'Vollbild';
-        }
-
-        // GeoGebra zwingen, sich an die neue Größe anzupassen
-        setTimeout(() => {
-           if(ggbApplet) window.dispatchEvent(new Event('resize'));
-        }, 100);
+    // Function to open the explanation video
+    function openVideo() {
+        window.open("https://www.youtube.com/watch?v=r8vCu72ojYw&list=PLI8kX0XEfSuiBG44xXbZ96mOYZ3mtK4Ay&index=9", "_blank");
     }
-
 
     // GeoGebra Applet Initialisierung
     var params = {
@@ -374,5 +365,4 @@
 
 </body>
 </html>
-
 
