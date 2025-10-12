@@ -125,15 +125,15 @@
     <h2>Parabeln zeichnen (Allgemeine Form)</h2>
 
     <div id="task-output">
-        <p>Zeichne den Graphen der folgenden Funktion in ein Koordinatensystem. Erstelle dazu eine Wertetabelle für den x-Bereich von -5 bis 5 mit einer Schrittweite von 0,5.</p>
+        <p>Zeichne den Graphen der folgenden Funktion in ein Koordinatensystem auf einem Blatt Papier. Erstelle dazu eine Wertetabelle für den x-Bereich von -5 bis 5 mit einer Schrittweite von 0,5.</p>
         <div id="equation-display">y = x² + 2x - 1</div>
     </div>
 
-    <div id="solution-container">
+    <div id="solution-container" style="display: none;">
         <div id="ggb-container">
             <div id="ggb-element"></div>
         </div>
-        <div id="table-container" style="display: none;"></div>
+        <div id="table-container"></div>
     </div>
 
     <div class="button-container">
@@ -153,12 +153,12 @@
     }
 
     function generateNewTask() {
-        if (!ggbApplet) return;
-
-        ggbApplet.reset(); // Clear the applet for the new task
-        document.getElementById('table-container').style.display = 'none';
+        // Hide solution for the new task
+        document.getElementById('solution-container').style.display = 'none';
         document.getElementById('table-container').innerHTML = '';
-
+        if (ggbApplet) {
+            ggbApplet.reset();
+        }
 
         const randomInt = (max, min = 0) => Math.floor(Math.random() * (max - min + 1)) + min;
         const randomHalfInt = (max, min) => randomInt(max * 2, min * 2) / 2;
@@ -187,6 +187,14 @@
     }
 
     function drawGraphAndTable() {
+        const solutionContainer = document.getElementById('solution-container');
+        solutionContainer.style.display = 'flex';
+
+        // Force GeoGebra to resize/re-render after its container becomes visible
+        setTimeout(() => {
+            if(ggbApplet) window.dispatchEvent(new Event('resize'));
+        }, 50);
+
         if (ggbApplet && currentEquation) {
             // 1. Draw the graph
             ggbApplet.evalCommand(currentEquation);
@@ -202,7 +210,6 @@
 
             tableHTML += '</tbody></table>';
             tableContainer.innerHTML = tableHTML;
-            tableContainer.style.display = 'block';
         }
     }
 
