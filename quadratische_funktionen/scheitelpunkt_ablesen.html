@@ -185,7 +185,7 @@
     <div id="task-output">Klicke auf "Neue Aufgabe" um zu starten.</div>
 
     <div id="solution-input-container">
-        S( <input type="text" id="xs-input" class="coord-input" placeholder="x_s"> | <input type="text" id="ys-input" class="coord-input" placeholder="y_s"> )
+        S( <input type="text" id="xs-input" class="coord-input" placeholder="xₛ"> | <input type="text" id="ys-input" class="coord-input" placeholder="yₛ"> )
     </div>
     
     <div id="feedback-output"></div>
@@ -235,9 +235,6 @@
         currentTaskType = Math.random() < 0.5 ? 'general_form' : 'vertex_form';
 
         if (currentTaskType === 'general_form') {
-            document.getElementById('xs-input').placeholder = "x_s";
-            document.getElementById('ys-input').placeholder = "y_s";
-
             switch (currentDifficulty) {
                 case 'medium':
                     a = randomChoice([-2, -1.5, -0.5, 0.5, 1.5, 2]);
@@ -285,9 +282,6 @@
             `;
 
         } else { // currentTaskType === 'vertex_form'
-            document.getElementById('xs-input').placeholder = "x_s (umgedrehtes Vorzeichen!)";
-            document.getElementById('ys-input').placeholder = "y_s";
-
             switch (currentDifficulty) {
                 case 'medium':
                     a = randomChoice([-2, -1.5, -0.5, 0.5, 1.5, 2]);
@@ -308,7 +302,7 @@
             }
             if (a === 0) a = 1;
 
-            correctA = formatNumber(a);
+            let correctA = formatNumber(a);
             correctXs = formatNumber(xs);
             correctYs = formatNumber(ys);
 
@@ -340,7 +334,7 @@
         const ysUserInput = document.getElementById('ys-input').value.replace(',', '.');
 
         if (xsUserInput === '' || ysUserInput === '') {
-            feedback.textContent = 'Bitte fülle beide Felder (x_s und y_s) aus.';
+            feedback.textContent = 'Bitte fülle beide Felder (xₛ und yₛ) aus.';
             feedback.className = 'incorrect';
             return;
         }
@@ -382,5 +376,4 @@
 
 </body>
 </html>
-
 
