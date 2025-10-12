@@ -3,664 +3,393 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terme gemischte Operationen - Aufgabengenerator</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Aufgabengenerator: Terme zusammenfassen</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
-        /* Custom styles */
+        /* Modernes & ansprechendes Design */
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #e2e8f0; /* Softer background */
-            background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%239C92AC' fill-opacity='0.1' fill-rule='evenodd'%3E%3Cpath d='M5 0h1L0 6V5zM6 5v1H5z'/%3E%3C/g%3E%3C/svg%3E"); /* Subtle pattern */
             display: flex;
             justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .container {
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 16px; /* More rounded corners */
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* Stronger shadow */
-            width: 100%;
-            max-width: 750px; /* Slightly wider */
-            text-align: center;
-            margin-top: 20px; /* Add some space from top */
-        }
-        .difficulty-buttons button {
-            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out, box-shadow 0.2s ease-in-out;
-        }
-        .difficulty-buttons button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        /* Default state for difficulty buttons (not selected) */
-        .difficulty-buttons button {
-             background-color: #60a5fa; /* Tailwind blue-400, a neutral starting point */
-             color: white;
-        }
-        /* Selected states for difficulty buttons */
-        .difficulty-buttons button.selected-easy {
-            background-color: #22c55e; /* Tailwind green-500 */
-        }
-        .difficulty-buttons button.selected-medium {
-            background-color: #facc15; /* Tailwind yellow-400 */
-        }
-        .difficulty-buttons button.selected-hard {
-            background-color: #ef4444; /* Tailwind red-500 */
-        }
-
-        .answer-button {
-             transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
-             min-width: 120px; /* Ensure buttons have minimum width */
-        }
-         .answer-button:hover {
-             background-color: #e5e7eb; /* Light gray on hover */
-             transform: translateY(-1px);
-         }
-        .answer-button.selected {
-            background-color: #9ca3af; /* Medium gray when selected */
-            color: white;
-        }
-         .answer-button:disabled {
-             opacity: 0.7;
-             cursor: not-allowed;
-         }
-        #feedback {
-            min-height: 1.5em; /* Reserve space to prevent layout shifts */
-            display: flex;
             align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        #task-generator-container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 25px 30px;
+            width: 100%;
+            max-width: 700px;
+            margin: 20px;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
+            text-align: center;
+        }
+        @keyframes correct-flash {
+            0% { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(40, 167, 69, 0.5); }
+            50% { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1), 0 0 0 10px rgba(40, 167, 69, 0); }
+            100% { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(40, 167, 69, 0); }
+        }
+        .correct-flash-animation {
+            animation: correct-flash 0.7s ease-out;
+        }
+        #task-generator-container h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        #score-container {
+            margin-bottom: 20px;
+        }
+        #score-progress-bar-container {
+            width: 100%; background-color: #e0e0e0; border-radius: 10px;
+        }
+        #score-progress-bar {
+            width: 0%; height: 12px; background-color: #ff9800; border-radius: 10px; transition: width 0.5s ease;
+        }
+        #score-text {
+            font-weight: bold; margin-top: 5px; color: #555;
+        }
+        #difficulty-selector {
+            display: flex;
             justify-content: center;
-            gap: 8px; /* Space between icon and text */
+            gap: 10px;
+            margin-bottom: 20px;
         }
-        #feedback .icon {
-            font-size: 1.5em; /* Larger icon */
+        .difficulty-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            color: #495057;
+            transition: all 0.3s ease;
         }
-        .correct-feedback {
-            color: #16a34a; /* Tailwind green-600 */
+        .difficulty-button.active {
+            background-color: #0073aa;
+            color: white;
+            border-color: #0073aa;
+            font-weight: bold;
         }
-        .incorrect-feedback {
-            color: #dc2626; /* Tailwind red-600 */
+        #task-output {
+            background-color: #f8f9fa;
+            border: 1px solid #dcdcdc;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            min-height: 80px;
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #495057;
         }
-         .warning-feedback {
-             color: #d97706; /* Tailwind amber-600 */
-         }
-        /* Ensure responsiveness for smaller screens */
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
-            }
-            .difficulty-buttons {
-                flex-direction: column; /* Stack buttons on small screens */
-                gap: 10px; /* Space between stacked buttons */
-            }
-            .difficulty-buttons button {
-                width: 100%; /* Full width buttons */
-                margin-bottom: 0; /* Remove extra margin */
-            }
-             .answer-buttons {
-                flex-direction: column; /* Stack answer buttons on small screens */
-                gap: 10px; /* Space between stacked answer buttons */
-            }
-             .answer-button {
-                width: 100%; /* Full width answer buttons */
-                margin-bottom: 0; /* Remove extra margin */
-            }
+        .equation-display {
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #005a87;
+            font-family: 'Courier New', Courier, monospace;
+            display: block;
+            margin-top: 15px;
+            text-align: center;
+            word-break: break-all;
+        }
+        #solution-input-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .equation-input {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 1em;
+            width: 100px;
+            text-align: center;
+            font-family: inherit;
+        }
+        #feedback-output {
+            min-height: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .correct { color: #28a745; }
+        .incorrect { color: #dc3545; }
+        #solution-output {
+            background-color: #e9f5e9;
+            border: 1px solid #c8e6c9;
+            color: #2e7d32;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: left;
+            font-family: 'Courier New', Courier, monospace;
+            line-height: 1.8;
+            word-break: break-word;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .generator-button {
+            background: linear-gradient(145deg, #0078b3, #005f8e);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 28px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .generator-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+        .generator-button:disabled {
+            background: linear-gradient(145deg, #c0c0c0, #a9a9a9);
+            cursor: not-allowed;
+            transform: none;
+        }
+        .check-button {
+             background: linear-gradient(145deg, #28a745, #218838);
+        }
+        .secondary-button {
+             background: linear-gradient(145deg, #6c757d, #5a6268);
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1 class="text-3xl font-bold mb-6 text-gray-800">Terme gemischte Operationen</h1>
 
-        <div class="mb-6">
-             <h2 class="text-xl font-semibold mb-3 text-gray-700">Wähle ein Niveau:</h2>
-            <div class="difficulty-buttons flex justify-center space-x-4 md:space-x-6">
-                <button data-level="easy" class="px-6 py-3 rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">Einfach</button>
-                <button data-level="medium" class="px-6 py-3 rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">Mittel</button>
-                <button data-level="hard" class="px-6 py-3 rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">Schwer</button>
-            </div>
+<div id="task-generator-container">
+    <h2>Terme zusammenfassen</h2>
+
+    <div id="score-container">
+        <div id="score-progress-bar-container">
+            <div id="score-progress-bar"></div>
         </div>
-
-        <div id="progress-area" class="mb-6 text-gray-600 font-semibold hidden">
-             Fortschritt: <span id="progress-counter">0</span> Aufgaben richtig gelöst
-        </div>
-
-
-        <div id="task-area" class="mb-8 hidden">
-            <h2 class="text-xl font-semibold mb-3 text-gray-700">Arbeitsauftrag: Berechne den Wert des Terms.</h2>
-            <div id="term-display" class="text-2xl font-mono bg-gray-100 p-4 rounded-lg mb-4"></div>
-
-            <h2 class="text-xl font-semibold mb-3 text-gray-700">Wähle deine Lösung:</h2>
-            <div id="answer-buttons" class="flex flex-wrap justify-center gap-4 mb-6">
-                </div>
-
-            <button id="check-button" class="px-8 py-3 rounded-lg bg-green-500 text-white font-semibold hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">Überprüfen</button>
-            </div>
-
-        <div id="feedback" class="mt-6 text-lg font-semibold"></div>
-
-        <button id="new-task-button" class="mt-6 px-8 py-3 rounded-lg bg-purple-500 text-white font-semibold hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 hidden">Neue Aufgabe</button>
+        <div id="score-text">Punkte: 0 / 20</div>
     </div>
 
-    <script>
-        const difficultyButtons = document.querySelectorAll('.difficulty-buttons button');
-        const taskArea = document.getElementById('task-area');
-        const termDisplay = document.getElementById('term-display');
-        const answerButtonsContainer = document.getElementById('answer-buttons');
-        const checkButton = document.getElementById('check-button');
-        const feedbackDiv = document.getElementById('feedback');
-        const newTaskButton = document.getElementById('new-task-button');
-        const progressArea = document.getElementById('progress-area');
-        const progressCounter = document.getElementById('progress-counter');
+    <div id="main-content">
+        <div id="difficulty-selector">
+            <button class="difficulty-button" id="diff-easy" onclick="setDifficulty('easy')">Leicht</button>
+            <button class="difficulty-button" id="diff-medium" onclick="setDifficulty('medium')">Mittel</button>
+            <button class="difficulty-button" id="diff-hard" onclick="setDifficulty('hard')">Schwer</button>
+        </div>
 
-        let currentLevel = null;
-        let currentTask = null; // Store the task object { term: "...", answer: "..." }
-        let selectedAnswerButton = null;
-        let correctCount = { easy: 0, medium: 0, hard: 0 };
+        <div id="task-output">
+            <p>Fasse den folgenden Term schriftlich zusammen und berechne das Ergebnis.</p>
+            <div id="equation-display"></div>
+        </div>
 
+        <div id="solution-input-container">
+            = <input type="text" id="solution-input" class="equation-input" placeholder="Ergebnis">
+        </div>
 
-        // Event listeners for difficulty buttons
-        difficultyButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                // Remove 'selected' class and level-specific color classes from all buttons
-                difficultyButtons.forEach(btn => {
-                    btn.classList.remove('selected-easy', 'selected-medium', 'selected-hard');
-                });
-                // Add level-specific color class to the clicked button
-                const level = button.dataset.level;
-                button.classList.add(`selected-${level}`);
+        <div id="feedback-output"></div>
 
+        <div class="button-container">
+            <button class="generator-button" onclick="generateNewTask()">Neue Aufgabe</button>
+            <button class="generator-button check-button" onclick="checkSolution()">Lösung prüfen</button>
+            <button class="generator-button secondary-button" id="show-answer-btn" onclick="showAnswer()">Lösung anzeigen</button>
+        </div>
 
-                currentLevel = level;
-                taskArea.classList.remove('hidden');
-                progressArea.classList.remove('hidden');
-                updateProgressDisplay();
-                feedbackDiv.textContent = ''; // Clear previous feedback
-                feedbackDiv.className = 'mt-6 text-lg font-semibold'; // Reset feedback class
-                newTaskButton.classList.add('hidden'); // Hide new task button initially
-                generateNewTask();
-            });
-        });
+        <div id="solution-output" style="display: none;"></div>
+    </div>
 
-        // Event listener for check button
-        checkButton.addEventListener('click', () => {
-            checkAnswer();
-        });
+    <div id="win-screen" style="display: none; padding: 40px 20px;">
+        <h3>🎉 Geschafft! 🎉</h3>
+        <p>Herzlichen Glückwunsch, du hast 20 Punkte erreicht!</p>
+        <p id="win-statistics" style="font-weight: bold; margin-top: 20px;"></p>
+        <button class="generator-button" onclick="startNewGame()">Neue Runde starten</button>
+    </div>
+</div>
 
-        // Event listener for new task button
-        newTaskButton.addEventListener('click', () => {
-            feedbackDiv.textContent = ''; // Clear previous feedback
-             feedbackDiv.className = 'mt-6 text-lg font-semibold'; // Reset feedback class
-            newTaskButton.classList.add('hidden'); // Hide new task button
-            generateNewTask();
-        });
+<script>
+    let correctSolution;
+    let solutionSteps = "";
+    let currentDifficulty = "easy";
+    let score = 0;
+    const GOAL_SCORE = 20;
+    let isFirstTry = true;
+    let totalFirstTries = 0;
+    let correctFirstTries = 0;
 
+    function setDifficulty(level) {
+        currentDifficulty = level;
+        document.querySelectorAll('.difficulty-button').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`diff-${level}`).classList.add('active');
+        generateNewTask();
+    }
+    
+    function updateScore(points) {
+        score += points;
+        updateScoreDisplay();
+    }
 
-        // Function to generate a random integer between min and max (inclusive)
-        function getRandomInt(min, max) {
-            return Math.floor(Math.random() * (max - min + 1)) + min;
+    function updateScoreDisplay() {
+        const scoreBar = document.getElementById('score-progress-bar');
+        const scoreText = document.getElementById('score-text');
+        score = Math.max(0, score); // Prevent score from going below 0
+        const percentage = (score / GOAL_SCORE) * 100;
+        scoreBar.style.width = `${percentage}%`;
+        scoreText.textContent = `Punkte: ${score} / ${GOAL_SCORE}`;
+        
+        if (score >= GOAL_SCORE) {
+            const successRate = totalFirstTries > 0 ? (correctFirstTries / totalFirstTries) * 100 : 0;
+            document.getElementById('win-statistics').textContent = `Du hast ${Math.round(successRate)}% der Fragen im ersten Versuch korrekt beantwortet.`;
+            document.getElementById('main-content').style.display = 'none';
+            document.getElementById('win-screen').style.display = 'block';
         }
+    }
 
-        // Simple expression evaluator (handles +, -, *, / and parentheses)
-        // This is a simplified evaluator for generated structures, not a full-fledged parser.
-        function evaluateExpression(expression) {
-            // Remove spaces for easier processing
-            expression = expression.replace(/\s+/g, '');
+    function startNewGame() {
+        score = 0;
+        totalFirstTries = 0;
+        correctFirstTries = 0;
+        updateScoreDisplay();
+        document.getElementById('main-content').style.display = 'block';
+        document.getElementById('win-screen').style.display = 'none';
+        generateNewTask();
+    }
+    
+    function generateNewTask() {
+        isFirstTry = true;
+        document.getElementById('feedback-output').textContent = '';
+        document.getElementById('solution-input').value = '';
+        document.getElementById('solution-output').style.display = 'none';
+        document.getElementById('show-answer-btn').disabled = true;
 
-            // Handle parentheses recursively
-            while (expression.includes('(')) {
-                const openParen = expression.lastIndexOf('(');
-                const closeParen = expression.indexOf(')', openParen);
-                if (openParen === -1 || closeParen === -1) {
-                    console.error("Mismatched parentheses:", expression);
-                    return NaN; // Indicate error
+        const randomInt = (max, min = 1) => Math.floor(Math.random() * (max - min + 1)) + min;
+        const formatSign = (val) => val >= 0 ? `+ ${val}` : `- ${Math.abs(val)}`;
+
+        let term = "";
+        
+        switch (currentDifficulty) {
+            case 'hard': // Fractions and brackets
+                if (Math.random() < 0.5) { // a * (b + c) + d/e
+                    const a = randomInt(10, 2);
+                    const b = randomInt(10, -10);
+                    const c = randomInt(10, -10);
+                    const e = randomInt(5, 2);
+                    const d = randomInt(10, 1) * e;
+                    term = `${a} * (${b} ${formatSign(c)}) ${formatSign(d)} / ${e}`;
+                    correctSolution = a * (b + c) + d / e;
+                    solutionSteps = `Punkt vor Strich & Klammern zuerst!<br>${term}<br>= ${a} * (${b+c}) + ${d/e}<br>= ${a*(b+c)} + ${d/e}<br>= ${correctSolution}`;
+                } else { // Fractions with MathJax
+                    const n1 = randomInt(20, 1);
+                    const d1 = randomInt(10, 2);
+                    const n2 = randomInt(20, 1);
+                    const d2 = randomInt(10, 2);
+                    term = `$$\\frac{${n1}}{${d1}} * ${n2} + \\frac{${d1*n2}}{${d1}}$$`;
+                    correctSolution = (n1 / d1) * n2 + (d1*n2)/d1;
+                    solutionSteps = `${term}<br>= ${formatNumber(n1/d1)} * ${n2} + ${formatNumber((d1*n2)/d1)}<br>= ${formatNumber((n1/d1)*n2)} + ${formatNumber((d1*n2)/d1)}<br>= ${formatNumber(correctSolution)}`;
                 }
-                const subExpression = expression.substring(openParen + 1, closeParen);
-                const subResult = evaluateExpression(subExpression);
-                if (isNaN(subResult)) return NaN; // Propagate error
-                expression = expression.substring(0, openParen) + subResult + expression.substring(closeParen + 1);
-            }
-
-            // Evaluate multiplication and division
-            let parts = expression.match(/[+-]?\s*\d+(\.\d+)?|\*|\/|[+-]/g); // Match numbers and operators
-             if (!parts) { // Handle case with only one number
-                 return parseFloat(expression);
-             }
-
-            // Reconstruct with spaces for easier splitting
-            expression = parts.join(' ').replace(/\+\s-/g, '- ').replace(/-\s-/g, '+ ');
-
-
-             // Process multiplication and division
-             while (expression.includes('*') || expression.includes('/')) {
-                 const multIndex = expression.indexOf('*');
-                 const divIndex = expression.indexOf('/');
-
-                 let operatorIndex;
-                 if (multIndex !== -1 && (divIndex === -1 || multIndex < divIndex)) {
-                     operatorIndex = multIndex;
-                 } else if (divIndex !== -1 && (multIndex === -1 || divIndex < multIndex)) {
-                     operatorIndex = divIndex;
-                 } else {
-                      break; // No more multiplication or division
-                 }
-
-                 // Split the expression around the operator
-                 const before = expression.substring(0, operatorIndex).trim();
-                 const after = expression.substring(operatorIndex + 1).trim();
-                 const operator = expression[operatorIndex];
-
-                 // Find the numbers involved in the operation
-                 const num1Match = before.match(/[+-]?\s*\d+(\.\d+)?$/);
-                 const num2Match = after.match(/^[+-]?\s*\d+(\.\d+)?/);
-
-                 if (!num1Match || !num2Match) {
-                     console.error("Error parsing numbers for multiplication/division:", expression);
-                     return NaN;
-                 }
-
-                 const num1Str = num1Match[0].trim();
-                 const num2Str = num2Match[0].trim();
-
-                 const num1 = parseFloat(num1Str);
-                 const num2 = parseFloat(num2Str);
-
-                 if (isNaN(num1) || isNaN(num2)) {
-                      console.error("Invalid numbers for multiplication/division:", num1Str, num2Str);
-                      return NaN;
-                 }
-
-                 let result;
-                 if (operator === '*') {
-                     result = num1 * num2;
-                 } else { // '/'
-                      if (num2 === 0) {
-                          console.error("Division by zero:", expression);
-                          return NaN; // Division by zero
-                      }
-                     result = num1 / num2;
-                 }
-
-                 // Replace the evaluated part in the expression
-                 const beforePart = before.substring(0, before.length - num1Str.length).trim();
-                 const afterPart = after.substring(num2Str.length).trim();
-
-                 expression = beforePart + ' ' + result + ' ' + afterPart;
-                 expression = expression.trim().replace(/\s+/g, ' '); // Clean up spaces
-            }
-
-
-            // Evaluate addition and subtraction
-            // Re-split by operators after handling multiplication/division
-            parts = expression.match(/[+-]?\s*\d+(\.\d+)?/g);
-
-             if (!parts) { // Handle case with only one number after evaluation
-                 return parseFloat(expression);
-             }
-
-            let finalResult = 0;
-            let currentSign = 1;
-
-            parts.forEach(part => {
-                 part = part.trim();
-                 if (part === '+') {
-                     currentSign = 1;
-                 } else if (part === '-') {
-                     currentSign = -1;
-                 } else {
-                     const number = parseFloat(part);
-                      if (!isNaN(number)) {
-                        finalResult += currentSign * number;
-                        currentSign = 1; // Reset sign after adding a number
-                      } else {
-                           console.error("Error parsing number for addition/subtraction:", part);
-                           return NaN; // Indicate error
-                      }
-                 }
-            });
-
-
-            return finalResult;
-        }
-
-
-        // Function to generate a task with mixed operations and parentheses
-        function generateTask(level) {
-            let maxAbsValue;
-            let numOperations;
-            let useParentheses = false;
-
-            switch (level) {
-                case 'easy':
-                    maxAbsValue = 10;
-                    numOperations = 2; // e.g., a + b * c
-                    useParentheses = false;
-                    break;
-                case 'medium':
-                    maxAbsValue = 15;
-                    numOperations = 3; // e.g., a + b * c - d
-                    useParentheses = getRandomInt(0, 1) === 1; // 50% chance
-                    break;
-                case 'hard':
-                    maxAbsValue = 20;
-                    numOperations = 4; // e.g., a + b * c - d / e
-                    useParentheses = getRandomInt(0, 1) === 1; // 50% chance
-                    break;
-            }
-
-            let numbers = [];
-            for(let i = 0; i < numOperations + 1; i++) {
-                 let num = getRandomInt(1, maxAbsValue);
-                 // Ensure numbers are not zero if they are divisors
-                 if (i > 0 && numOperations > 0 && getRandomInt(0,1) === 0 && num === 0) {
-                      while(num === 0) num = getRandomInt(1, maxAbsValue);
-                 }
-                 numbers.push(num);
-            }
-
-            let operators = [];
-            const availableOperators = ['+', '-', '*', '/'];
-            for(let i = 0; i < numOperations; i++) {
-                 let op = availableOperators[getRandomInt(0, availableOperators.length - 1)];
-                 // Avoid division that results in non-integers for easy/medium unless necessary
-                 if (op === '/' && level !== 'hard') {
-                      // Find numbers that can be divided
-                      let divisiblePairFound = false;
-                      for(let j = 0; j < numbers.length - 1; j++) {
-                          if (numbers[j] !== 0 && numbers[j+1] !== 0 && numbers[j] % numbers[j+1] === 0) {
-                              divisiblePairFound = true;
-                              break;
-                          }
-                      }
-                      if (!divisiblePairFound) {
-                           // If no divisible pair, change operator to something else
-                           while(op === '/') op = availableOperators[getRandomInt(0, availableOperators.length - 2)]; // Exclude division
-                      } else {
-                           // Ensure the division happens between a divisible pair in the generated string
-                           // This is complex to guarantee in a random generation, so we might need to regenerate
-                           // or simplify the structure. For now, let's just generate and hope for the best,
-                           // and regenerate if the result is not an integer (handled below).
-                      }
-                 }
-                 operators.push(op);
-            }
-
-            let termString = numbers[0].toString();
-            for(let i = 0; i < numOperations; i++) {
-                termString += ` ${operators[i]} ${numbers[i+1]}`;
-            }
-
-            // Add parentheses for medium/hard if enabled
-            if (useParentheses) {
-                 // Simple parentheses around a multiplication or division
-                 let opIndexToParenthesize = -1;
-                 // Find a multiplication or division operator to parenthesize
-                 for(let i = 0; i < operators.length; i++) {
-                     if (operators[i] === '*' || operators[i] === '/') {
-                         opIndexToParenthesize = i;
-                         break; // Parenthesize the first one found
-                     }
-                 }
-
-                 if (opIndexToParenthesize !== -1) {
-                      // Find the start and end index of the terms involved in the operation
-                      let startIndex = termString.indexOf(numbers[opIndexToParenthesize].toString());
-                      let endIndex = termString.indexOf(numbers[opIndexToParenthesize + 1].toString()) + numbers[opIndexToParenthesize + 1].toString().length;
-
-                      // Adjust indices to include the operator and spaces
-                       startIndex = termString.indexOf(`${numbers[opIndexToParenthesize]} ${operators[opIndexToParenthesize]} ${numbers[opIndexToParenthesize + 1]}`);
-                       endIndex = startIndex + `${numbers[opIndexToParenthesize]} ${operators[opIndexToParenthesize]} ${numbers[opIndexToParenthesize + 1]}`.length;
-
-
-                      // Add parentheses
-                      termString = termString.substring(0, startIndex) + '(' + termString.substring(startIndex, endIndex) + ')' + termString.substring(endIndex);
-                 } else if (numOperations >= 2) {
-                      // If no multiplication/division, maybe parenthesize an addition/subtraction in medium/hard
-                       if (level !== 'easy') {
-                            let opIndexToParenthesize = getRandomInt(0, operators.length - 2); // Parenthesize two terms and one operator
-                            let startIndex = termString.indexOf(numbers[opIndexToParenthesize].toString());
-                            let endIndex = termString.indexOf(numbers[opIndexToParenthesize + 1].toString()) + numbers[opIndexToParenthesize + 1].toString().length;
-
-                             startIndex = termString.indexOf(`${numbers[opIndexToParenthesize]} ${operators[opIndexToParenthesize]} ${numbers[opIndexToParenthesize + 1]}`);
-                             endIndex = startIndex + `${numbers[opIndexToParenthesize]} ${operators[opIndexToParenthesize]} ${numbers[opIndexToParenthesize + 1]}`.length;
-
-
-                             termString = termString.substring(0, startIndex) + '(' + termString.substring(startIndex, endIndex) + ')' + termString.substring(endIndex);
-
-                       }
-                 }
-            }
-
-
-            let correctAnswer;
-            try {
-                 // Use the evaluateExpression function to get the correct answer
-                 correctAnswer = evaluateExpression(termString);
-                 // Ensure the correct answer is an integer for easy/medium levels
-                 if (level !== 'hard' && !Number.isInteger(correctAnswer)) {
-                      console.warn("Generated non-integer result in easy/medium. Regenerating...");
-                      return generateTask(level); // Regenerate task
-                 }
-                 // Ensure the correct answer is not NaN (from division by zero or parsing error)
-                 if (isNaN(correctAnswer)) {
-                      console.warn("Generated NaN result. Regenerating...");
-                       return generateTask(level); // Regenerate task
-                 }
-
-            } catch (error) {
-                 console.error("Error evaluating generated expression:", termString, error);
-                 return generateTask(level); // Regenerate on evaluation error
-            }
-
-
-             console.log("Generated Task:", termString); // Debugging log
-             console.log("Correct Answer:", correctAnswer); // Debugging log
-
-
-            return { term: termString, answer: correctAnswer.toString() };
-        }
-
-
-        // Function to generate plausible incorrect answers
-        function generateIncorrectAnswers(correctAnswer, task, count = 3) {
-            const incorrectAnswers = new Set();
-            const correctNum = parseFloat(correctAnswer);
-
-            // Strategies for incorrect answers:
-            // 1. Incorrect order of operations (e.g., left-to-right)
-            // 2. Parentheses errors (ignoring or misinterpreting)
-            // 3. Simple arithmetic errors
-            // 4. Sign errors
-
-             // Simple left-to-right evaluation (ignores order of operations and parentheses)
-             const evaluateLeftToRight = (expression) => {
-                 // Remove spaces and parentheses for this simplified evaluation
-                 expression = expression.replace(/\s+/g, '').replace(/[()]/g, '');
-
-                 const parts = expression.match(/[+-]?\s*\d+(\.\d+)?|\*|\/|[+-]/g);
-                 if (!parts) return parseFloat(expression);
-
-                 let result = parseFloat(parts[0]);
-                 for (let i = 1; i < parts.length; i += 2) {
-                     const operator = parts[i];
-                     const number = parseFloat(parts[i + 1]);
-                      if (isNaN(number)) return NaN;
-
-                     if (operator === '+') result += number;
-                     else if (operator === '-') result -= number;
-                     else if (operator === '*') result *= number;
-                     else if (operator === '/') {
-                          if (number === 0) return NaN;
-                         result /= number;
-                     }
-                 }
-                 return result;
-             };
-
-
-            while (incorrectAnswers.size < count) {
-                let potentialAnswer;
-                let strategy = getRandomInt(0, 3); // 4 strategies
-
-                if (strategy === 0) { // Incorrect order of operations (left-to-right)
-                    potentialAnswer = evaluateLeftToRight(task);
-                } else if (strategy === 1 && task.includes('(')) { // Parentheses error (ignore parentheses)
-                     potentialAnswer = evaluateExpression(task.replace(/[()]/g, '')); // Evaluate without parentheses
-                } else if (strategy === 2) { // Simple arithmetic error
-                     potentialAnswer = correctNum + (getRandomInt(0, 1) === 0 ? 1 : -1) * getRandomInt(1, 5);
-                } else { // Strategy 3: Sign error or slightly larger error
-                     if (correctNum !== 0 && getRandomInt(0,1) === 0) {
-                          potentialAnswer = -correctNum; // Flip sign
-                     } else {
-                          potentialAnswer = correctNum + (getRandomInt(0, 1) === 0 ? 1 : -1) * getRandomInt(3, 8);
-                     }
+                break;
+            case 'medium': // Brackets or point before line
+                {
+                    const a = randomInt(10, 2);
+                    const b = randomInt(10, -10);
+                    const c = randomInt(10, -10);
+                    const d = randomInt(20, -20);
+                    term = `${a} * (${b} ${formatSign(c)}) ${formatSign(d)}`;
+                    correctSolution = a * (b + c) + d;
+                    solutionSteps = `Klammer zuerst!<br>${term}<br>= ${a} * (${b+c}) ${formatSign(d)}<br>= ${a*(b+c)} ${formatSign(d)}<br>= ${correctSolution}`;
                 }
+                break;
+            case 'easy': // Summarize terms
+            default:
+                {
+                    const n1 = randomInt(20, -20);
+                    const n2 = randomInt(20, -20);
+                    const n3 = randomInt(20, -20);
+                    const n4 = randomInt(20, -20);
+                    term = `${n1} ${formatSign(n2)} ${formatSign(n3)} ${formatSign(n4)}`;
+                    correctSolution = n1 + n2 + n3 + n4;
+                    solutionSteps = `${term}<br>= ${n1+n2} ${formatSign(n3)} ${formatSign(n4)}<br>= ${n1+n2+n3} ${formatSign(n4)}<br>= ${correctSolution}`;
+                }
+                break;
+        }
+        
+        document.getElementById('equation-display').innerHTML = term;
+        if (window.MathJax && window.MathJax.typeset) {
+            MathJax.typesetPromise([document.getElementById('equation-display')]).catch((err) => console.log(err.message));
+        }
+    }
 
-                 // Ensure potential answer is a number and not the correct answer
-                 if (!isNaN(potentialAnswer) && potentialAnswer.toString() !== correctAnswer) {
-                     // Format potential answer to avoid unnecessary decimals in integer results
-                      if (Number.isInteger(potentialAnswer)) {
-                           incorrectAnswers.add(potentialAnswer.toString());
-                      } else {
-                           // Keep decimal for non-integer results (hard mode)
-                           incorrectAnswers.add(potentialAnswer.toFixed(2).toString()); // Format to 2 decimal places
-                      }
-                 }
-            }
+    function checkSolution() {
+        const feedback = document.getElementById('feedback-output');
+        const showAnswerBtn = document.getElementById('show-answer-btn');
+        const container = document.getElementById('task-generator-container');
+        
+        const userInput = document.getElementById('solution-input').value.replace(',', '.');
 
-            return Array.from(incorrectAnswers);
+        if (userInput === '') {
+            feedback.textContent = 'Bitte gib eine Lösung ein.';
+            feedback.className = 'incorrect';
+            return;
+        }
+        
+        if (isFirstTry) {
+            totalFirstTries++;
         }
 
-
-        // Function to generate and display a new task
-        function generateNewTask() {
-            try { // Added try-catch for debugging
-                currentTask = generateTask(currentLevel); // Generate task and correct answer
-
-                 // Regenerate if the correct answer is NaN or not an integer in easy/medium
-                 while (isNaN(currentTask.answer) || (currentLevel !== 'hard' && !Number.isInteger(parseFloat(currentTask.answer)))) {
-                      console.warn("Generated invalid or non-integer task result. Regenerating...");
-                      currentTask = generateTask(currentLevel);
-                 }
-
-
-                const incorrectAnswers = generateIncorrectAnswers(currentTask.answer, currentTask.term, 3);
-
-                const allAnswers = [currentTask.answer, ...incorrectAnswers];
-                // Shuffle the answers
-                allAnswers.sort(() => Math.random() - 0.5);
-
-                termDisplay.textContent = currentTask.term + ' ='; // Display the task term
-                answerButtonsContainer.innerHTML = ''; // Clear previous buttons
-                selectedAnswerButton = null; // Reset selected button
-
-                allAnswers.forEach(answer => {
-                    const button = document.createElement('button');
-                    button.textContent = answer;
-                    button.classList.add('answer-button', 'px-6', 'py-3', 'rounded-lg', 'bg-gray-200', 'text-gray-800', 'font-semibold', 'focus:outline-none', 'focus:ring-2', 'focus:ring-blue-500', 'focus:ring-opacity-50');
-                    button.addEventListener('click', () => {
-                        if (selectedAnswerButton) {
-                            selectedAnswerButton.classList.remove('selected');
-                             selectedAnswerButton.classList.remove('bg-blue-500'); // Remove blue background
-                             selectedAnswerButton.classList.add('bg-gray-200'); // Add gray background
-                        }
-                        button.classList.add('selected');
-                         button.classList.remove('bg-gray-200'); // Remove gray background
-                         button.classList.add('bg-blue-500'); // Add blue background for selected
-                        selectedAnswerButton = button;
-                    });
-                    answerButtonsContainer.appendChild(button);
-                });
-
-                feedbackDiv.textContent = ''; // Clear feedback
-                 feedbackDiv.className = 'mt-6 text-lg font-semibold'; // Reset feedback class
-                checkButton.disabled = false; // Enable check button
-                 // Re-enable answer buttons
-                 answerButtonsContainer.querySelectorAll('.answer-button').forEach(button => {
-                     button.disabled = false;
-                     button.classList.remove('bg-green-500', 'bg-red-500', 'text-white');
-                     button.classList.add('bg-gray-200', 'text-gray-800');
-                 });
-            } catch (error) {
-                console.error("Error generating new task:", error); // Log any errors
-                termDisplay.textContent = "Fehler beim Generieren der Aufgabe.";
-                answerButtonsContainer.innerHTML = '';
-                feedbackDiv.innerHTML = '<span class="icon">❌</span> Es gab einen Fehler beim Laden der Aufgabe.';
-                feedbackDiv.className = 'mt-6 text-lg font-semibold incorrect-feedback';
-                 checkButton.disabled = true;
-                 newTaskButton.classList.remove('hidden');
+        const userSolution = parseFloat(userInput);
+        
+        if (Math.abs(userSolution - correctSolution) < 0.01) {
+            feedback.textContent = 'Richtig! Ausgezeichnet!';
+            feedback.className = 'correct';
+            showAnswerBtn.disabled = true;
+            if (isFirstTry) {
+                correctFirstTries++;
+                updateScore(1);
+                container.classList.add('correct-flash-animation');
+                setTimeout(() => {
+                    container.classList.remove('correct-flash-animation');
+                }, 700);
+            }
+            setTimeout(generateNewTask, 1200); // Load next task automatically
+        } else {
+            feedback.textContent = 'Leider nicht ganz richtig. Überprüfe deinen Rechenweg!';
+            feedback.className = 'incorrect';
+            showAnswerBtn.disabled = false;
+            if(isFirstTry) {
+                updateScore(-0.5);
             }
         }
+        isFirstTry = false;
+    }
 
-        // Function to check the user's answer
-        function checkAnswer() {
-            if (!selectedAnswerButton) {
-                feedbackDiv.innerHTML = '<span class="icon">⚠️</span> Bitte wähle eine Antwort aus!';
-                feedbackDiv.className = 'mt-6 text-lg font-semibold warning-feedback';
-                return;
-            }
-
-            const userAnswer = selectedAnswerButton.textContent.trim();
-
-             // Standardize format for comparison (remove spaces, leading +)
-            const standardizedUserAnswer = userAnswer.replace(/\s+/g, '').replace(/^\+/, '');
-            const standardizedCorrectAnswer = currentTask.answer.toString().replace(/\s+/g, '').replace(/^\+/, '');
-
-
-            if (standardizedUserAnswer === standardizedCorrectAnswer) {
-                feedbackDiv.innerHTML = '<span class="icon">✅</span> Richtig!';
-                feedbackDiv.className = 'mt-6 text-lg font-semibold correct-feedback';
-                checkButton.disabled = true; // Disable check button
-                newTaskButton.classList.remove('hidden'); // Show new task button
-                 correctCount[currentLevel]++; // Increment correct count for the level
-                 updateProgressDisplay(); // Update progress display
-
-                 // Highlight the correct answer
-                answerButtonsContainer.querySelectorAll('.answer-button').forEach(button => {
-                    const standardizedButtonText = button.textContent.trim().replace(/\s+/g, '').replace(/^\+/, '');
-                     if (standardizedButtonText === standardizedCorrectAnswer) {
-                         button.classList.remove('bg-blue-500', 'bg-gray-200', 'selected');
-                         button.classList.add('bg-green-500', 'text-white');
-                     } else {
-                         button.classList.remove('bg-blue-500', 'selected');
-                         button.classList.add('bg-gray-200', 'text-gray-800');
-                     }
-                     button.disabled = true; // Disable all answer buttons
-                });
-
-            } else {
-                feedbackDiv.innerHTML = `<span class="icon">❌</span> Leider falsch. Die richtige Lösung wäre: ${currentTask.answer}`;
-                feedbackDiv.className = 'mt-6 text-lg font-semibold incorrect-feedback';
-                 newTaskButton.classList.remove('hidden'); // Show new task button
-                 checkButton.disabled = true; // Disable check button
-                 // Highlight the correct answer and mark the selected wrong answer
-                 answerButtonsContainer.querySelectorAll('.answer-button').forEach(button => {
-                    const standardizedButtonText = button.textContent.trim().replace(/\s+/g, '').replace(/^\+/, '');
-                    if (standardizedButtonText === standardizedCorrectAnswer) {
-                         button.classList.remove('bg-blue-500', 'bg-gray-200', 'selected');
-                         button.classList.add('bg-green-500', 'text-white'); // Correct answer in green
-                    } else if (button === selectedAnswerButton) {
-                         button.classList.remove('bg-blue-500', 'selected');
-                         button.classList.add('bg-red-500', 'text-white'); // Selected wrong answer in red
-                    } else {
-                         button.classList.remove('bg-blue-500', 'selected');
-                         button.classList.add('bg-gray-200', 'text-gray-800'); // Other answers gray
-                    }
-                    button.disabled = true; // Disable all answer buttons
-                });
-            }
+    function showAnswer() {
+        const solutionDiv = document.getElementById('solution-output');
+        solutionDiv.innerHTML = solutionSteps;
+        solutionDiv.style.display = 'block';
+        document.getElementById('show-answer-btn').disabled = true;
+        if (isFirstTry) {
+             totalFirstTries++;
         }
-
-        // Function to update the progress display
-        function updateProgressDisplay() {
-            if (currentLevel) {
-                progressCounter.textContent = correctCount[currentLevel];
-            }
+        isFirstTry = false;
+        if (window.MathJax && window.MathJax.typeset) {
+            MathJax.typesetPromise([document.getElementById('solution-output')]).catch((err) => console.log(err.message));
         }
+    }
 
-    </script>
+    window.onload = function() {
+        setDifficulty('easy');
+        updateScoreDisplay(); // Initialize score display
+    };
+
+</script>
+
 </body>
 </html>
+
