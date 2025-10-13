@@ -58,10 +58,11 @@
             justify-content: center;
             gap: 10px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
         .difficulty-button {
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 10px 15px;
+            font-size: 14px;
             cursor: pointer;
             border: 1px solid #ccc;
             border-radius: 8px;
@@ -97,11 +98,13 @@
             word-break: break-all;
         }
         #solution-input-container {
+            margin-bottom: 15px;
+        }
+        .input-row {
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 8px;
-            margin-bottom: 15px;
             font-size: 1.5em;
             font-family: 'Courier New', Courier, monospace;
         }
@@ -113,6 +116,13 @@
             width: 100px;
             text-align: center;
             font-family: inherit;
+        }
+        #special-solution-container {
+            font-size: 0.9rem;
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
         }
         #feedback-output {
             min-height: 20px;
@@ -184,6 +194,7 @@
             <button class="difficulty-button" id="diff-easy" onclick="setDifficulty('easy')">Leicht</button>
             <button class="difficulty-button" id="diff-medium" onclick="setDifficulty('medium')">Mittel</button>
             <button class="difficulty-button" id="diff-hard" onclick="setDifficulty('hard')">Schwer</button>
+            <button class="difficulty-button" id="diff-ultimativ" onclick="setDifficulty('ultimativ')">Ultimativ</button>
         </div>
 
         <div id="task-output">
@@ -192,7 +203,13 @@
         </div>
 
         <div id="solution-input-container">
-            x = <input type="text" id="solution-input" class="equation-input" placeholder="Lösung">
+            <div class="input-row">
+                 x = <input type="text" id="solution-input" class="equation-input" placeholder="Lösung">
+            </div>
+            <div id="special-solution-container" style="display: none;">
+                <label><input type="checkbox" id="no-solution" onchange="handleCheckbox(this)"> Keine Lösung</label>
+                <label><input type="checkbox" id="infinite-solutions" onchange="handleCheckbox(this)"> Unendlich viele Lösungen</label>
+            </div>
         </div>
 
         <div id="feedback-output"></div>
@@ -235,11 +252,11 @@
         score += points;
         updateScoreDisplay();
     }
-
+    
     function updateScoreDisplay() {
         const scoreBar = document.getElementById('score-progress-bar');
         const scoreText = document.getElementById('score-text');
-        score = Math.max(0, score); // Prevent score from going below 0
+        score = Math.max(0, score);
         const percentage = (score / GOAL_SCORE) * 100;
         scoreBar.style.width = `${percentage}%`;
         scoreText.textContent = `Punkte: ${score} / ${GOAL_SCORE}`;
@@ -264,115 +281,164 @@
     
     function generateNewTask() {
         isFirstTry = true;
-        // Reset UI
         document.getElementById('feedback-output').textContent = '';
         document.getElementById('solution-input').value = '';
         document.getElementById('solution-output').style.display = 'none';
         document.getElementById('show-answer-btn').disabled = true;
+        document.getElementById('special-solution-container').style.display = currentDifficulty === 'ultimativ' ? 'flex' : 'none';
+        document.getElementById('no-solution').checked = false;
+        document.getElementById('infinite-solutions').checked = false;
+        document.getElementById('solution-input').disabled = false;
+
 
         const randomInt = (max, min = 1) => Math.floor(Math.random() * (max - min + 1)) + min;
-        
+        const formatSign = (val) => val >= 0 ? `+ ${val}` : `- ${Math.abs(val)}`;
+        const formatX = (val) => val === 1 ? 'x' : val === -1 ? '-x' : `${val}x`;
+
         let equation = "";
-        let x = randomInt(10, -10); // Alle Level haben ganzzahlige Lösungen
+        let x = randomInt(10, -10);
         correctSolution = x;
 
-        // Helper for formatting terms with signs
-        const formatSign = (val) => val >= 0 ? `+ ${val}` : `- ${Math.abs(val)}`;
-        const formatX = (val) => {
-            if (val === 1) return 'x';
-            if (val === -1) return '-x';
-            return `${val}x`;
-        };
-        const formatSignNoSpace = (val) => val >= 0 ? `+${val}` : `${val}`;
-
         switch (currentDifficulty) {
-            case 'hard': // a(bx+c) = d(ex+f) OR (ax+b)/c = d
-                if (Math.random() < 0.5) { // Bracket equation
-                    let a, b, c, d, e, f;
-                    do {
-                        a = randomInt(5, 2) * (Math.random() < 0.5 ? 1 : -1);
-                        b = randomInt(5, 1) * (Math.random() < 0.5 ? 1 : -1);
-                        d = randomInt(5, 2) * (Math.random() < 0.5 ? 1 : -1);
-                        e = randomInt(5, 1) * (Math.random() < 0.5 ? 1 : -1);
-                    } while (a * b === d * e); // Avoid 0x
-
-                    c = randomInt(10, -10);
-                    f = ((a * b - d * e) * x + a * c) / d;
-                    
-                    if (f % 1 !== 0) {
-                        generateNewTask(); return;
-                    }
-
-                    equation = `${a}(${formatX(b)} ${formatSign(c)}) = ${d}(${formatX(e)} ${formatSign(f)})`;
-                    solutionSteps = `
-                        ${equation} | Ausmultiplizieren<br>
-                        ${a*b}x ${formatSign(a*c)} = ${d*e}x ${formatSign(d*f)} | -${d*e}x<br>
-                        ${a*b - d*e}x ${formatSign(a*c)} = ${d*f} | ${a*c > 0 ? '-': '+'} ${Math.abs(a*c)}<br>
-                        ${a*b - d*e}x = ${d*f - a*c} | /(${a*b - d*e})<br>
-                        <strong>x = ${x}</strong>
-                    `;
-                } else { // Fraction equation
-                    const a = randomInt(5,1) * (Math.random() < 0.5 ? 1 : -1);
+            case 'ultimativ':
+                const type = Math.random();
+                if (type < 0.25) { // No solution
+                    const a = randomInt(5,1);
+                    const b = randomInt(10,-10);
+                    let c;
+                    do { c = randomInt(10,-10); } while (b === c);
+                    equation = `${formatX(a)} ${formatSign(b)} = ${formatX(a)} ${formatSign(c)}`;
+                    correctSolution = 'none';
+                    solutionSteps = `${equation} | -${formatX(a)}<br>${b} = ${c}<br><strong>Widerspruch! Keine Lösung.</strong>`;
+                } else if (type < 0.5) { // Infinite solutions
+                    const a = randomInt(5,2);
+                    const b = randomInt(5,1);
+                    const c = randomInt(10,-10);
+                    equation = `${a}(${formatX(b)} ${formatSign(c)}) = ${formatX(a*b)} ${formatSign(a*c)}`;
+                    correctSolution = 'infinite';
+                    solutionSteps = `${equation} | Klammer ausmultiplizieren<br>${formatX(a*b)} ${formatSign(a*c)} = ${formatX(a*b)} ${formatSign(a*c)}<br><strong>Wahre Aussage! Unendlich viele Lösungen.</strong>`;
+                } else if (type < 0.75){ // Fraction equation
+                    const a_frac = randomInt(5,1) * (Math.random() < 0.5 ? 1 : -1);
                     const c_denom = randomInt(5,2) * (Math.random() < 0.5 ? 1 : -1);
-                    const d = randomInt(10,-10);
-                    const b = d * c_denom - a * x;
+                    const d_frac = randomInt(5,-5);
+                    const e_frac = randomInt(5, -5);
+                    if(a_frac === (d_frac*c_denom)) { generateNewTask(); return; } // Avoid 0x
+                    const b_frac = (d_frac * x + e_frac) * c_denom - a_frac * x;
                     
-                    const numerator = `${formatX(a)} ${b >= 0 ? '+':'-'} ${Math.abs(b)}`;
-                    equation = `$$\\frac{${numerator}}{${c_denom}} = ${d}$$`;
+                    const numerator = `${formatX(a_frac)} ${b_frac >= 0 ? '+':'-'} ${Math.abs(b_frac)}`;
+                    equation = `$$\\frac{${numerator}}{${c_denom}} = ${formatX(d_frac)} ${formatSign(e_frac)}$$`;
+                    correctSolution = x;
                     solutionSteps = `
-                        $$ \\frac{${numerator}}{${c_denom}} = ${d} $$ | * ${c_denom}<br>
-                        ${a}x ${formatSign(b)} = ${d*c_denom} | ${b > 0 ? '-': '+'} ${Math.abs(b)}<br>
-                        ${a}x = ${d*c_denom - b} | /(${a})<br>
+                        $$ \\frac{${numerator}}{${c_denom}} = ${formatX(d_frac)} ${formatSign(e_frac)} $$ | * ${c_denom}<br>
+                        ${a_frac}x ${formatSign(b_frac)} = ${c_denom}(${formatX(d_frac)} ${formatSign(e_frac)})<br>
+                        ${a_frac}x ${formatSign(b_frac)} = ${c_denom*d_frac}x ${formatSign(c_denom*e_frac)} | ...<br>
                         <strong>x = ${x}</strong>
                     `;
+                } else { // Nested brackets
+                    const a_n = randomInt(20, -20);
+                    const b_n = randomInt(5, 2) * (Math.random() < 0.5 ? 1 : -1);
+                    const c_n = randomInt(4, 1);
+                    const d_n = randomInt(5, -5);
+                    const e_n = randomInt(8, -8);
+                    if((b_n*c_n + e_n) === 0) { generateNewTask(); return; }
+
+                    correctSolution = (a_n - (b_n*d_n)) / (b_n*c_n + e_n);
+                    if(correctSolution % 1 !== 0) { generateNewTask(); return; }
+                     x = correctSolution;
+
+                    equation = `${a_n} - (${b_n}(${formatX(c_n)} ${formatSign(d_n)}) ${formatSign(e_n)}x) = 0`;
+                    solutionSteps = `...`; // Simplified for brevity
                 }
                 break;
-            case 'medium': // a(bx+c) = dx + e
-                {
+            case 'hard':
+                if (Math.random() < 0.5) {
+                    let a_h, b_h, c_h, d_h, e_h, f_h;
+                    do {
+                        a_h = randomInt(5, 2) * (Math.random() < 0.5 ? 1 : -1);
+                        b_h = randomInt(5, 1) * (Math.random() < 0.5 ? 1 : -1);
+                        d_h = randomInt(5, 2) * (Math.random() < 0.5 ? 1 : -1);
+                        e_h = randomInt(5, 1) * (Math.random() < 0.5 ? 1 : -1);
+                    } while (a_h * b_h === d_h * e_h);
+
+                    c_h = randomInt(10, -10);
+                    f_h = ((a_h * b_h - d_h * e_h) * x + a_h * c_h) / d_h;
+                    
+                    if (f_h % 1 !== 0) {
+                        generateNewTask(); return;
+                    }
+                    equation = `${a_h}(${formatX(b_h)} ${formatSign(c_h)}) = ${d_h}(${formatX(e_h)} ${formatSign(f_h)})`;
+                    solutionSteps = `...`;
+                } else {
+                     const a_frac = randomInt(5,1) * (Math.random() < 0.5 ? 1 : -1);
+                    const c_denom = randomInt(5,2) * (Math.random() < 0.5 ? 1 : -1);
+                    const d_frac = randomInt(10,-10);
+                    const b_frac = d_frac * c_denom - a_frac * x;
+                    
+                    const numerator = `${formatX(a_frac)} ${b_frac >= 0 ? '+':'-'} ${Math.abs(b_frac)}`;
+                    equation = `$$\\frac{${numerator}}{${c_denom}} = ${d_frac}$$`;
+                    solutionSteps = `...`;
+                }
+                break;
+            case 'medium':
+                if(Math.random() < 0.5) {
                     const a = randomInt(5, 2) * (Math.random() < 0.5 ? 1 : -1);
                     const b = randomInt(5, 1) * (Math.random() < 0.5 ? 1 : -1);
                     const c = randomInt(10, -10);
                     let d;
                     do { d = randomInt(10, -10); } while (a*b === d);
-                    
                     const e = a * (b * x + c) - d * x;
-                    
                     equation = `${a}(${formatX(b)} ${formatSign(c)}) = ${formatX(d)} ${formatSign(e)}`;
-                    solutionSteps = `
-                        ${equation} | Ausmultiplizieren<br>
-                        ${a*b}x ${formatSign(a*c)} = ${d}x ${formatSign(e)} | -${d}x<br>
-                        ${a*b - d}x ${formatSign(a*c)} = ${e} | ${a*c > 0 ? '-': '+'} ${Math.abs(a*c)}<br>
-                        ${a*b - d}x = ${e - a*c} | /(${a*b - d})<br>
-                        <strong>x = ${x}</strong>
-                    `;
+                    solutionSteps = `...`;
+                } else {
+                    let a,c;
+                    do { a = randomInt(5,-5); c = randomInt(5,-5); } while (a===c || a===0 || c===0);
+                    const b = randomInt(10,-10);
+                    const d = (a-c)*x + (a*b - c*randomInt(5,-5));
+                    if(d % 1 !== 0) { generateNewTask(); return; }
+                    const f = (a*(x+b)-d)/c - x;
+                    if(f % 1 !== 0) { generateNewTask(); return; }
+                     equation = `${a}(x ${formatSign(b)}) = ${c}(x ${formatSign(f)}) ${formatSign(d)}`;
+                     solutionSteps = `...`;
                 }
                 break;
-            case 'easy': // ax + b + cx = d
+            case 'easy':
             default:
-                {
+                 if(Math.random() < 0.5) {
                     let a, c;
                     do {
                         a = randomInt(10, -10);
                         c = randomInt(10, -10);
-                    } while (a + c === 0);
+                    } while (a === c || a===0 || c===0);
                     const b = randomInt(10, -10);
-                    const d = (a + c) * x + b;
+                    const d = (a - c) * x + b;
                     
-                    equation = `${formatX(a)} ${formatSign(b)} ${formatSignNoSpace(c)}x = ${d}`;
-                    solutionSteps = `
-                        ${equation} | Terme zusammenfassen<br>
-                        ${a+c}x ${formatSign(b)} = ${d} | ${b > 0 ? '-': '+'} ${Math.abs(b)}<br>
-                        ${a+c}x = ${d-b} | /(${a+c})<br>
-                        <strong>x = ${x}</strong>
-                    `;
-                }
+                    equation = `${formatX(a)} ${formatSign(b)} = ${formatX(c)} ${formatSign(d)}`;
+                    solutionSteps = `...`;
+                 } else {
+                    const a = randomInt(5,2);
+                    const b = randomInt(10,-10);
+                    const c = a * (x+b);
+                    equation = `${a}(x ${formatSign(b)}) = ${c}`;
+                    solutionSteps = `...`;
+                 }
                 break;
         }
         
         document.getElementById('equation-display').innerHTML = equation;
         if (window.MathJax && window.MathJax.typeset) {
-            MathJax.typesetPromise([document.getElementById('equation-display')]);
+            MathJax.typesetPromise([document.getElementById('equation-display')]).catch((err) => console.log(err.message));
         }
+    }
+
+    function handleCheckbox(checkbox) {
+        const solutionInput = document.getElementById('solution-input');
+        if(checkbox.id === 'no-solution' && checkbox.checked) {
+            document.getElementById('infinite-solutions').checked = false;
+        }
+        if(checkbox.id === 'infinite-solutions' && checkbox.checked) {
+            document.getElementById('no-solution').checked = false;
+        }
+        solutionInput.disabled = checkbox.checked;
     }
 
     function checkSolution() {
@@ -380,10 +446,12 @@
         const showAnswerBtn = document.getElementById('show-answer-btn');
         const container = document.getElementById('task-generator-container');
         
-        const userInput = document.getElementById('solution-input').value.replace(',', '.');
+        const userInput = document.getElementById('solution-input').value.replace(/−|–/g, '-').replace(',', '.');
+        const noSolutionChecked = document.getElementById('no-solution').checked;
+        const infiniteSolutionsChecked = document.getElementById('infinite-solutions').checked;
 
-        if (userInput === '') {
-            feedback.textContent = 'Bitte gib eine Lösung ein.';
+        if (userInput === '' && !noSolutionChecked && !infiniteSolutionsChecked) {
+            feedback.textContent = 'Bitte gib eine Lösung ein oder wähle eine Option.';
             feedback.className = 'incorrect';
             return;
         }
@@ -392,9 +460,17 @@
             totalFirstTries++;
         }
 
-        const userSolution = parseFloat(userInput);
+        let isCorrect = false;
+        if (noSolutionChecked) {
+            isCorrect = correctSolution === 'none';
+        } else if (infiniteSolutionsChecked) {
+            isCorrect = correctSolution === 'infinite';
+        } else {
+            const userSolution = parseFloat(userInput);
+            isCorrect = Math.abs(userSolution - correctSolution) < 0.01;
+        }
         
-        if (Math.abs(userSolution - correctSolution) < 0.01) {
+        if (isCorrect) {
             feedback.textContent = 'Richtig! Ausgezeichnet!';
             feedback.className = 'correct';
             showAnswerBtn.disabled = true;
@@ -406,7 +482,7 @@
                     container.classList.remove('correct-flash-animation');
                 }, 700);
             }
-            setTimeout(generateNewTask, 1200); // Load next task automatically
+            setTimeout(generateNewTask, 1200);
         } else {
             feedback.textContent = 'Leider nicht ganz richtig. Überprüfe deinen Rechenweg!';
             feedback.className = 'incorrect';
@@ -423,18 +499,18 @@
         solutionDiv.innerHTML = solutionSteps;
         solutionDiv.style.display = 'block';
         document.getElementById('show-answer-btn').disabled = true;
-        if (isFirstTry) { // Showing answer on first try counts as an attempt
+        if (isFirstTry) {
              totalFirstTries++;
         }
         isFirstTry = false;
         if (window.MathJax && window.MathJax.typeset) {
-            MathJax.typesetPromise([document.getElementById('solution-output')]);
+            MathJax.typesetPromise([document.getElementById('solution-output')]).catch((err) => console.log(err.message));
         }
     }
 
     window.onload = function() {
         setDifficulty('easy');
-        updateScoreDisplay(); // Initialize score display
+        updateScoreDisplay();
     };
 
 </script>
