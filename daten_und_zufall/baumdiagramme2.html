@@ -101,7 +101,7 @@
 
             const taskScenarios = [
                 { type: "Urne", text: "In einer Urne befinden sich {items}. Du ziehst zweimal {replacement}." },
-                { type: "Lostrommel", text: "In einer Lostrommel sind {items}. Du ziehst zwei Lose {replacement}." },
+                { type: "Lostrommel", text: "In einer Lostrommel sind {items}. Du ziehst zwei Lose nacheinander." },
                 { type: "Glücksrad", text: "Ein Glücksrad mit {total} Feldern ({items}) wird zweimal gedreht." }
             ];
 
@@ -193,7 +193,16 @@
             const generateNewTask = () => {
                 // Neue Aufgabe generieren
                 const scenario = taskScenarios[Math.floor(Math.random() * taskScenarios.length)];
-                const withReplacement = Math.random() > 0.5;
+                
+                let withReplacement;
+                if (scenario.type === "Lostrommel") {
+                    withReplacement = false; // Lose werden nicht zurückgelegt
+                } else if (scenario.type === "Glücksrad") {
+                    withReplacement = true; // Ein Glücksrad ändert sich nicht
+                } else { // Urne
+                    withReplacement = Math.random() > 0.5;
+                }
+
                 const availableItems = scenario.type === "Lostrommel" ? ['Gewinn', 'Niete'] : ['rot', 'blau', 'gelb', 'grün'];
                 const numColors = scenario.type === "Lostrommel" ? 2 : (Math.random() > 0.4 ? 2 : 3);
                 
@@ -204,7 +213,8 @@
 
                 for(let i=0; i < numColors; i++) {
                     const color = availableItems[i];
-                    const count = Math.floor(Math.random() * 4) + 1;
+                    // HIER: Die Anzahl pro Farbe/Typ wurde erhöht
+                    const count = Math.floor(Math.random() * 6) + 3; // War vorher: (Math.random() * 4) + 1
                     urn[color] = count;
                     colors.push(color);
                     totalBalls += count;
@@ -353,7 +363,4 @@
     </script>
 </body>
 </html>
-
-
-
 
