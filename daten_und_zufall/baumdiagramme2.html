@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktives Baumdiagramm-Training</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        #canvas-container {
+            position: relative;
+        }
+        canvas {
+            background-color: #f9fafb;
+            border-radius: 0.5rem;
+            border: 1px solid #d1d5db;
+        }
+        .fraction-container {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform: translate(-50%, -50%); /* Zentriert den Container */
+        }
+        .prob-input-part {
+            width: 35px;
+            height: 25px;
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            border: 2px solid #9ca3af;
+            border-radius: 4px;
+            background-color: white;
+            /* Hide number input spinners */
+            -moz-appearance: textfield;
+        }
+        .prob-input-part::-webkit-outer-spin-button,
+        .prob-input-part::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .fraction-line {
+            width: 40px;
+            height: 2px;
+            background-color: #4b5563;
+            margin: 2px 0;
+        }
+        .prob-input-part.correct {
+            border-color: #22c55e;
+            color: #166534;
+        }
+        .prob-input-part.incorrect {
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+    </style>
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-5xl">
+        <div class="text-center mb-6">
+            <h1 class="text-4xl font-bold text-blue-600">Interaktives Baumdiagramm-Training</h1>
+            <p class="text-slate-600 mt-2">Löse die Aufgabe, indem du die Wahrscheinlichkeiten in die Felder einträgst.</p>
+        </div>
+
+        <!-- Aufgabenstellung und Steuerung -->
+        <div class="bg-white p-6 rounded-lg shadow-md border border-slate-200 mb-8">
+            <h2 class="text-xl font-bold text-slate-800 mb-2">Deine Aufgabe:</h2>
+            <p id="taskDescription" class="text-lg text-slate-700 leading-relaxed"></p>
+            <div class="mt-6 flex flex-col sm:flex-row gap-4">
+                <button id="checkBtn" class="w-full sm:w-auto flex-1 bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-300 shadow-sm">Lösung prüfen</button>
+                <button id="newTaskBtn" class="w-full sm:w-auto flex-1 bg-slate-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-slate-700 transition duration-300 shadow-sm">Neue Aufgabe</button>
+            </div>
+             <div id="feedback" class="mt-4 text-center font-semibold"></div>
+        </div>
+
+        <!-- Canvas-Bereich für die Visualisierung -->
+        <div id="canvas-container" class="bg-white p-4 rounded-lg shadow-md border border-slate-200">
+            <canvas id="treeCanvas"></canvas>
+            <!-- Eingabefelder werden hier dynamisch hinzugefügt -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Globale Variablen und Referenzen ---
+            const canvas = document.getElementById('treeCanvas');
+            const ctx = canvas.getContext('2d');
+            const canvasContainer = document.getElementById('canvas-container');
+            const taskDescEl = document.getElementById('taskDescription');
+            const feedbackEl = document.getElementById('feedback');
+            const checkBtn = document.getElementById('checkBtn');
+            const newTaskBtn = document.getElementById('newTaskBtn');
+            
+            let currentTaskData = {}; // Speichert die Daten der aktuellen Aufgabe
+
+            const taskScenarios = [
+                { type: "Urne", text: "In einer Urne befinden sich {items}. Du ziehst zweimal {replacement}." },
+                { type: "Lostrommel", text: "In einer Lostrommel sind {items}. Du ziehst zwei Lose {replacement}." },
+                { type: "Glücksrad", text: "Ein Glücksrad mit {total} Feldern ({items}) wird zweimal gedreht." }
+            ];
+
+            const mapColor = (name) => {
+                const colorMap = {
+                    'rot': '#ef4444',
+                    'blau': '#3b82f6',
+                    'gelb': '#eab308',
+                    'grün': '#22c55e',
+                    'gewinn': '#22c55e',
+                    'niete': '#ef4444',
+                    'grau': '#6b7280',
+                    'weiss': '#f9fafb'
+                };
+                return colorMap[name.toLowerCase()] || '#9ca3af'; // Grau als Standard
+            };
+            
+            // --- Zeichenfunktionen ---
+            const drawNode = (x, y, color, label, radius, fontSize) => {
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = mapColor(color);
+                ctx.fill();
+                ctx.strokeStyle = '#4b5563';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                const textColor = (color.toLowerCase() === 'weiss' || color.toLowerCase() === 'gelb' || color.toLowerCase() === 'gewinn') ? '#1f2937' : 'white';
+                ctx.fillStyle = textColor;
+                ctx.font = `bold ${fontSize}px Inter`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(label.toUpperCase(), x, y);
+            };
+
+            const drawLine = (startX, startY, endX, endY, lineWidth) => {
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(endX, endY);
+                ctx.strokeStyle = '#6b7280';
+                ctx.lineWidth = lineWidth;
+                ctx.stroke();
+            };
+
+            const drawCurrentTask = () => {
+                // Canvas an Container anpassen (Responsivität)
+                const rect = canvas.parentElement.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.width * 0.7; // Seitenverhältnis beibehalten
+
+                // Reset
+                feedbackEl.textContent = '';
+                canvasContainer.querySelectorAll('.fraction-container').forEach(el => el.remove());
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                if (!currentTaskData.urn) return; // Nichts zu zeichnen
+                const { urn, colors, withReplacement, totalBalls } = currentTaskData;
+
+                // Layout und Zeichnen des leeren Diagramms (relativ zur Canvas-Größe)
+                const nodeRadius = canvas.width * 0.025;
+                const fontSize = canvas.width * 0.012;
+                const lineWidth = canvas.width * 0.0015;
+
+                const startX = canvas.width * 0.1;
+                const level1X = canvas.width * 0.4;
+                const level2X = canvas.width * 0.75;
+                drawNode(startX, canvas.height / 2, 'grau', 'Start', nodeRadius, fontSize);
+                const level1Spacing = (canvas.height - (canvas.height * 0.1)) / colors.length;
+
+                colors.forEach((color1, i) => {
+                    const y1 = (canvas.height * 0.05) + (i * level1Spacing) + (level1Spacing / 2);
+                    drawLine(startX + nodeRadius, canvas.height / 2, level1X - nodeRadius, y1, lineWidth);
+                    drawNode(level1X, y1, color1, color1, nodeRadius, fontSize);
+                    
+                    createInput(`s1_${color1}`, (startX + level1X) / 2, (canvas.height / 2 + y1) / 2, i, colors.length, canvas.height * 0.04);
+
+                    const level2Spacing = level1Spacing / colors.length;
+                    colors.forEach((color2, j) => {
+                        const y2 = (y1 - level1Spacing / 2) + (j * level2Spacing) + (level2Spacing / 2);
+                        drawLine(level1X + nodeRadius, y1, level2X - nodeRadius, y2, lineWidth);
+                        drawNode(level2X, y2, color2, color2, nodeRadius, fontSize);
+                        
+                        createInput(`s2_${color1}_${color2}`, (level1X + level2X) / 2, (y1 + y2) / 2, j, colors.length, canvas.height * 0.04);
+                    });
+                });
+            };
+
+            // --- Kernlogik ---
+            const generateNewTask = () => {
+                // Neue Aufgabe generieren
+                const scenario = taskScenarios[Math.floor(Math.random() * taskScenarios.length)];
+                const withReplacement = Math.random() > 0.5;
+                const availableItems = scenario.type === "Lostrommel" ? ['Gewinn', 'Niete'] : ['rot', 'blau', 'gelb', 'grün'];
+                const numColors = scenario.type === "Lostrommel" ? 2 : (Math.random() > 0.4 ? 2 : 3);
+                
+                let urn = {};
+                let colors = [];
+                let totalBalls = 0;
+                let itemsText = '';
+
+                for(let i=0; i < numColors; i++) {
+                    const color = availableItems[i];
+                    const count = Math.floor(Math.random() * 4) + 1;
+                    urn[color] = count;
+                    colors.push(color);
+                    totalBalls += count;
+                    if (color === 'Niete') {
+                        itemsText += `${count} ${count > 1 ? 'Nieten' : 'Niete'}, `;
+                    } else if (color === 'Gewinn') {
+                        itemsText += `${count} ${count > 1 ? 'Gewinne' : 'Gewinn'}, `;
+                    } else {
+                        itemsText += `${count} ${color}e, `;
+                    }
+                }
+                itemsText = itemsText.slice(0, -2);
+                
+                const taskText = scenario.text
+                    .replace('{items}', itemsText)
+                    .replace('{total}', totalBalls)
+                    .replace('{replacement}', withReplacement ? 'mit Zurücklegen' : 'ohne Zurücklegen');
+                taskDescEl.textContent = taskText;
+                
+                // Lösungs-Daten generieren
+                let solution = { stage1: {}, stage2: {} };
+                 colors.forEach(color1 => {
+                    solution.stage1[color1] = `${urn[color1]}/${totalBalls}`;
+                    colors.forEach(color2 => {
+                        let num, den;
+                        if(withReplacement) {
+                            num = urn[color2];
+                            den = totalBalls;
+                        } else {
+                            den = totalBalls - 1;
+                            num = (color1 === color2) ? urn[color2] - 1 : urn[color2];
+                        }
+                        solution.stage2[`${color1}_${color2}`] = `${num < 0 ? 0 : num}/${den}`;
+                    });
+                });
+
+                currentTaskData = { urn, colors, withReplacement, totalBalls, solution };
+                drawCurrentTask();
+            };
+            
+            const createInput = (id, x, y, index, total, baseOffset) => {
+                const container = document.createElement('div');
+                container.className = 'fraction-container';
+                container.style.left = `${x}px`;
+
+                let yOffset = 0;
+                if (total > 1) { // Nur anwenden, wenn es mehrere Äste gibt
+                    if (index === 0) { // Oberster Ast
+                        yOffset = -baseOffset;
+                    } else if (index === total - 1) { // Unterster Ast
+                        yOffset = baseOffset;
+                    }
+                }
+                
+                container.style.top = `${y + yOffset}px`;
+
+                const numerator = document.createElement('input');
+                numerator.type = 'number';
+                numerator.className = 'prob-input-part';
+                numerator.id = `${id}_num`;
+                numerator.placeholder = '?';
+
+                const line = document.createElement('div');
+                line.className = 'fraction-line';
+
+                const denominator = document.createElement('input');
+                denominator.type = 'number';
+                denominator.className = 'prob-input-part';
+                denominator.id = `${id}_den`;
+                denominator.placeholder = '?';
+
+                container.appendChild(numerator);
+                container.appendChild(line);
+                container.appendChild(denominator);
+                
+                canvasContainer.appendChild(container);
+            };
+
+            const checkSolution = () => {
+                if (!currentTaskData.solution) return;
+                let allCorrect = true;
+                const solution = currentTaskData.solution;
+
+                const checkSingleFraction = (baseId, correctFractionStr) => {
+                    const numInput = document.getElementById(`${baseId}_num`);
+                    const denInput = document.getElementById(`${baseId}_den`);
+
+                    if (!numInput || !denInput) return; // Element nicht gefunden
+
+                    // Klassen zurücksetzen
+                    numInput.classList.remove('correct', 'incorrect');
+                    denInput.classList.remove('correct', 'incorrect');
+
+                    const [correctNum, correctDen] = correctFractionStr.split('/').map(Number);
+                    const userNum = parseInt(numInput.value, 10);
+                    const userDen = parseInt(denInput.value, 10);
+
+                    // Überprüfen, ob die Eingabe dem gekürzten oder ungekürzten Bruch entspricht
+                    if (!isNaN(userNum) && !isNaN(userDen) && userDen !== 0 && (userNum / userDen === correctNum / correctDen)) {
+                        numInput.classList.add('correct');
+                        denInput.classList.add('correct');
+                    } else {
+                        numInput.classList.add('incorrect');
+                        denInput.classList.add('incorrect');
+                        allCorrect = false;
+                    }
+                };
+                
+                // Check Stage 1
+                for (const color1 in solution.stage1) {
+                    checkSingleFraction(`s1_${color1}`, solution.stage1[color1]);
+                }
+
+                // Check Stage 2
+                for (const path in solution.stage2) {
+                    checkSingleFraction(`s2_${path}`, solution.stage2[path]);
+                }
+
+                feedbackEl.classList.remove('text-green-600', 'text-red-600');
+                if (allCorrect) {
+                    feedbackEl.textContent = "Super! Alles richtig gelöst.";
+                    feedbackEl.classList.add('text-green-600');
+                } else {
+                    feedbackEl.textContent = "Leider nicht ganz richtig. Schau dir die roten Felder nochmal an.";
+                    feedbackEl.classList.add('text-red-600');
+                }
+            };
+
+            // Event Listeners
+            newTaskBtn.addEventListener('click', generateNewTask);
+            checkBtn.addEventListener('click', checkSolution);
+            
+            // Debounced resize handler
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    drawCurrentTask();
+                }, 100);
+            });
+
+
+            // Initialisierung
+            generateNewTask();
+        });
+    </script>
+</body>
+</html>
+
+
+
+
