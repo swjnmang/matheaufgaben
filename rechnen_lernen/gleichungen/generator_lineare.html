@@ -143,6 +143,13 @@
             line-height: 1.8;
             word-break: break-word;
         }
+        #solution-output table {
+            width: 100%;
+            text-align: left;
+        }
+        #solution-output td:nth-child(1) { width: 60%; text-align: right; padding-right: 10px; }
+        #solution-output td:nth-child(2) { width: 5%; }
+        #solution-output td:nth-child(3) { width: 35%; text-align: left; color: #555;}
         .button-container {
             display: flex;
             justify-content: center;
@@ -294,6 +301,8 @@
         const randomInt = (max, min = 1) => Math.floor(Math.random() * (max - min + 1)) + min;
         const formatSign = (val) => val >= 0 ? `+ ${val}` : `- ${Math.abs(val)}`;
         const formatX = (val) => val === 1 ? 'x' : val === -1 ? '-x' : `${val}x`;
+        const formatOp = (val, isVar=false) => `${val > 0 ? '-' : '+'} ${Math.abs(val)}${isVar ? 'x': ''}`;
+        const formatOpX = (val) => `${val > 0 ? '-' : '+'} ${formatX(Math.abs(val))}`;
 
         let equation = "";
         let x = randomInt(10, -10);
@@ -309,31 +318,32 @@
                     do { c = randomInt(10,-10); } while (b === c);
                     equation = `${formatX(a)} ${formatSign(b)} = ${formatX(a)} ${formatSign(c)}`;
                     correctSolution = 'none';
-                    solutionSteps = `${equation} | -${formatX(a)}<br>${b} = ${c}<br><strong>Widerspruch! Keine Lösung.</strong>`;
+                    solutionSteps = `<table><tr><td>${equation}</td><td>|</td><td>${formatOpX(a)}</td></tr><tr><td>${b} = ${c}</td><td></td><td></td></tr><tr><td colspan="3"><strong>Widerspruch! Keine Lösung.</strong></td></tr></table>`;
                 } else if (type < 0.5) { // Infinite solutions
                     const a = randomInt(5,2);
                     const b = randomInt(5,1);
                     const c = randomInt(10,-10);
                     equation = `${a}(${formatX(b)} ${formatSign(c)}) = ${formatX(a*b)} ${formatSign(a*c)}`;
                     correctSolution = 'infinite';
-                    solutionSteps = `${equation} | Klammer ausmultiplizieren<br>${formatX(a*b)} ${formatSign(a*c)} = ${formatX(a*b)} ${formatSign(a*c)}<br><strong>Wahre Aussage! Unendlich viele Lösungen.</strong>`;
+                    solutionSteps = `<table><tr><td>${equation}</td><td></td><td>Klammer ausmultiplizieren</td></tr><tr><td>${formatX(a*b)} ${formatSign(a*c)} = ${formatX(a*b)} ${formatSign(a*c)}</td><td></td><td></td></tr><tr><td colspan="3"><strong>Wahre Aussage! Unendlich viele Lösungen.</strong></td></tr></table>`;
                 } else if (type < 0.75){ // Fraction equation
                     const a_frac = randomInt(5,1) * (Math.random() < 0.5 ? 1 : -1);
                     const c_denom = randomInt(5,2) * (Math.random() < 0.5 ? 1 : -1);
                     const d_frac = randomInt(5,-5);
                     const e_frac = randomInt(5, -5);
-                    if(a_frac === (d_frac*c_denom)) { generateNewTask(); return; } // Avoid 0x
+                    if(a_frac === (d_frac*c_denom)) { generateNewTask(); return; } 
                     const b_frac = (d_frac * x + e_frac) * c_denom - a_frac * x;
-                    
                     const numerator = `${formatX(a_frac)} ${b_frac >= 0 ? '+':'-'} ${Math.abs(b_frac)}`;
                     equation = `$$\\frac{${numerator}}{${c_denom}} = ${formatX(d_frac)} ${formatSign(e_frac)}$$`;
                     correctSolution = x;
-                    solutionSteps = `
-                        $$ \\frac{${numerator}}{${c_denom}} = ${formatX(d_frac)} ${formatSign(e_frac)} $$ | * ${c_denom}<br>
-                        ${a_frac}x ${formatSign(b_frac)} = ${c_denom}(${formatX(d_frac)} ${formatSign(e_frac)})<br>
-                        ${a_frac}x ${formatSign(b_frac)} = ${c_denom*d_frac}x ${formatSign(c_denom*e_frac)} | ...<br>
-                        <strong>x = ${x}</strong>
-                    `;
+                    solutionSteps = `<table>
+                        <tr><td>$$ \\frac{${numerator}}{${c_denom}} = ${formatX(d_frac)} ${formatSign(e_frac)} $$</td><td>|</td><td>* ${c_denom}</td></tr>
+                        <tr><td>${formatX(a_frac)} ${formatSign(b_frac)} = ${c_denom}(${formatX(d_frac)} ${formatSign(e_frac)})</td><td></td><td></td></tr>
+                        <tr><td>${formatX(a_frac)} ${formatSign(b_frac)} = ${formatX(c_denom*d_frac)} ${formatSign(c_denom*e_frac)}</td><td>|</td><td>${formatOpX(c_denom*d_frac)}</td></tr>
+                        <tr><td>${formatX(a_frac - c_denom*d_frac)} ${formatSign(b_frac)} = ${c_denom*e_frac}</td><td>|</td><td>${formatOp(b_frac)}</td></tr>
+                        <tr><td>${formatX(a_frac - c_denom*d_frac)} = ${c_denom*e_frac - b_frac}</td><td>|</td><td>/(${a_frac - c_denom*d_frac})</td></tr>
+                        <tr><td><strong>x = ${x}</strong></td><td></td><td></td></tr>
+                    </table>`;
                 } else { // Nested brackets
                     const a_n = randomInt(20, -20);
                     const b_n = randomInt(5, 2) * (Math.random() < 0.5 ? 1 : -1);
@@ -344,14 +354,13 @@
 
                     correctSolution = (a_n - (b_n*d_n)) / (b_n*c_n + e_n);
                     if(correctSolution % 1 !== 0) { generateNewTask(); return; }
-                     x = correctSolution;
-
+                    x = correctSolution;
                     equation = `${a_n} - (${b_n}(${formatX(c_n)} ${formatSign(d_n)}) ${formatSign(e_n)}x) = 0`;
-                    solutionSteps = `...`; // Simplified for brevity
+                    solutionSteps = `...`;
                 }
                 break;
             case 'hard':
-                if (Math.random() < 0.5) {
+                 if (Math.random() < 0.5) {
                     let a_h, b_h, c_h, d_h, e_h, f_h;
                     do {
                         a_h = randomInt(5, 2) * (Math.random() < 0.5 ? 1 : -1);
@@ -363,20 +372,29 @@
                     c_h = randomInt(10, -10);
                     f_h = ((a_h * b_h - d_h * e_h) * x + a_h * c_h) / d_h;
                     
-                    if (f_h % 1 !== 0) {
-                        generateNewTask(); return;
-                    }
+                    if (f_h % 1 !== 0) { generateNewTask(); return; }
                     equation = `${a_h}(${formatX(b_h)} ${formatSign(c_h)}) = ${d_h}(${formatX(e_h)} ${formatSign(f_h)})`;
-                    solutionSteps = `...`;
-                } else {
-                     const a_frac = randomInt(5,1) * (Math.random() < 0.5 ? 1 : -1);
+                    solutionSteps = `<table>
+                        <tr><td>${equation}</td><td></td><td>Ausmultiplizieren</td></tr>
+                        <tr><td>${formatX(a_h*b_h)} ${formatSign(a_h*c_h)} = ${formatX(d_h*e_h)} ${formatSign(d_h*f_h)}</td><td>|</td><td>${formatOpX(d_h*e_h)}</td></tr>
+                        <tr><td>${formatX(a_h*b_h - d_h*e_h)} ${formatSign(a_h*c_h)} = ${d_h*f_h}</td><td>|</td><td>${formatOp(a_h*c_h)}</td></tr>
+                        <tr><td>${formatX(a_h*b_h - d_h*e_h)} = ${d_h*f_h - a_h*c_h}</td><td>|</td><td>/(${a_h*b_h - d_h*e_h})</td></tr>
+                        <tr><td><strong>x = ${x}</strong></td><td></td><td></td></tr>
+                    </table>`;
+                 } else {
+                    const a_frac = randomInt(5,1) * (Math.random() < 0.5 ? 1 : -1);
                     const c_denom = randomInt(5,2) * (Math.random() < 0.5 ? 1 : -1);
                     const d_frac = randomInt(10,-10);
                     const b_frac = d_frac * c_denom - a_frac * x;
                     
                     const numerator = `${formatX(a_frac)} ${b_frac >= 0 ? '+':'-'} ${Math.abs(b_frac)}`;
                     equation = `$$\\frac{${numerator}}{${c_denom}} = ${d_frac}$$`;
-                    solutionSteps = `...`;
+                    solutionSteps = `<table>
+                        <tr><td>$$ \\frac{${numerator}}{${c_denom}} = ${d_frac} $$</td><td>|</td><td>* ${c_denom}</td></tr>
+                        <tr><td>${formatX(a_frac)} ${formatSign(b_frac)} = ${d_frac*c_denom}</td><td>|</td><td>${formatOp(b_frac)}</td></tr>
+                        <tr><td>${formatX(a_frac)} = ${d_frac*c_denom - b_frac}</td><td>|</td><td>/(${a_frac})</td></tr>
+                        <tr><td><strong>x = ${x}</strong></td><td></td><td></td></tr>
+                    </table>`;
                 }
                 break;
             case 'medium':
@@ -388,38 +406,52 @@
                     do { d = randomInt(10, -10); } while (a*b === d);
                     const e = a * (b * x + c) - d * x;
                     equation = `${a}(${formatX(b)} ${formatSign(c)}) = ${formatX(d)} ${formatSign(e)}`;
-                    solutionSteps = `...`;
+                    solutionSteps = `<table>
+                        <tr><td>${equation}</td><td></td><td>Ausmultiplizieren</td></tr>
+                        <tr><td>${formatX(a*b)} ${formatSign(a*c)} = ${formatX(d)} ${formatSign(e)}</td><td>|</td><td>${formatOpX(d)}</td></tr>
+                        <tr><td>${formatX(a*b - d)} ${formatSign(a*c)} = ${e}</td><td>|</td><td>${formatOp(a*c)}</td></tr>
+                        <tr><td>${formatX(a*b - d)} = ${e - a*c}</td><td>|</td><td>/(${a*b - d})</td></tr>
+                        <tr><td><strong>x = ${x}</strong></td><td></td><td></td></tr>
+                    </table>`;
                 } else {
                     let a,c;
                     do { a = randomInt(5,-5); c = randomInt(5,-5); } while (a===c || a===0 || c===0);
                     const b = randomInt(10,-10);
-                    const d = (a-c)*x + (a*b - c*randomInt(5,-5));
-                    if(d % 1 !== 0) { generateNewTask(); return; }
-                    const f = (a*(x+b)-d)/c - x;
+                    const d = randomInt(5,-5);
+                    const f = (a*(x+b) - c*(x+d));
                     if(f % 1 !== 0) { generateNewTask(); return; }
-                     equation = `${a}(x ${formatSign(b)}) = ${c}(x ${formatSign(f)}) ${formatSign(d)}`;
+                    equation = `${a}(x ${formatSign(b)}) = ${c}(x ${formatSign(d)}) ${formatSign(f)}`;
                      solutionSteps = `...`;
                 }
                 break;
             case 'easy':
             default:
                  if(Math.random() < 0.5) {
-                    let a, c;
+                    let a_e, c_e;
                     do {
-                        a = randomInt(10, -10);
-                        c = randomInt(10, -10);
-                    } while (a === c || a===0 || c===0);
-                    const b = randomInt(10, -10);
-                    const d = (a - c) * x + b;
+                        a_e = randomInt(10, -10);
+                        c_e = randomInt(10, -10);
+                    } while (a_e === c_e || a_e===0 || c_e===0);
+                    const b_e = randomInt(10, -10);
+                    const d_e = (a_e - c_e) * x + b_e;
                     
-                    equation = `${formatX(a)} ${formatSign(b)} = ${formatX(c)} ${formatSign(d)}`;
-                    solutionSteps = `...`;
+                    equation = `${formatX(a_e)} ${formatSign(b_e)} = ${formatX(c_e)} ${formatSign(d_e)}`;
+                    solutionSteps = `<table>
+                        <tr><td>${equation}</td><td>|</td><td>${formatOpX(c_e)}</td></tr>
+                        <tr><td>${formatX(a_e-c_e)} ${formatSign(b_e)} = ${d_e}</td><td>|</td><td>${formatOp(b_e)}</td></tr>
+                        <tr><td>${formatX(a_e-c_e)} = ${d_e-b_e}</td><td>|</td><td>/(${a_e-c_e})</td></tr>
+                        <tr><td><strong>x = ${x}</strong></td><td></td><td></td></tr>
+                    </table>`;
                  } else {
                     const a = randomInt(5,2);
                     const b = randomInt(10,-10);
                     const c = a * (x+b);
                     equation = `${a}(x ${formatSign(b)}) = ${c}`;
-                    solutionSteps = `...`;
+                    solutionSteps = `<table>
+                        <tr><td>${equation}</td><td>|</td><td>/${a}</td></tr>
+                        <tr><td>x ${formatSign(b)} = ${c/a}</td><td>|</td><td>${formatOp(b)}</td></tr>
+                        <tr><td><strong>x = ${x}</strong></td><td></td><td></td></tr>
+                    </table>`;
                  }
                 break;
         }
