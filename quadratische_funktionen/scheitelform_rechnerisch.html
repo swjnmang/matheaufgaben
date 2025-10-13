@@ -19,9 +19,9 @@
         #task-generator-container {
             background-color: #ffffff;
             border-radius: 12px;
-            padding: 25px 30px;
+            padding: 20px;
             width: 100%;
-            max-width: 700px;
+            max-width: 600px;
             margin: 20px;
             box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
             border: 1px solid #e0e0e0;
@@ -38,14 +38,14 @@
         }
         #streak-counter {
             position: absolute;
-            top: 20px;
-            right: 25px;
+            top: 15px;
+            right: 20px;
             background-color: #ff9800;
             color: white;
             padding: 5px 12px;
             border-radius: 15px;
             font-weight: bold;
-            font-size: 1.1em;
+            font-size: 1em;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             transition: transform 0.2s ease-in-out;
         }
@@ -54,12 +54,12 @@
         }
         #task-generator-container h2 {
             color: #333;
-            margin-bottom: 20px;
-            font-size: 1.5em;
+            margin-bottom: 15px;
+            font-size: 1.4em;
         }
         #ggb-container {
             width: 100%;
-            max-width: 500px;
+            max-width: 450px;
             aspect-ratio: 1 / 1;
             margin: 0 auto 15px auto;
             border-radius: 8px;
@@ -70,19 +70,19 @@
             background-color: #f8f9fa;
             border: 1px solid #dcdcdc;
             border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            font-size: 1.1em;
-            line-height: 1.6;
+            padding: 15px;
+            margin-bottom: 15px;
+            font-size: 1em;
+            line-height: 1.5;
             color: #495057;
         }
         .task-data {
-            font-size: 1.2em;
+            font-size: 1.1em;
             font-weight: bold;
             color: #005a87;
             font-family: 'Courier New', Courier, monospace;
             display: block;
-            margin-top: 10px;
+            margin-top: 8px;
         }
         #solution-input-container {
             display: flex;
@@ -90,16 +90,16 @@
             align-items: center;
             gap: 8px;
             margin-bottom: 15px;
-            font-size: 1.3em;
+            font-size: 1.2em;
             font-family: 'Courier New', Courier, monospace;
             flex-wrap: wrap;
         }
         .equation-input {
-            padding: 8px;
+            padding: 6px;
             border-radius: 6px;
             border: 1px solid #ccc;
             font-size: 1em;
-            width: 70px;
+            width: 60px;
             text-align: center;
             font-family: inherit;
         }
@@ -125,7 +125,7 @@
         .button-container {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 10px;
             flex-wrap: wrap;
             margin-top: 20px;
         }
@@ -134,8 +134,8 @@
             color: white;
             border: none;
             border-radius: 8px;
-            padding: 12px 28px;
-            font-size: 16px;
+            padding: 10px 20px;
+            font-size: 14px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -248,7 +248,7 @@
         const xMin = correctXs - viewMargin;
         const xMax = correctXs + viewMargin;
         const yMin = correctYs - viewMargin;
-        const yMax = correctYs + viewMargin; // Bug fixed here
+        const yMax = correctYs + viewMargin; 
         
         setTimeout(() => {
             if(ggbApplet) {
