@@ -301,7 +301,7 @@
         const randomInt = (max, min = 1) => Math.floor(Math.random() * (max - min + 1)) + min;
         const formatSign = (val) => val >= 0 ? `+ ${val}` : `- ${Math.abs(val)}`;
         const formatX = (val) => val === 1 ? 'x' : val === -1 ? '-x' : `${val}x`;
-        const formatOp = (val, isVar=false) => `${val > 0 ? '-' : '+'} ${Math.abs(val)}${isVar ? 'x': ''}`;
+        const formatOp = (val, isVar = false) => `${val >= 0 ? '-' : '+'} ${Math.abs(val)}${isVar ? 'x': ''}`;
         const formatOpX = (val) => `${val > 0 ? '-' : '+'} ${formatX(Math.abs(val))}`;
 
         let equation = "";
@@ -312,20 +312,31 @@
             case 'ultimativ':
                 const type = Math.random();
                 if (type < 0.25) { // No solution
-                    const a = randomInt(5,1);
-                    const b = randomInt(10,-10);
-                    let c;
-                    do { c = randomInt(10,-10); } while (b === c);
-                    equation = `${formatX(a)} ${formatSign(b)} = ${formatX(a)} ${formatSign(c)}`;
+                    const a = randomInt(5,2);
+                    const b = randomInt(5,1);
+                    const c = randomInt(5,-5);
+                    const d = a*b;
+                    let e;
+                    do { e = randomInt(10,-10); } while (e === a*c);
+                    equation = `${a}(${formatX(b)} ${formatSign(c)}) = ${formatX(d)} ${formatSign(e)}`;
                     correctSolution = 'none';
-                    solutionSteps = `<table><tr><td>${equation}</td><td>|</td><td>${formatOpX(a)}</td></tr><tr><td>${b} = ${c}</td><td></td><td></td></tr><tr><td colspan="3"><strong>Widerspruch! Keine Lösung.</strong></td></tr></table>`;
+                    solutionSteps = `<table>
+                        <tr><td>${equation}</td><td></td><td>Ausmultiplizieren</td></tr>
+                        <tr><td>${formatX(a*b)} ${formatSign(a*c)} = ${formatX(d)} ${formatSign(e)}</td><td>|</td><td>-${formatX(d)}</td></tr>
+                        <tr><td>${a*c} = ${e}</td><td></td><td></td></tr>
+                        <tr><td colspan="3"><strong>Widerspruch! Keine Lösung.</strong></td></tr>
+                    </table>`;
                 } else if (type < 0.5) { // Infinite solutions
                     const a = randomInt(5,2);
                     const b = randomInt(5,1);
                     const c = randomInt(10,-10);
                     equation = `${a}(${formatX(b)} ${formatSign(c)}) = ${formatX(a*b)} ${formatSign(a*c)}`;
                     correctSolution = 'infinite';
-                    solutionSteps = `<table><tr><td>${equation}</td><td></td><td>Klammer ausmultiplizieren</td></tr><tr><td>${formatX(a*b)} ${formatSign(a*c)} = ${formatX(a*b)} ${formatSign(a*c)}</td><td></td><td></td></tr><tr><td colspan="3"><strong>Wahre Aussage! Unendlich viele Lösungen.</strong></td></tr></table>`;
+                    solutionSteps = `<table>
+                        <tr><td>${equation}</td><td></td><td>Ausmultiplizieren</td></tr>
+                        <tr><td>${formatX(a*b)} ${formatSign(a*c)} = ${formatX(a*b)} ${formatSign(a*c)}</td><td></td><td></td></tr>
+                        <tr><td colspan="3"><strong>Wahre Aussage! Unendlich viele Lösungen.</strong></td></tr>
+                    </table>`;
                 } else if (type < 0.75){ // Fraction equation
                     const a_frac = randomInt(5,1) * (Math.random() < 0.5 ? 1 : -1);
                     const c_denom = randomInt(5,2) * (Math.random() < 0.5 ? 1 : -1);
@@ -354,9 +365,18 @@
 
                     correctSolution = (a_n - (b_n*d_n)) / (b_n*c_n + e_n);
                     if(correctSolution % 1 !== 0) { generateNewTask(); return; }
-                    x = correctSolution;
+                     x = correctSolution;
+
                     equation = `${a_n} - (${b_n}(${formatX(c_n)} ${formatSign(d_n)}) ${formatSign(e_n)}x) = 0`;
-                    solutionSteps = `...`;
+                    const innerSolvedX = b_n*c_n+e_n;
+                    const innerSolvedConst = b_n*d_n;
+                    solutionSteps = `<table>
+                        <tr><td>${equation}</td><td></td><td>Innere Klammer auflösen</td></tr>
+                        <tr><td>${a_n} - (${formatX(b_n*c_n)} ${formatSign(b_n*d_n)} ${formatSign(e_n)}x) = 0</td><td></td><td></td></tr>
+                        <tr><td>${a_n} - (${formatX(innerSolvedX)} ${formatSign(innerSolvedConst)}) = 0</td><td>|</td><td>Äußere Klammer auflösen</td></tr>
+                        <tr><td>${a_n} ${formatOpX(innerSolvedX)} ${formatOp(innerSolvedConst)} = 0</td><td>|</td><td>...</td></tr>
+                        <tr><td><strong>x = ${x}</strong></td><td></td><td></td></tr>
+                    </table>`;
                 }
                 break;
             case 'hard':
@@ -421,7 +441,13 @@
                     const f = (a*(x+b) - c*(x+d));
                     if(f % 1 !== 0) { generateNewTask(); return; }
                     equation = `${a}(x ${formatSign(b)}) = ${c}(x ${formatSign(d)}) ${formatSign(f)}`;
-                     solutionSteps = `...`;
+                    solutionSteps = `<table>
+                        <tr><td>${equation}</td><td></td><td>Ausmultiplizieren</td></tr>
+                        <tr><td>${formatX(a)} ${formatSign(a*b)} = ${formatX(c)} ${formatSign(c*d)} ${formatSign(f)}</td><td>|</td><td>${formatOpX(c)}</td></tr>
+                        <tr><td>${formatX(a-c)} ${formatSign(a*b)} = ${c*d+f}</td><td>|</td><td>${formatOp(a*b)}</td></tr>
+                        <tr><td>${formatX(a-c)} = ${c*d+f - a*b}</td><td>|</td><td>/(${a-c})</td></tr>
+                        <tr><td><strong>x = ${x}</strong></td><td></td><td></td></tr>
+                    </table>`;
                 }
                 break;
             case 'easy':
