@@ -127,9 +127,14 @@
                     </div>
                 </div>
             </div>
-            <button onclick="submitAnswer()" id="submit-button" class="w-full mt-4 bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transition duration-300 ease-in-out transform hover:-translate-y-1">
-                Nächste Frage
-            </button>
+            <div class="flex items-center justify-between mt-6">
+                <button onclick="goBack()" id="back-button" class="bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-lg hover:bg-gray-400 focus:outline-none focus:ring-4 focus:ring-gray-300 transition duration-300 ease-in-out">
+                    Zurück
+                </button>
+                <button onclick="submitAnswer()" id="submit-button" class="bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transition duration-300 ease-in-out flex-grow ml-4">
+                    Nächste Frage
+                </button>
+            </div>
         </div>
 
         <!-- Certificate Screen -->
@@ -236,6 +241,7 @@
         const questionNumber = document.getElementById('question-number');
         const answerInput = document.getElementById('answer');
         const submitButton = document.getElementById('submit-button');
+        const backButton = document.getElementById('back-button');
         const standardAnswerContainer = document.getElementById('standard-answer-container');
         const powersOfTenAnswerContainer = document.getElementById('powers-of-ten-answer-container');
         const potMantissaInput = document.getElementById('pot-mantissa');
@@ -285,7 +291,22 @@
             
             document.getElementById('student-info-display').textContent = `${studentName}, ${studentClass}`;
 
-            const powersOfTenQs = shuffle([...questions.powersOfTen]).slice(0, 3);
+            const toDecimalQs = questions.powersOfTen.filter(q => q.subtype === 'to_decimal');
+            const toPowerQs = questions.powersOfTen.filter(q => q.subtype === 'to_power');
+
+            shuffle(toDecimalQs);
+            shuffle(toPowerQs);
+
+            const selectedPotQs = [];
+            if (toDecimalQs.length > 0) selectedPotQs.push(toDecimalQs.pop());
+            if (toPowerQs.length > 0) selectedPotQs.push(toPowerQs.pop());
+            
+            const remainingPotQs = shuffle([...toDecimalQs, ...toPowerQs]);
+            while (selectedPotQs.length < 3 && remainingPotQs.length > 0) {
+                selectedPotQs.push(remainingPotQs.pop());
+            }
+            const powersOfTenQs = selectedPotQs;
+            
             const rootsQs = shuffle([...questions.roots]).slice(0, 3);
             const linearQs = shuffle([...questions.linearEquations]).slice(0, 2);
             const quadraticQs = shuffle([...questions.quadraticEquations]).slice(0, 2);
@@ -298,86 +319,141 @@
             displayQuestion();
         }
 
+        function clearInputs() {
+            // Clear all possible input fields
+            answerInput.value = '';
+            potMantissaInput.value = '';
+            potExponentInput.value = '';
+            solutionChoiceRadios.forEach(radio => radio.checked = false);
+            oneSolutionContainer.classList.add('hidden');
+            twoSolutionsContainer.classList.add('hidden');
+            answerSingleInput.value = '';
+            answer1Input.value = '';
+            answer2Input.value = '';
+        }
+
         function displayQuestion() {
             if (currentQuestionIndex < testQuestions.length) {
                 const question = testQuestions[currentQuestionIndex];
                 questionText.innerHTML = question.q;
                 questionNumber.textContent = currentQuestionIndex + 1;
                 
-                // Hide all containers first
                 standardAnswerContainer.classList.add('hidden');
                 quadraticAnswerContainer.classList.add('hidden');
                 powersOfTenAnswerContainer.classList.add('hidden');
+                
+                clearInputs();
 
+                // Show/hide back button
+                backButton.classList.toggle('hidden', currentQuestionIndex === 0);
+
+                // Show appropriate container for the question type
                 if (question.type === 'powersOfTen' && question.subtype === 'to_power') {
                     powersOfTenAnswerContainer.classList.remove('hidden');
-                    potMantissaInput.value = '';
-                    potExponentInput.value = '';
-                    potMantissaInput.focus();
                 } else if (question.type === 'quadraticEquations') {
                     quadraticAnswerContainer.classList.remove('hidden');
-                    solutionChoiceRadios.forEach(radio => radio.checked = false);
-                    oneSolutionContainer.classList.add('hidden');
-                    twoSolutionsContainer.classList.add('hidden');
-                    answerSingleInput.value = '';
-                    answer1Input.value = '';
-                    answer2Input.value = '';
                 } else {
                     standardAnswerContainer.classList.remove('hidden');
-                    answerInput.value = '';
-                    answerInput.focus();
                 }
+
+                // Populate with previous answer if it exists
+                const storedAnswer = userAnswers[currentQuestionIndex];
+                if (storedAnswer && storedAnswer.userInput) {
+                    const userInput = storedAnswer.userInput;
+                    if (question.type === 'powersOfTen' && question.subtype === 'to_power') {
+                        potMantissaInput.value = userInput.mantissa || '';
+                        potExponentInput.value = userInput.exponent || '';
+                    } else if (question.type === 'quadraticEquations') {
+                        if (userInput.choice) {
+                            const radio = document.getElementById(`sol-${userInput.choice}`);
+                            if(radio) {
+                                radio.checked = true;
+                                radio.dispatchEvent(new Event('change')); // Show correct containers
+                            }
+                            if (userInput.choice === 'one') {
+                                answerSingleInput.value = userInput.values[0] || '';
+                            } else if (userInput.choice === 'two') {
+                                answer1Input.value = userInput.values[0] || '';
+                                answer2Input.value = userInput.values[1] || '';
+                            }
+                        }
+                    } else {
+                        answerInput.value = userInput.value || '';
+                    }
+                } else {
+                    // Focus on the first input if no answer is stored
+                    if (question.type === 'powersOfTen' && question.subtype === 'to_power') potMantissaInput.focus();
+                    else if (question.type !== 'quadraticEquations') answerInput.focus();
+                }
+
 
                 submitButton.textContent = (currentQuestionIndex === testQuestions.length - 1) ? 'Test beenden & Zertifikat anzeigen' : 'Nächste Frage';
             }
         }
 
+        function goBack() {
+            if (currentQuestionIndex > 0) {
+                // Save current state before going back, in case the user was editing
+                // This step is optional but improves user experience. We'll skip it for simplicity now.
+                // The current answer will be saved on the next "submitAnswer" call anyway.
+                currentQuestionIndex--;
+                displayQuestion();
+            }
+        }
+
         function submitAnswer() {
             const question = testQuestions[currentQuestionIndex];
-            let userAnswer, userAnswerForDisplay;
+            let userAnswer, userAnswerForDisplay, userInputData = {};
 
             if (question.type === 'powersOfTen' && question.subtype === 'to_power') {
                 const mantissa = potMantissaInput.value.trim().replace(',', '.');
                 const exponent = potExponentInput.value.trim().replace(',', '.');
                 userAnswer = `${mantissa}e${exponent}`;
                 userAnswerForDisplay = `${mantissa} &times; 10<sup class="text-sm">${exponent}</sup>`;
+                userInputData = { mantissa, exponent };
             } else if (question.type === 'quadraticEquations') {
                 const selectedChoice = document.querySelector('input[name="solution-choice"]:checked');
                 
                 if (!selectedChoice) {
-                    userAnswer = []; // Treat as incorrect
+                    userAnswer = [];
                     userAnswerForDisplay = 'Keine Auswahl';
+                    userInputData = { choice: null, values: [] };
                 } else {
                     const choiceValue = selectedChoice.value;
                     if (choiceValue === 'none') {
                         userAnswer = 'no_solution';
                         userAnswerForDisplay = 'Keine Lösung';
+                        userInputData = { choice: 'none', values: [] };
                     } else if (choiceValue === 'one') {
                         const ans = answerSingleInput.value.trim().replace(',', '.');
                         userAnswer = [ans];
                         userAnswerForDisplay = ans;
+                        userInputData = { choice: 'one', values: [ans] };
                     } else if (choiceValue === 'two') {
                         const ans1 = answer1Input.value.trim().replace(',', '.');
                         const ans2 = answer2Input.value.trim().replace(',', '.');
                         userAnswer = [ans1, ans2].filter(Boolean).sort();
                         userAnswerForDisplay = userAnswer.join('; ');
+                        userInputData = { choice: 'two', values: [ans1, ans2] };
                     }
                 }
             } else {
                 userAnswer = answerInput.value.trim().replace(',', '.');
                 userAnswerForDisplay = userAnswer;
+                userInputData = { value: userAnswer };
             }
 
             if (userAnswerForDisplay === '' || userAnswerForDisplay.includes('<sup></sup>')) userAnswerForDisplay = 'Keine Antwort';
 
             const isCorrect = checkAnswer(userAnswer, question.a);
             
-            userAnswers.push({
+            userAnswers[currentQuestionIndex] = {
                 question: question.q,
                 userAnswerForDisplay,
+                userInput: userInputData,
                 correctAnswer: question.a,
                 isCorrect
-            });
+            };
 
             currentQuestionIndex++;
 
@@ -389,7 +465,6 @@
         }
         
         function checkAnswer(userAns, correctAns) {
-            // Normalize scientific notation answers for powers of ten
             if (typeof userAns === 'string' && userAns.toLowerCase().includes('e')) {
                  userAns = Number(userAns);
             }
@@ -397,23 +472,20 @@
                  correctAns = Number(correctAns);
             }
 
-            if (Array.isArray(correctAns)) { // For quadratic equations with 1 or 2 solutions
+            if (Array.isArray(correctAns)) {
                 if (!Array.isArray(userAns)) return false;
-                // Normalize to numbers for sorting if possible, otherwise use string sort
                 const normUser = userAns.map(v => isNaN(parseFloat(v)) ? v : parseFloat(v)).sort();
                 const normCorrect = correctAns.map(v => isNaN(parseFloat(v)) ? v : parseFloat(v)).sort();
                 return JSON.stringify(normUser) === JSON.stringify(normCorrect);
             } else if (correctAns === 'no_solution') {
                 return userAns === 'no_solution';
-            } else { // For single answers (linear, roots, etc.)
+            } else {
                 try {
-                    // Compare with a tolerance for floating point issues
                     if (!isNaN(parseFloat(userAns)) && !isNaN(parseFloat(correctAns))) {
                          return Math.abs(parseFloat(userAns) - parseFloat(correctAns)) < 0.01;
                     }
                 } catch(e) { /* Ignore eval errors */ }
                 
-                // Fallback to string comparison
                 return userAns.toString().toLowerCase() === correctAns.toString().toLowerCase();
             }
         }
@@ -427,7 +499,6 @@
             if (Array.isArray(answer)) {
                 if(answer.length === 1) return `x = ${answer[0]}`;
                 if(answer.length === 2) {
-                    // Sort numerically before displaying
                     const sorted = answer.map(Number).sort((a,b) => a-b);
                     return `x₁=${sorted[0]}, x₂=${sorted[1]}`;
                 }
@@ -443,13 +514,16 @@
             document.getElementById('cert-class').textContent = studentClass;
             document.getElementById('cert-date').textContent = new Date().toLocaleDateString('de-DE');
 
-            const score = userAnswers.filter(a => a.isCorrect).length;
+            // Filter out any undefined/empty slots before counting
+            const validAnswers = userAnswers.filter(a => a !== undefined);
+            const score = validAnswers.filter(a => a.isCorrect).length;
             document.getElementById('cert-score').textContent = `Ergebnis: ${score} von ${testQuestions.length} richtig`;
 
             const resultsContainer = document.getElementById('results');
             resultsContainer.innerHTML = '';
 
-            userAnswers.forEach((item, index) => {
+            testQuestions.forEach((question, index) => {
+                const item = userAnswers[index] || { userAnswerForDisplay: 'Nicht beantwortet', isCorrect: false, correctAnswer: question.a };
                 const resultElement = document.createElement('div');
                 resultElement.className = 'p-4 bg-gray-50 rounded-lg border border-gray-200';
                 
@@ -458,7 +532,7 @@
                     : `<span class="text-red-600 font-bold ml-2">&#10007; Falsch</span><br><span class="text-sm text-gray-700">Richtige Antwort: <strong>${formatAnswerForDisplay(item.correctAnswer)}</strong></span>`;
 
                 resultElement.innerHTML = `
-                    <p class="font-semibold text-gray-700">Frage ${index + 1}: <span class="latex">${item.question}</span></p>
+                    <p class="font-semibold text-gray-700">Frage ${index + 1}: <span class="latex">${question.q}</span></p>
                     <p class="mt-2 text-indigo-800">
                         <strong>Deine Antwort:</strong> <span class="latex">${item.userAnswerForDisplay}</span>
                         ${correctIndicator}
@@ -468,7 +542,6 @@
             });
         }
         
-        // Allow submitting with Enter key on standard input
         answerInput.addEventListener('keyup', function(event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
