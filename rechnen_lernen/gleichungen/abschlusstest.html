@@ -20,7 +20,16 @@
             background: white;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
+        
         @media print {
+            @page {
+                size: A4;
+                margin: 20mm;
+            }
+            body {
+                -webkit-print-color-adjust: exact; /* Ensures colors are printed */
+                print-color-adjust: exact;
+            }
             body * {
                 visibility: hidden;
             }
@@ -32,6 +41,43 @@
                 left: 0;
                 top: 0;
                 width: 100%;
+            }
+            .certificate {
+                border-width: 8px;
+                padding: 1rem;
+                box-shadow: none;
+            }
+            .certificate h1 {
+                font-size: 2rem;
+                margin-bottom: 1rem;
+            }
+            .certificate h2 {
+                font-size: 1.25rem;
+                margin-bottom: 0.5rem;
+                padding-bottom: 0.25rem;
+            }
+            .certificate p {
+                font-size: 0.9rem;
+                line-height: 1.2;
+            }
+            .certificate .mb-8 {
+                margin-bottom: 1.5rem;
+            }
+            .certificate .text-xl {
+                font-size: 1rem;
+            }
+            .certificate #cert-score {
+                font-size: 1.25rem;
+                margin-top: 0.75rem;
+            }
+            .certificate #results .p-4 {
+                padding: 0.5rem;
+            }
+             .certificate #results .space-y-4 > * + * {
+                margin-top: 0.5rem;
+            }
+            .certificate .latex {
+                font-size: 1em;
             }
             .no-print {
                 display: none;
@@ -66,7 +112,7 @@
         <!-- Test Screen -->
         <div id="test-screen" class="hidden bg-white p-8 rounded-xl shadow-lg">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">Aufgabe <span id="question-number">1</span> von 10</h2>
+                <h2 class="text-2xl font-bold text-gray-800">Aufgabe <span id="question-number">1</span> von 15</h2>
                 <div class="text-gray-600 font-semibold" id="student-info-display"></div>
             </div>
             <div class="bg-gray-50 p-6 rounded-lg mb-6 min-h-[120px] flex items-center justify-center">
@@ -180,6 +226,10 @@
                 { q: "Stelle als Dezimalzahl dar: 3.2 &times; 10<sup>-2</sup>", a: "0.032", subtype: "to_decimal" },
                 { q: "Stelle als Zehnerpotenz dar: 45000", a: "4.5e4", subtype: "to_power" },
                 { q: "Stelle als Zehnerpotenz dar: 0.0071", a: "7.1e-3", subtype: "to_power" },
+                { q: "Stelle als Dezimalzahl dar: 6.02 &times; 10<sup>-5</sup>", a: "0.0000602", subtype: "to_decimal"},
+                { q: "Stelle als Zehnerpotenz dar: 910000", a: "9.1e5", subtype: "to_power" },
+                { q: "Stelle als Dezimalzahl dar: 8 &times; 10<sup>7</sup>", a: "80000000", subtype: "to_decimal"},
+                { q: "Stelle als Zehnerpotenz dar: 0.00015", a: "1.5e-4", subtype: "to_power"},
             ],
             roots: [
                 { q: "Vereinfache: <math><msqrt><mn>4</mn></msqrt></math>", a: "2" },
@@ -194,6 +244,9 @@
                 { q: "Vereinfache: <math><mroot><mn>125</mn><mn>3</mn></mroot></math>", a: "5" },
                 { q: "Vereinfache: <math><msqrt><mrow><mn>400</mn><msup><mi>y</mi><mn>2</mn></msup></mrow></msqrt></math>", a: "20y" },
                 { q: "Vereinfache: <math><mroot><mrow><mn>64</mn><msup><mi>a</mi><mn>3</mn></msup></mrow><mn>3</mn></mroot></math>", a: "4a" },
+                { q: "Vereinfache: <math><msqrt><mn>144</mn></msqrt></math>", a: "12" },
+                { q: "Vereinfache: <math><mroot><mn>1000</mn><mn>3</mn></mroot></math>", a: "10" },
+                { q: "Vereinfache: <math><msqrt><mrow><mn>9</mn><msup><mi>b</mi><mn>2</mn></msup></mrow></msqrt></math>", a: "3b" },
             ],
             linearEquations: [
                 { q: "Löse: 5x + 7 = 3x + 15", a: "4" },
@@ -206,24 +259,34 @@
                 { q: "Löse: 2(3x - 1) = 4x + 8", a: "5" },
                 { q: "Löse: 5x + 15 = 3(x + 8)", a: "4.5" },
                 { q: "Löse: 9x - 3 = 6(x+1)", a: "3"},
+                { q: "Löse: 12x + 3 = 5x + 17", a: "2" },
+                { q: "Löse: 5(x - 2) = 3x + 4", a: "7" },
+                { q: "Löse: 6x - 9 = x + 1", a: "2" },
+                { q: "Löse: 2x = 4(x - 3)", a: "6" },
+                { q: "Löse: 2x(x + 3) + 5x = 2x<sup>2</sup> + 22", a: "2" },
+                { q: "Löse: 10x<sup>2</sup> + 4(x - 1) = 5(2x<sup>2</sup> + 2)", a: "3.5" },
+                { q: "Löse: 15x + 3x(x - 1) = 3x<sup>2</sup> + 24", a: "2" },
             ],
             quadraticEquations: [
-                // Reinquadratische Gleichungen
                 { q: "Löse: x<sup>2</sup> &minus; 16 = 0", a: ["4", "-4"] },
                 { q: "Löse: 2x<sup>2</sup> &minus; 50 = 0", a: ["5", "-5"] },
                 { q: "Löse: x<sup>2</sup> + 25 = 0", a: "no_solution" },
                 { q: "Löse: 4x<sup>2</sup> - 1 = 0", a: ["0.5", "-0.5"] },
-                 { q: "Löse: x<sup>2</sup> &minus; 81 = 0", a: ["9", "-9"] },
+                { q: "Löse: x<sup>2</sup> &minus; 81 = 0", a: ["9", "-9"] },
                 { q: "Löse: 3x<sup>2</sup> = 12", a: ["2", "-2"] },
-                // Gleichungen, die durch Umformung reinquadratisch werden
                 { q: "Löse: 5(x<sup>2</sup> &minus; 4) = 4x<sup>2</sup> + 5", a: ["5", "-5"] },
                 { q: "Löse: 3x<sup>2</sup> + 10 = x<sup>2</sup> + 42", a: ["4", "-4"] },
-                 { q: "Löse: 6(x<sup>2</sup> + 1) = 5x<sup>2</sup> + 22", a: ["4", "-4"] },
-                // Gleichungen, die durch Umformung linear werden
+                { q: "Löse: 6(x<sup>2</sup> + 1) = 5x<sup>2</sup> + 22", a: ["4", "-4"] },
                 { q: "Löse: 3x<sup>2</sup> + 5x = 3(x<sup>2</sup> + x + 4)", a: ["6"] },
                 { q: "Löse: 8x<sup>2</sup> + 2(x&minus;3) = 4(2x<sup>2</sup> + 1)", a: ["5"] },
                 { q: "Löse: 2x<sup>2</sup> + 10 = 10", a: ["0"] },
                 { q: "Löse: 10x<sup>2</sup> - 5 = 2(5x<sup>2</sup> + 5)", a: "no_solution" },
+                { q: "Löse: x<sup>2</sup> - 100 = 0", a: ["10", "-10"] },
+                { q: "Löse: 5x<sup>2</sup> = 20", a: ["2", "-2"] },
+                { q: "Löse: 2x<sup>2</sup> + 3x = 2(x<sup>2</sup> + x) + 9", a: ["9"] },
+                { q: "Löse: 3x(x + 5) - 15x = 75", a: ["5", "-5"] },
+                { q: "Löse: 2(x<sup>2</sup> + 10) + 10x = 10(x + 7)", a: ["5", "-5"]},
+                { q: "Löse: 6x<sup>2</sup> + 4(x + 5) = 2(2x + 2x<sup>2</sup>) + 70", a: ["5", "-5"]},
             ]
         };
 
@@ -291,25 +354,14 @@
             
             document.getElementById('student-info-display').textContent = `${studentName}, ${studentClass}`;
 
-            const toDecimalQs = questions.powersOfTen.filter(q => q.subtype === 'to_decimal');
-            const toPowerQs = questions.powersOfTen.filter(q => q.subtype === 'to_power');
-
-            shuffle(toDecimalQs);
-            shuffle(toPowerQs);
-
-            const selectedPotQs = [];
-            if (toDecimalQs.length > 0) selectedPotQs.push(toDecimalQs.pop());
-            if (toPowerQs.length > 0) selectedPotQs.push(toPowerQs.pop());
+            const toDecimalQs = shuffle([...questions.powersOfTen.filter(q => q.subtype === 'to_decimal')]);
+            const toPowerQs = shuffle([...questions.powersOfTen.filter(q => q.subtype === 'to_power')]);
             
-            const remainingPotQs = shuffle([...toDecimalQs, ...toPowerQs]);
-            while (selectedPotQs.length < 3 && remainingPotQs.length > 0) {
-                selectedPotQs.push(remainingPotQs.pop());
-            }
-            const powersOfTenQs = selectedPotQs;
+            const powersOfTenQs = [...toDecimalQs.slice(0, 2), ...toPowerQs.slice(0, 2)];
+            const rootsQs = shuffle([...questions.roots]).slice(0, 4);
+            const linearQs = shuffle([...questions.linearEquations]).slice(0, 4);
+            const quadraticQs = shuffle([...questions.quadraticEquations]).slice(0, 3);
             
-            const rootsQs = shuffle([...questions.roots]).slice(0, 3);
-            const linearQs = shuffle([...questions.linearEquations]).slice(0, 2);
-            const quadraticQs = shuffle([...questions.quadraticEquations]).slice(0, 2);
             testQuestions = shuffle([...powersOfTenQs, ...rootsQs, ...linearQs, ...quadraticQs]);
             
             currentQuestionIndex = 0;
@@ -320,7 +372,6 @@
         }
 
         function clearInputs() {
-            // Clear all possible input fields
             answerInput.value = '';
             potMantissaInput.value = '';
             potExponentInput.value = '';
@@ -344,10 +395,9 @@
                 
                 clearInputs();
 
-                // Show/hide back button
                 backButton.classList.toggle('hidden', currentQuestionIndex === 0);
+                backButton.disabled = currentQuestionIndex === 0;
 
-                // Show appropriate container for the question type
                 if (question.type === 'powersOfTen' && question.subtype === 'to_power') {
                     powersOfTenAnswerContainer.classList.remove('hidden');
                 } else if (question.type === 'quadraticEquations') {
@@ -356,7 +406,6 @@
                     standardAnswerContainer.classList.remove('hidden');
                 }
 
-                // Populate with previous answer if it exists
                 const storedAnswer = userAnswers[currentQuestionIndex];
                 if (storedAnswer && storedAnswer.userInput) {
                     const userInput = storedAnswer.userInput;
@@ -368,7 +417,7 @@
                             const radio = document.getElementById(`sol-${userInput.choice}`);
                             if(radio) {
                                 radio.checked = true;
-                                radio.dispatchEvent(new Event('change')); // Show correct containers
+                                radio.dispatchEvent(new Event('change'));
                             }
                             if (userInput.choice === 'one') {
                                 answerSingleInput.value = userInput.values[0] || '';
@@ -381,11 +430,9 @@
                         answerInput.value = userInput.value || '';
                     }
                 } else {
-                    // Focus on the first input if no answer is stored
                     if (question.type === 'powersOfTen' && question.subtype === 'to_power') potMantissaInput.focus();
                     else if (question.type !== 'quadraticEquations') answerInput.focus();
                 }
-
 
                 submitButton.textContent = (currentQuestionIndex === testQuestions.length - 1) ? 'Test beenden & Zertifikat anzeigen' : 'Nächste Frage';
             }
@@ -393,9 +440,6 @@
 
         function goBack() {
             if (currentQuestionIndex > 0) {
-                // Save current state before going back, in case the user was editing
-                // This step is optional but improves user experience. We'll skip it for simplicity now.
-                // The current answer will be saved on the next "submitAnswer" call anyway.
                 currentQuestionIndex--;
                 displayQuestion();
             }
@@ -514,7 +558,6 @@
             document.getElementById('cert-class').textContent = studentClass;
             document.getElementById('cert-date').textContent = new Date().toLocaleDateString('de-DE');
 
-            // Filter out any undefined/empty slots before counting
             const validAnswers = userAnswers.filter(a => a !== undefined);
             const score = validAnswers.filter(a => a.isCorrect).length;
             document.getElementById('cert-score').textContent = `Ergebnis: ${score} von ${testQuestions.length} richtig`;
