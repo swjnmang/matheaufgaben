@@ -3,738 +3,516 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quadratische Gleichungen Trainer</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Aufgabengenerator: Reinquadratische Gleichungen</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
+        /* Modernes & ansprechendes Design */
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6; /* Tailwind gray-100 */
-        }
-        .level-btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            color: white;
-            font-weight: bold;
-            transition: background-color 0.3s ease, transform 0.1s ease;
-            margin: 0 0.5rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .level-btn:active {
-            transform: translateY(1px);
-        }
-        .action-btn {
-            padding: 0.6rem 1.2rem;
-            border-radius: 0.5rem;
-            color: white;
-            font-weight: bold;
-            transition: background-color 0.3s ease, transform 0.1s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-         .action-btn:active {
-            transform: translateY(1px);
-        }
-        #solution-steps p {
-            margin-bottom: 0.5rem;
-            padding: 0.35rem 0.5rem;
-            border-radius: 0.35rem;
-        }
-        #solution-steps p:nth-child(odd) {
-            background-color: #e5e7eb; /* Tailwind gray-200 */
-        }
-         #solution-steps p:nth-child(even) {
-            background-color: #d1d5db; /* Tailwind gray-300 */
-        }
-        .operation-span {
-            display: inline-block;
-            min-width: 150px; /* Adjusted for potentially longer operations like 'Wurzel ziehen' */
-            color: #4b5563; /* Tailwind gray-600 */
-            font-style: italic;
-            text-align: right;
-            padding-right: 10px;
-        }
-        .equation-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .equation-text {
-            flex-grow: 1;
-            text-align: left;
-        }
-        .solution-input-container {
             display: flex;
             justify-content: center;
-            gap: 1rem;
-            margin-bottom: 0.5rem;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
-        .solution-input {
-            /* Changed border-slate-400 to border-slate-500 for better default visibility */
-            border-2 border-slate-500 focus:border-blue-600 focus:ring-blue-600 p-3 rounded-lg w-full sm:w-1/3 md:w-1/4 text-center text-lg shadow-sm;
+        #task-generator-container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 25px 30px;
+            width: 100%;
+            max-width: 700px;
+            margin: 20px;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
+            text-align: center;
+        }
+        @keyframes correct-flash {
+            0% { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(40, 167, 69, 0.5); }
+            50% { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1), 0 0 0 10px rgba(40, 167, 69, 0); }
+            100% { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(40, 167, 69, 0); }
+        }
+        .correct-flash-animation {
+            animation: correct-flash 0.7s ease-out;
+        }
+        #task-generator-container h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        #score-container {
+            margin-bottom: 20px;
+        }
+        #score-progress-bar-container {
+            width: 100%; background-color: #e0e0e0; border-radius: 10px;
+        }
+        #score-progress-bar {
+            width: 0%; height: 12px; background-color: #ff9800; border-radius: 10px; transition: width 0.5s ease;
+        }
+        #score-text {
+            font-weight: bold; margin-top: 5px; color: #555;
+        }
+        #difficulty-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .difficulty-button {
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            color: #495057;
+            transition: all 0.3s ease;
+        }
+        .difficulty-button.active {
+            background-color: #0073aa;
+            color: white;
+            border-color: #0073aa;
+            font-weight: bold;
+        }
+        #task-output {
+            background-color: #f8f9fa;
+            border: 1px solid #dcdcdc;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            min-height: 80px;
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #495057;
+        }
+        .equation-display {
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #005a87;
+            font-family: 'Courier New', Courier, monospace;
+            display: block;
+            margin-top: 15px;
+            text-align: center;
+            word-break: break-all;
+        }
+        #solution-input-container {
+            margin-bottom: 15px;
+        }
+        .input-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.5em;
+            font-family: 'Courier New', Courier, monospace;
+            flex-wrap: wrap;
+        }
+        .equation-input {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 1em;
+            width: 100px;
+            text-align: center;
+            font-family: inherit;
+        }
+        #special-solution-container {
+            font-size: 0.9rem;
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        #feedback-output {
+            min-height: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .correct { color: #28a745; }
+        .incorrect { color: #dc3545; }
+        #solution-output {
+            background-color: #e9f5e9;
+            border: 1px solid #c8e6c9;
+            color: #2e7d32;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: left;
+            font-family: 'Courier New', Courier, monospace;
+            line-height: 1.8;
+            word-break: break-word;
+        }
+        #solution-output table {
+            width: 100%;
+            text-align: left;
+            border-collapse: collapse;
+        }
+        #solution-output td {
+            padding: 3px;
+            vertical-align: middle;
+        }
+        #solution-output td:nth-child(1) { width: 60%; text-align: right; padding-right: 10px; }
+        #solution-output td:nth-child(2) { width: 5%; text-align: center; }
+        #solution-output td:nth-child(3) { width: 35%; text-align: left; color: #555;}
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .generator-button {
+            background: linear-gradient(145deg, #0078b3, #005f8e);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 28px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .generator-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+        .generator-button:disabled {
+            background: linear-gradient(145deg, #c0c0c0, #a9a9a9);
+            cursor: not-allowed;
+            transform: none;
+        }
+        .check-button {
+             background: linear-gradient(145deg, #28a745, #218838);
+        }
+        .secondary-button {
+             background: linear-gradient(145deg, #6c757d, #5a6268);
         }
     </style>
 </head>
-<body class="bg-gray-100">
+<body>
 
-    <div class="container mx-auto p-4 sm:p-6 md:p-8 max-w-2xl">
-        <header class="text-center mb-8">
-            <h1 class="text-3xl sm:text-4xl font-bold text-slate-700">Quadratische Gleichungen Trainer</h1>
-            <p class="text-gray-600 mt-2">Löse Gleichungen der Form ax² + bx + c = 0 durch Umformen!</p>
-        </header>
+<div id="task-generator-container">
+    <h2>Reinquadratische Gleichungen lösen</h2>
 
-        <div class="difficulty-selector text-center mb-8 space-y-2 sm:space-y-0 sm:space-x-2 md:space-x-4">
-            <button data-level="1" class="level-btn bg-teal-500 hover:bg-teal-600">Leicht</button>
-            <button data-level="2" class="level-btn bg-sky-500 hover:bg-sky-600">Mittel</button>
-            <button data-level="3" class="level-btn bg-indigo-600 hover:bg-indigo-700">Schwer</button>
+    <div id="score-container">
+        <div id="score-progress-bar-container">
+            <div id="score-progress-bar"></div>
         </div>
-
-        <div id="task-area" class="bg-white p-6 rounded-xl shadow-lg text-center">
-            <p class="text-lg text-gray-700 mb-2">Aktuelle Gleichung:</p>
-            <p id="equation-display" class="text-2xl sm:text-3xl font-mono text-slate-800 mb-6 p-3 bg-gray-100 rounded-md"></p>
-
-            <div class="mb-6">
-                <label class="block text-lg text-gray-700 mb-2">Deine Lösung(en) für <span class="font-bold">x</span>:</label>
-                <div class="solution-input-container">
-                    <input type="text" id="user-solution-1" class="solution-input" placeholder="x₁">
-                    <input type="text" id="user-solution-2" class="solution-input" placeholder="x₂">
-                </div>
-                <p class="text-sm text-gray-500 mt-1">Bitte auf zwei Nachkommastellen runden, falls nötig.</p>
-            </div>
-
-            <div class="space-x-2 sm:space-x-4">
-                <button id="check-solution-btn" class="action-btn bg-blue-600 hover:bg-blue-700">Ergebnis prüfen</button>
-                <button id="show-solution-btn" class="action-btn bg-slate-500 hover:bg-slate-600">Lösungsweg anzeigen</button>
-            </div>
-            <div id="feedback-area" class="mt-6 text-lg min-h-[2rem]"></div>
-        </div>
-
-        <div id="solution-area" class="bg-gray-50 p-6 rounded-xl shadow-lg mt-8 hidden">
-            <h3 class="text-2xl font-semibold text-slate-700 mb-4 text-center">Musterlösung:</h3>
-            <div id="solution-steps" class="font-mono text-gray-800 space-y-2 text-sm sm:text-base">
-                </div>
-        </div>
+        <div id="score-text">Punkte: 0 / 20</div>
     </div>
 
-    <script>
-        // Global variable to store current equation data
-        let currentEquationData = null;
-        const VAR_NAME = 'x'; // Variable name used in equations
+    <div id="main-content">
+        <div id="difficulty-selector">
+            <button class="difficulty-button" id="diff-easy" onclick="setDifficulty('easy')">Leicht</button>
+            <button class="difficulty-button" id="diff-medium" onclick="setDifficulty('medium')">Mittel</button>
+            <button class="difficulty-button" id="diff-hard" onclick="setDifficulty('hard')">Schwer</button>
+            <button class="difficulty-button" id="diff-ultimativ" onclick="setDifficulty('ultimativ')">Ultimativ</button>
+        </div>
 
-        // DOM Elements
-        const difficultyButtons = document.querySelectorAll('.level-btn');
-        const equationDisplay = document.getElementById('equation-display');
-        const userSolutionInput1 = document.getElementById('user-solution-1');
-        const userSolutionInput2 = document.getElementById('user-solution-2');
-        const checkSolutionBtn = document.getElementById('check-solution-btn');
-        const showSolutionBtn = document.getElementById('show-solution-btn');
-        const feedbackArea = document.getElementById('feedback-area');
-        const solutionArea = document.getElementById('solution-area');
-        const solutionStepsDiv = document.getElementById('solution-steps');
+        <div id="task-output">
+            <p>Löse die folgende Gleichung schriftlich nach x auf. Gib beide Lösungen an (falls vorhanden).</p>
+            <div id="equation-display"></div>
+        </div>
 
-        // --- Utility Functions ---
-        function getRandomInt(min, max) {
-            min = Math.ceil(min);
-            max = Math.floor(max);
-            return Math.floor(Math.random() * (max - min + 1)) + min;
-        }
+        <div id="solution-input-container">
+            <div class="input-row">
+                 x₁ = <input type="text" id="solution1-input" class="equation-input" placeholder="Lösung 1">
+                 &nbsp; x₂ = <input type="text" id="solution2-input" class="equation-input" placeholder="Lösung 2">
+            </div>
+            <div id="special-solution-container">
+                <label><input type="checkbox" id="no-solution" onchange="handleCheckbox(this)"> Keine reelle Lösung</label>
+            </div>
+        </div>
 
-        function formatNumber(num, precision = 2) {
-            if (Number.isInteger(num)) {
-                return num.toString();
-            }
-            const factor = Math.pow(10, precision);
-            const roundedNum = Math.round(num * factor) / factor;
-            return roundedNum.toString(); 
-        }
+        <div id="feedback-output"></div>
+
+        <div class="button-container">
+            <button class="generator-button" onclick="generateNewTask()">Neue Aufgabe</button>
+            <button class="generator-button check-button" onclick="checkSolution()">Lösung prüfen</button>
+            <button class="generator-button secondary-button" id="show-answer-btn" onclick="showAnswer()">Lösung anzeigen</button>
+        </div>
+
+        <div id="solution-output" style="display: none;"></div>
+</div>
+
+<script>
+    let correctSolution1, correctSolution2;
+    let solutionSteps = "";
+    let currentDifficulty = "easy";
+    let score = 0;
+    const GOAL_SCORE = 20;
+    let isFirstTry = true;
+    let totalFirstTries = 0;
+    let correctFirstTries = 0;
+    let currentXSquaredVal = 0; // Store the final x² value for the solution steps
+
+    function setDifficulty(level) {
+        currentDifficulty = level;
+        document.querySelectorAll('.difficulty-button').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`diff-${level}`).classList.add('active');
+        generateNewTask();
+    }
+    
+    function formatNumber(num) {
+        return Math.round(num * 100) / 100;
+    }
+    
+    function updateScore(points) {
+        score += points;
+        updateScoreDisplay();
+    }
+    
+    function updateScoreDisplay() {
+        const scoreBar = document.getElementById('score-progress-bar');
+        const scoreText = document.getElementById('score-text');
+        score = Math.max(0, score);
+        const percentage = (score / GOAL_SCORE) * 100;
+        scoreBar.style.width = `${percentage}%`;
+        scoreText.textContent = `Punkte: ${score} / ${GOAL_SCORE}`;
         
-        function sideToString(coeffs, varName = VAR_NAME) {
-            let parts = [];
-            const { x2, x, c } = coeffs; 
-
-            if (x2 !== 0) {
-                if (x2 === 1) parts.push(`${varName}²`);
-                else if (x2 === -1) parts.push(`-${varName}²`);
-                else parts.push(`${formatNumber(x2)}${varName}²`);
-            }
-
-            if (x !== 0) {
-                const sign = x > 0 ? '+' : '-';
-                const absX = Math.abs(x);
-                const xTermVal = absX === 1 ? varName : `${formatNumber(absX)}${varName}`;
-                if (parts.length > 0) { 
-                    parts.push(sign);
-                    parts.push(xTermVal);
-                } else { 
-                    parts.push(x > 0 ? xTermVal : `-${xTermVal}`);
-                }
-            }
-
-            if (c !== 0) {
-                const sign = c > 0 ? '+' : '-';
-                const absC = Math.abs(c);
-                if (parts.length > 0) { 
-                    parts.push(sign);
-                    parts.push(formatNumber(absC).toString());
-                } else { 
-                    parts.push(formatNumber(c).toString());
-                }
-            }
-
-            if (parts.length === 0) return "0";
-            return parts.join(' ').replace(/\s\+\s/g, ' + ').replace(/\s-\s/g, ' - ');
+        if (score >= GOAL_SCORE) {
+            const successRate = totalFirstTries > 0 ? (correctFirstTries / totalFirstTries) * 100 : 0;
+            document.getElementById('win-statistics').textContent = `Du hast ${Math.round(successRate)}% der Fragen im ersten Versuch korrekt beantwortet.`;
+            document.getElementById('main-content').style.display = 'none';
+            document.getElementById('win-screen').style.display = 'block';
         }
+    }
+
+    function startNewGame() {
+        score = 0;
+        totalFirstTries = 0;
+        correctFirstTries = 0;
+        updateScoreDisplay();
+        document.getElementById('main-content').style.display = 'block';
+        document.getElementById('win-screen').style.display = 'none';
+        generateNewTask();
+    }
+    
+    function generateNewTask() {
+        isFirstTry = true;
+        document.getElementById('feedback-output').textContent = '';
+        document.getElementById('solution1-input').value = '';
+        document.getElementById('solution2-input').value = '';
+        document.getElementById('solution-output').style.display = 'none';
+        document.getElementById('show-answer-btn').disabled = true;
+        document.getElementById('no-solution').checked = false;
+        document.getElementById('solution1-input').disabled = false;
+        document.getElementById('solution2-input').disabled = false;
+
+        const randomInt = (max, min = 1) => Math.floor(Math.random() * (max - min + 1)) + min;
+        const formatSign = (val) => val >= 0 ? `+ ${val}` : `- ${Math.abs(val)}`;
+        const formatOp = (val) => val >= 0 ? `- ${val}` : `+ ${Math.abs(val)}`;
+
+        let equation = "";
         
-        function formatParentheses(multiplier, contentCoeffs, varName = VAR_NAME) {
-            const contentStr = sideToString(contentCoeffs, varName);
-            if (multiplier === 1) return contentStr;
-            if (multiplier === -1) return `-(${contentStr})`;
-            return `${formatNumber(multiplier)}(${contentStr})`;
-        }
-
-        // --- Equation Generation Functions ---
-        function genType1Easy() {
-            let sol = getRandomInt(1, 10);
-            let a = Math.random() < 0.4 ? 1 : getRandomInt(1,4) * (Math.random() < 0.3 ? -1 : 1); 
-            if (a === 0) a = 1;
-            
-            let c = -a * sol * sol; 
-
-            let lhs = { x2: a, x: 0, c: c };
-            let rhs = { x2: 0, x: 0, c: 0 };
-            let equationString = `${sideToString(lhs)} = ${sideToString(rhs)}`;
-            let solutions = sol === 0 ? [0] : [sol, -sol].sort((a,b)=>a-b);
-            
-            let steps = [];
-            steps.push({ state: equationString, opForNext: c !== 0 ? (c > 0 ? `| - ${formatNumber(c)}` : `| + ${formatNumber(Math.abs(c))}`) : "" });
-            let intermediate_rhs_c = -c;
-            if (c !== 0) steps.push({ state: `${sideToString({x2:a, x:0, c:0})} = ${formatNumber(intermediate_rhs_c)}`, opForNext: (a !== 1 && a !== 0) ? `| / ${formatNumber(a)}` : "" });
-            
-            let x_squared_val = intermediate_rhs_c / a;
-            if (a !== 1 && a !== 0 && c !== 0) steps.push({ state: `${VAR_NAME}² = ${formatNumber(x_squared_val)}`, opForNext: `| √ (Wurzel ziehen)` });
-            else if (c === 0 && a !== 1 && a !== 0) steps.push({ state: `${VAR_NAME}² = 0`, opForNext: `| √ (Wurzel ziehen)` });
-            else if (a === 1 && c !== 0) steps.push({ state: `${VAR_NAME}² = ${formatNumber(x_squared_val)}`, opForNext: `| √ (Wurzel ziehen)` });
-            else if (a === 1 && c === 0) steps.push({ state: `${VAR_NAME}² = 0`, opForNext: `| √ (Wurzel ziehen)` });
-
-
-            if (sol === 0) {
-                 steps.push({ state: `${VAR_NAME} = 0`, opForNext: "(Lösung)" });
-            } else {
-                 steps.push({ state: `${VAR_NAME} = ±${formatNumber(sol)}`, opForNext: "" });
-                 steps.push({ state: `${VAR_NAME}₁ = ${formatNumber(Math.min(...solutions))}, ${VAR_NAME}₂ = ${formatNumber(Math.max(...solutions))}`, opForNext: "(Lösungen)" });
-            }
-            return { equationString, solutions, steps };
-        }
-
-        function genType2Easy() {
-            let b = getRandomInt(1, 10) * (Math.random() < 0.5 ? 1 : -1);
-            let a = Math.random() < 0.4 ? 1 : getRandomInt(1, 5) * (Math.random() < 0.3 ? -1 : 1);
-            if (a === 0) a = 1;
-
-            let sol2_num = -b;
-            let sol2_den = a;
-            let sol2 = sol2_num / sol2_den;
-
-            let lhs = { x2: a, x: b, c: 0 };
-            let rhs = { x2: 0, x: 0, c: 0 };
-            let equationString = `${sideToString(lhs)} = ${sideToString(rhs)}`;
-            let solutions = [0, sol2].sort((a,b)=>a-b);
-            if (solutions.length > 1 && Math.abs(solutions[0] - solutions[1]) < 0.0001) {
-                solutions = [0];
-            }
-
-
-            let steps = [];
-            steps.push({ state: equationString, opForNext: `| ${VAR_NAME} ausklammern` });
-            steps.push({ state: `${VAR_NAME}(${sideToString({x2:0, x:a, c:b})}) = 0`, opForNext: `| Satz vom Nullprodukt` });
-            steps.push({ state: `${VAR_NAME}₁ = 0 \xa0 oder \xa0 ${sideToString({x2:0, x:a, c:b})} = 0`, opForNext: b !== 0 ? (b > 0 ? `| - ${formatNumber(b)}` : `| + ${formatNumber(Math.abs(b))}`) : "" });
-            if (b !== 0) steps.push({ state: `${sideToString({x2:0, x:a, c:0})} = ${formatNumber(-b)}`, opForNext: (a !== 1 && a !== 0) ? `| / ${formatNumber(a)}` : "" });
-            if (a !== 1 && a !== 0 && b !== 0) steps.push({ state: `${VAR_NAME} = ${formatNumber(sol2)}`, opForNext: "" });
-            
-            if (solutions.length === 1) {
-                steps.push({ state: `${VAR_NAME} = ${formatNumber(solutions[0])}`, opForNext: "(Lösung)" });
-            } else {
-                steps.push({ state: `${VAR_NAME}₁ = ${formatNumber(Math.min(...solutions))}, ${VAR_NAME}₂ = ${formatNumber(Math.max(...solutions))}`, opForNext: "(Lösungen)" });
-            }
-            return { equationString, solutions, steps };
-        }
+        const sol = randomInt(12, 2);
+        const x_squared = sol * sol;
         
-        function generateEasyQuadraticEquation() {
-            if (Math.random() < 0.5) {
-                return genType1Easy();
-            } else {
-                return genType2Easy();
-            }
-        }
+        switch (currentDifficulty) {
+            case 'ultimativ': // a(bx² + c) = d(ex² + f)
+                {
+                    let a, b, d, e;
+                    do {
+                        a = randomInt(5, 1) * (Math.random() < 0.5 ? 1 : -1);
+                        b = randomInt(3, 1);
+                        d = randomInt(5, 1) * (Math.random() < 0.5 ? 1 : -1);
+                        e = randomInt(3, 1);
+                    } while (a * b === d * e); // Avoid 0x²
 
-        function genType1Medium() {
-            let sol_for_paren = getRandomInt(1, 8); 
-            let d_val = getRandomInt(-5, 5);
-            let a_coeff = getRandomInt(1,4) * (Math.random() < 0.4 ? -1 : 1);
-            if (a_coeff === 0) a_coeff = 1;
+                    const A = a * b - d * e;
+                    const B = A * x_squared;
 
-            let c_val = a_coeff * sol_for_paren * sol_for_paren;
+                    let c = randomInt(10, -10);
+                    let f = (B + a*c) / d;
 
-            let parenContentCoeffs = {x2:0, x:1, c:d_val};
-            let equationString = `${formatParentheses(a_coeff, parenContentCoeffs)}² = ${formatNumber(c_val)}`;
-            if (a_coeff === 1) equationString = `(${sideToString(parenContentCoeffs)})² = ${formatNumber(c_val)}`;
-            if (a_coeff === -1) equationString = `-(${sideToString(parenContentCoeffs)})² = ${formatNumber(c_val)}`;
+                    if (f % 1 !== 0 || f === 0) { // Retry if f is not an integer
+                        generateNewTask();
+                        return;
+                    }
 
-
-            let sol1 = sol_for_paren - d_val;
-            let sol2 = -sol_for_paren - d_val;
-            let solutions = [sol1, sol2].sort((a,b)=>a-b);
-            if (solutions.length > 1 && Math.abs(solutions[0] - solutions[1]) < 0.0001) { 
-                solutions = [-d_val];
-            }
-
-
-            let steps = [];
-            steps.push({ state: equationString, opForNext: (a_coeff !== 1 && a_coeff !== 0) ? `| / ${formatNumber(a_coeff)}` : `| √ (Wurzel ziehen)`});
-            
-            let val_after_div = c_val / a_coeff;
-            if (a_coeff !== 1 && a_coeff !== 0) {
-                 steps.push({ state: `(${sideToString(parenContentCoeffs)})² = ${formatNumber(val_after_div)}`, opForNext: `| √ (Wurzel ziehen)` });
-            }
-           
-            steps.push({ state: `${sideToString(parenContentCoeffs)} = ±${formatNumber(sol_for_paren)}`, opForNext: d_val !== 0 ? (d_val > 0 ? `| - ${formatNumber(d_val)}` : `| + ${formatNumber(Math.abs(d_val))}`) : ""});
-            if (d_val !== 0) {
-                 steps.push({ state: `${VAR_NAME} = ${formatNumber(-d_val)} ± ${formatNumber(sol_for_paren)}`, opForNext: ""});
-            }
-            if (solutions.length === 1) {
-                steps.push({ state: `${VAR_NAME} = ${formatNumber(solutions[0])}`, opForNext: "(Lösung)" });
-            } else {
-                steps.push({ state: `${VAR_NAME}₁ = ${formatNumber(Math.min(...solutions))}, ${VAR_NAME}₂ = ${formatNumber(Math.max(...solutions))}`, opForNext: "(Lösungen)" });
-            }
-            return { equationString, solutions, steps };
-        }
-
-        function genType2Medium() {
-            let sol = getRandomInt(1, 10);
-            let a_lhs, d_rhs;
-            do {
-                a_lhs = getRandomInt(-5,5);
-                d_rhs = getRandomInt(-5,5);
-            } while (a_lhs === d_rhs || (a_lhs === 0 && d_rhs === 0)); 
-
-            let c_lhs = getRandomInt(-15,15);
-            let combined_x2_coeff = a_lhs - d_rhs;
-            if (combined_x2_coeff === 0) return genType1Easy(); 
-
-            let e_rhs = combined_x2_coeff * sol * sol + c_lhs;
-            
-            let lhs = {x2: a_lhs, x:0, c: c_lhs};
-            let rhs = {x2: d_rhs, x:0, c: e_rhs};
-            let equationString = `${sideToString(lhs)} = ${sideToString(rhs)}`;
-            let solutions = sol === 0 ? [0] : [sol, -sol].sort((a,b)=>a-b);
-
-            let steps = [];
-            steps.push({state: equationString, opForNext: d_rhs !== 0 ? (d_rhs > 0 ? `| - ${sideToString({x2:d_rhs, x:0, c:0})}`: `| + ${sideToString({x2:Math.abs(d_rhs),x:0,c:0})}`) : (c_lhs !== 0 ? (c_lhs > 0 ? `| - ${formatNumber(c_lhs)}` : `| + ${formatNumber(Math.abs(c_lhs))}`) : "") });
-            
-            let current_lhs_x2 = a_lhs;
-            let current_lhs_c = c_lhs;
-            let current_rhs_x2 = d_rhs;
-            let current_rhs_c = e_rhs;
-
-            if (current_rhs_x2 !== 0) {
-                current_lhs_x2 -= current_rhs_x2;
-                current_rhs_x2 = 0;
-                steps.push({state: `${sideToString({x2: current_lhs_x2, c:current_lhs_c})} = ${sideToString({x2: current_rhs_x2, c:current_rhs_c})}`, opForNext: current_lhs_c !== 0 ? (current_lhs_c > 0 ? `| - ${formatNumber(current_lhs_c)}` : `| + ${formatNumber(Math.abs(current_lhs_c))}`) : ""});
-            }
-            
-            if (current_lhs_c !== 0) {
-                current_rhs_c -= current_lhs_c;
-                current_lhs_c = 0;
-                if (d_rhs !== 0 || (d_rhs === 0 && c_lhs !== 0) ) { 
-                    steps.push({state: `${sideToString({x2:current_lhs_x2, c:current_lhs_c})} = ${sideToString({x2:current_rhs_x2, c:current_rhs_c})}`, opForNext: (current_lhs_x2 !== 1 && current_lhs_x2 !== 0) ? `| / ${formatNumber(current_lhs_x2)}` : ""});
+                    equation = `$$${a}(${b}x^2 ${formatSign(c)}) = ${d}(${e}x^2 ${formatSign(f)}) $$`;
+                    solutionSteps = `<table>
+                        <tr><td>${a}(${b}x² ${formatSign(c)}) = ${d}(${e}x² ${formatSign(f)})</td><td>|</td><td>Klammern auflösen</td></tr>
+                        <tr><td>${a*b}x² ${formatSign(a*c)} = ${d*e}x² ${formatSign(d*f)}</td><td>|</td><td>${formatOp(d*e, true)}</td></tr>
+                        <tr><td>${A}x² ${formatSign(a*c)} = ${d*f}</td><td>|</td><td>${formatOp(a*c)}</td></tr>
+                        <tr><td>${A}x² = ${B}</td><td>|</td><td>/${A}</td></tr>
+                    `;
+                    currentXSquaredVal = B / A;
                 }
-            }
-            
-            let x_sq_val = current_rhs_c / current_lhs_x2;
-            if (current_lhs_x2 !== 1 && current_lhs_x2 !== 0) {
-                if( (d_rhs !== 0 && c_lhs !==0) || (d_rhs === 0 && c_lhs !== 0 && current_lhs_x2 !== 1) || (d_rhs !== 0 && c_lhs === 0 && current_lhs_x2 !== 1)){
-                     steps.push({state: `${VAR_NAME}² = ${formatNumber(x_sq_val)}`, opForNext: `| √ (Wurzel ziehen)`});
-                } else if (current_lhs_x2 !==1 && (steps.length === 0 || steps[steps.length-1].state !== `${VAR_NAME}² = ${formatNumber(x_sq_val)}`)) { 
-                     steps.push({state: `${VAR_NAME}² = ${formatNumber(x_sq_val)}`, opForNext: `| √ (Wurzel ziehen)`});
-                }
-            } else if (current_lhs_x2 === 1 && (steps.length === 0 || steps[steps.length-1].state !== `${VAR_NAME}² = ${formatNumber(x_sq_val)}`)) { 
-                 steps.push({state: `${VAR_NAME}² = ${formatNumber(x_sq_val)}`, opForNext: `| √ (Wurzel ziehen)`});
-            }
+                break;
+            case 'hard': // ax² + b = cx² + d  OR a(x² + b) = c
+                 if (Math.random() < 0.5) { // ax² + b = cx² + d
+                    let a, c;
+                    do {
+                        a = randomInt(10, -10);
+                        c = randomInt(10, -10);
+                    } while (a === c || a === 0 || c === 0);
 
+                    const A = a - c;
+                    const B = A * x_squared;
+                    
+                    let b = randomInt(20, -20);
+                    let d = B + b;
 
-            if (sol === 0) {
-                 steps.push({ state: `${VAR_NAME} = 0`, opForNext: "(Lösung)" });
-            } else {
-                 steps.push({ state: `${VAR_NAME} = ±${formatNumber(sol)}`, opForNext: "" });
-                 steps.push({ state: `${VAR_NAME}₁ = ${formatNumber(Math.min(...solutions))}, ${VAR_NAME}₂ = ${formatNumber(Math.max(...solutions))}`, opForNext: "(Lösungen)" });
-            }
-            return { equationString, solutions, steps };
-        }
+                    equation = `$$${a}x^2 ${formatSign(b)} = ${c}x^2 ${formatSign(d)}$$`;
+                    solutionSteps = `<table>
+                        <tr><td>${a}x² ${formatSign(b)} = ${c}x² ${formatSign(d)}</td><td>|</td><td>${formatOp(c, true)}</td></tr>
+                        <tr><td>${A}x² ${formatSign(b)} = ${d}</td><td>|</td><td>${formatOp(b)}</td></tr>
+                        <tr><td>${A}x² = ${B}</td><td>|</td><td>/${A}</td></tr>
+                    `;
+                    currentXSquaredVal = B / A;
+                 } else { // a(x² + b) = c
+                    const a = randomInt(5, 2) * (Math.random() < 0.5 ? 1 : -1);
+                    const b = randomInt(20, -20);
+                    const c = a * (x_squared + b);
 
-
-        function generateMediumQuadraticEquation() {
-             if (Math.random() < 0.5) {
-                return genType1Medium();
-            } else {
-                return genType2Medium();
-            }
-        }
-        
-        function genType1Hard() {
-            let sol_for_paren_val = getRandomInt(1, 10); 
-            let d_coeff_in_paren = getRandomInt(1,3) * (Math.random() < 0.3 ? -1 : 1);
-            if(d_coeff_in_paren === 0) d_coeff_in_paren = 1;
-            let e_const_in_paren = getRandomInt(-5,5);
-
-            let a_multiplier = getRandomInt(1,4) * (Math.random() < 0.4 ? -1 : 1);
-            if (a_multiplier === 0) a_multiplier = 1;
-            
-            let f_const_lhs = getRandomInt(-15,15);
-            let g_const_rhs = a_multiplier * sol_for_paren_val * sol_for_paren_val + f_const_lhs;
-
-            let parenCoeffs = {x2:0, x:d_coeff_in_paren, c:e_const_in_paren};
-            let equationStringLHS = `${formatParentheses(a_multiplier, parenCoeffs)}²`;
-            if (a_multiplier === 1) equationStringLHS = `(${sideToString(parenCoeffs)})²`;
-            if (a_multiplier === -1) equationStringLHS = `-(${sideToString(parenCoeffs)})²`;
-            
-            let equationString = `${equationStringLHS} ${f_const_lhs >= 0 ? '+ '+formatNumber(f_const_lhs) : '- '+formatNumber(Math.abs(f_const_lhs))} = ${formatNumber(g_const_rhs)}`;
-            if (f_const_lhs === 0) equationString = `${equationStringLHS} = ${formatNumber(g_const_rhs)}`;
-
-
-            let sol1_val_for_dx_plus_e = sol_for_paren_val;
-            let sol2_val_for_dx_plus_e = -sol_for_paren_val;
-
-            let sol1 = (sol1_val_for_dx_plus_e - e_const_in_paren) / d_coeff_in_paren;
-            let sol2 = (sol2_val_for_dx_plus_e - e_const_in_paren) / d_coeff_in_paren;
-            let solutions = [sol1, sol2].sort((a,b)=>a-b);
-             if (solutions.length > 1 && Math.abs(solutions[0] - solutions[1]) < 0.0001) {
-                solutions = [sol1]; 
-            }
-
-
-            let steps = [];
-            steps.push({state: equationString, opForNext: f_const_lhs !== 0 ? (f_const_lhs > 0 ? `| - ${formatNumber(f_const_lhs)}` : `| + ${formatNumber(Math.abs(f_const_lhs))}`) : ((a_multiplier !== 1 && a_multiplier !== 0) ? `| / ${formatNumber(a_multiplier)}` : `| √ (Wurzel ziehen)`) });
-            
-            let rhs_after_f_move = g_const_rhs - f_const_lhs;
-            if (f_const_lhs !== 0) steps.push({state: `${equationStringLHS} = ${formatNumber(rhs_after_f_move)}`, opForNext: (a_multiplier !== 1 && a_multiplier !== 0) ? `| / ${formatNumber(a_multiplier)}` : `| √ (Wurzel ziehen)`});
-            
-            let val_after_div_a = rhs_after_f_move / a_multiplier;
-
-            if ( (f_const_lhs !== 0 && a_multiplier !== 1 && a_multiplier !== 0) || (f_const_lhs === 0 && a_multiplier !== 1 && a_multiplier !== 0) ) {
-                 steps.push({ state: `(${sideToString(parenCoeffs)})² = ${formatNumber(val_after_div_a)}`, opForNext: `| √ (Wurzel ziehen)` });
-            } else if ( (f_const_lhs === 0 && (a_multiplier === 1 || a_multiplier === -1)) || (f_const_lhs !== 0 && (a_multiplier === 1 || a_multiplier === -1)) ) {
-                 if (steps.length > 0 && steps[steps.length-1].state === `${equationStringLHS} = ${formatNumber(rhs_after_f_move)}` && (a_multiplier === 1 || a_multiplier === -1)) {
-                    steps[steps.length-1].opForNext = `| √ (Wurzel ziehen)`; 
-                 } else if (steps.length === 0 || steps[steps.length-1].state !== `(${sideToString(parenCoeffs)})² = ${formatNumber(val_after_div_a)}`) {
-                     steps.push({ state: `(${sideToString(parenCoeffs)})² = ${formatNumber(val_after_div_a)}`, opForNext: `| √ (Wurzel ziehen)` });
+                    equation = `$$${a}(x^2 ${formatSign(b)}) = ${c}$$`;
+                    solutionSteps = `<table>
+                        <tr><td>${a}(x² ${formatSign(b)}) = ${c}</td><td>|</td><td>/${a}</td></tr>
+                        <tr><td>x² ${formatSign(b)} = ${c/a}</td><td>|</td><td>${formatOp(b)}</td></tr>
+                    `;
+                    currentXSquaredVal = c/a - b;
                  }
-            }
+                break;
+            case 'medium': // ax² + c = d
+                {
+                    const a = randomInt(5, 2) * (Math.random() < 0.5 ? 1 : -1);
+                    const c = randomInt(50, -50);
+                    let d;
+                    
+                    if (Math.random() < 0.2) { // 20% chance of "no solution"
+                        currentXSquaredVal = -randomInt(20, 1);
+                        d = currentXSquaredVal * a + c;
+                    } else {
+                        currentXSquaredVal = x_squared;
+                        d = a * currentXSquaredVal + c;
+                    }
 
-
-            steps.push({state: `${sideToString(parenCoeffs)} = ±${formatNumber(sol_for_paren_val)}`, opForNext: ""});
-            steps.push({state: `${sideToString(parenCoeffs)} = ${formatNumber(sol_for_paren_val)} \xa0\xa0 ODER \xa0\xa0 ${sideToString(parenCoeffs)} = ${formatNumber(-sol_for_paren_val)}`, opForNext: `| Aufteilen und lösen`});
-            
-            let case1Processed = false;
-            const sol1InSolutions = solutions.some(s => Math.abs(s - sol1) < 0.0001);
-
-            if (sol1InSolutions) {
-                let temp_rhs1 = sol_for_paren_val;
-                let step1_eq = `${sideToString(parenCoeffs)} = ${formatNumber(temp_rhs1)}`;
-                let step1_op = "";
-                if (e_const_in_paren !== 0) {
-                    step1_op = e_const_in_paren > 0 ? `| - ${formatNumber(e_const_in_paren)}` : `| + ${formatNumber(Math.abs(e_const_in_paren))}`;
-                    steps.push({state: `Fall 1: ${step1_eq}`, opForNext: step1_op});
-                    temp_rhs1 -= e_const_in_paren;
-                    steps.push({state: `${sideToString({x:d_coeff_in_paren, x2:0, c:0})} = ${formatNumber(temp_rhs1)}`, opForNext: (d_coeff_in_paren !== 1 && d_coeff_in_paren !== 0) ? `| / ${formatNumber(d_coeff_in_paren)}` : ""});
-                } else {
-                     steps.push({state: `Fall 1: ${step1_eq}`, opForNext: (d_coeff_in_paren !== 1 && d_coeff_in_paren !== 0) ? `| / ${formatNumber(d_coeff_in_paren)}` : ""});
+                    equation = `$$${a}x^2 ${formatSign(c)} = ${d}$$`;
+                    solutionSteps = `<table>
+                        <tr><td>${a}x² ${formatSign(c)} = ${d}</td><td>|</td><td>${formatOp(c)}</td></tr>
+                        <tr><td>${a}x² = ${d-c}</td><td>|</td><td>/${a}</td></tr>
+                    `;
                 }
-                if (d_coeff_in_paren !== 1 && d_coeff_in_paren !== 0) {
-                     steps.push({state: `${VAR_NAME} = ${formatNumber(temp_rhs1 / d_coeff_in_paren)}`, opForNext: ""});
-                } else if (d_coeff_in_paren === 1 && e_const_in_paren === 0) { 
-                     steps.push({state: `${VAR_NAME} = ${formatNumber(temp_rhs1)}`, opForNext: ""});
+                break;
+            case 'easy': // x² + c = d
+            default:
+                {
+                    const c = randomInt(50, -50);
+                    const d = x_squared + c;
+                    equation = `$$x^2 ${formatSign(c)} = ${d}$$`;
+                    solutionSteps = `<table>
+                        <tr><td>x² ${formatSign(c)} = ${d}</td><td>|</td><td>${formatOp(c)}</td></tr>
+                    `;
+                    currentXSquaredVal = x_squared;
                 }
-                case1Processed = true;
-            }
-            
-            const sol2InSolutions = solutions.some(s => Math.abs(s - sol2) < 0.0001);
-
-            if (sol2InSolutions && (sol_for_paren_val !== 0 || !case1Processed) ) { 
-                let temp_rhs2 = -sol_for_paren_val;
-                let step2_eq = `${sideToString(parenCoeffs)} = ${formatNumber(temp_rhs2)}`;
-                let step2_op = "";
-                 if (e_const_in_paren !== 0) {
-                    step2_op = e_const_in_paren > 0 ? `| - ${formatNumber(e_const_in_paren)}` : `| + ${formatNumber(Math.abs(e_const_in_paren))}`;
-                    steps.push({state: `Fall ${case1Processed ? '2' : '1'}: ${step2_eq}`, opForNext: step2_op});
-                    temp_rhs2 -= e_const_in_paren;
-                    steps.push({state: `${sideToString({x:d_coeff_in_paren,x2:0, c:0})} = ${formatNumber(temp_rhs2)}`, opForNext: (d_coeff_in_paren !== 1 && d_coeff_in_paren !== 0) ? `| / ${formatNumber(d_coeff_in_paren)}` : ""});
-                } else {
-                    steps.push({state: `Fall ${case1Processed ? '2' : '1'}: ${step2_eq}`, opForNext: (d_coeff_in_paren !== 1 && d_coeff_in_paren !== 0) ? `| / ${formatNumber(d_coeff_in_paren)}` : ""});
-                }
-
-                if (d_coeff_in_paren !== 1 && d_coeff_in_paren !== 0) {
-                    steps.push({state: `${VAR_NAME} = ${formatNumber(temp_rhs2 / d_coeff_in_paren)}`, opForNext: ""});
-                } else if (d_coeff_in_paren === 1 && e_const_in_paren === 0) { 
-                     steps.push({state: `${VAR_NAME} = ${formatNumber(temp_rhs2)}`, opForNext: ""});
-                }
-            }
-            
-            if (solutions.length === 1) {
-                steps.push({ state: `${VAR_NAME} = ${formatNumber(solutions[0])}`, opForNext: "(Lösung)" });
-            } else {
-                steps.push({ state: `${VAR_NAME}₁ = ${formatNumber(Math.min(...solutions))}, ${VAR_NAME}₂ = ${formatNumber(Math.max(...solutions))}`, opForNext: "(Lösungen)" });
-            }
-            return { equationString, solutions, steps };
+                break;
         }
         
-        function genType2Hard() {
-            let sol = getRandomInt(1,12);
-            let a_lhs, d_rhs;
-            do {
-                a_lhs = getRandomInt(-7,7);
-                d_rhs = getRandomInt(-7,7);
-            } while (a_lhs === d_rhs || (a_lhs === 0 && d_rhs === 0));
-            
-            let b_common_x_coeff = getRandomInt(-10,10);
-            let c_lhs_const = getRandomInt(-25,25);
+        currentXSquaredVal = formatNumber(currentXSquaredVal);
 
-            let combined_x2_coeff = a_lhs - d_rhs;
-            if (combined_x2_coeff === 0) return genType1Medium(); 
+        if (currentXSquaredVal < 0) {
+            correctSolution1 = 'none';
+            correctSolution2 = 'none';
+            solutionSteps += `<tr><td>x² = ${currentXSquaredVal}</td><td>|</td><td>Wurzel ziehen</td></tr>
+                             <tr><td colspan="3"><strong>Aus einer negativen Zahl kann keine reelle Wurzel gezogen werden. Keine Lösung.</strong></td></tr></table>`;
+        } else {
+            correctSolution1 = formatNumber(Math.sqrt(currentXSquaredVal));
+            correctSolution2 = formatNumber(-Math.sqrt(currentXSquaredVal));
+             solutionSteps += `<tr><td>x² = ${currentXSquaredVal}</td><td>|</td><td>Wurzel ziehen (±)</td></tr>
+                             <tr><td>x₁ = ${correctSolution1}</td><td></td><td></td></tr>
+                             <tr><td>x₂ = ${correctSolution2}</td><td></td><td></td></tr>
+                             </table>`;
+        }
+        
+        document.getElementById('equation-display').innerHTML = equation;
+        if (window.MathJax && window.MathJax.typeset) {
+            MathJax.typesetPromise([document.getElementById('equation-display')]).catch((err) => console.log(err.message));
+        }
+    }
 
-            let f_rhs_const = combined_x2_coeff * sol * sol + c_lhs_const;
+    function handleCheckbox(checkbox) {
+        const input1 = document.getElementById('solution1-input');
+        const input2 = document.getElementById('solution2-input');
+        input1.disabled = checkbox.checked;
+        input2.disabled = checkbox.checked;
+    }
 
-            let lhs = {x2:a_lhs, x:b_common_x_coeff, c:c_lhs_const};
-            let rhs = {x2:d_rhs, x:b_common_x_coeff, c:f_rhs_const};
-            let equationString = `${sideToString(lhs)} = ${sideToString(rhs)}`;
-            let solutions = sol === 0 ? [0] : [sol, -sol].sort((a,b)=>a-b);
+    function checkSolution() {
+        const feedback = document.getElementById('feedback-output');
+        const showAnswerBtn = document.getElementById('show-answer-btn');
+        const container = document.getElementById('task-generator-container');
+        
+        const userInput1 = document.getElementById('solution1-input').value.replace(/−|–/g, '-').replace(',', '.');
+        const userInput2 = document.getElementById('solution2-input').value.replace(/−|–/g, '-').replace(',', '.');
+        const noSolutionChecked = document.getElementById('no-solution').checked;
 
-            let steps = [];
-            let op1 = "";
-            if (b_common_x_coeff !== 0) op1 = b_common_x_coeff > 0 ? `| - ${sideToString({x2:0, x:b_common_x_coeff, c:0})}` : `| + ${sideToString({x2:0, x:Math.abs(b_common_x_coeff), c:0})}`;
-            else if (d_rhs !== 0) op1 = d_rhs > 0 ? `| - ${sideToString({x2:d_rhs,x:0,c:0})}` : `| + ${sideToString({x2:Math.abs(d_rhs),x:0,c:0})}`;
-            else if (c_lhs_const !== 0) op1 = c_lhs_const > 0 ? `| - ${formatNumber(c_lhs_const)}` : `| + ${formatNumber(Math.abs(c_lhs_const))}`;
-            steps.push({state: equationString, opForNext: op1});
-            
-            let current_lhs = {...lhs};
-            let current_rhs = {...rhs};
-
-            if (b_common_x_coeff !== 0) {
-                current_lhs.x = 0;
-                current_rhs.x = 0;
-                let op2 = "";
-                if (current_rhs.x2 !== 0) op2 = current_rhs.x2 > 0 ? `| - ${sideToString({x2:current_rhs.x2,x:0,c:0})}` : `| + ${sideToString({x2:Math.abs(current_rhs.x2),x:0,c:0})}`;
-                else if (current_lhs.c !== 0) op2 = current_lhs.c > 0 ? `| - ${formatNumber(current_lhs.c)}` : `| + ${formatNumber(Math.abs(current_lhs.c))}`;
-                steps.push({state: `${sideToString(current_lhs)} = ${sideToString(current_rhs)}`, opForNext: op2});
-            }
-            
-            if (current_rhs.x2 !== 0) {
-                current_lhs.x2 -= current_rhs.x2;
-                current_rhs.x2 = 0;
-                let op3 = "";
-                if (current_lhs.c !== 0) op3 = current_lhs.c > 0 ? `| - ${formatNumber(current_lhs.c)}` : `| + ${formatNumber(Math.abs(current_lhs.c))}`;
-                else if (current_lhs.x2 !== 1 && current_lhs.x2 !== 0) op3 = `| / ${formatNumber(current_lhs.x2)}`;
-
-                if (b_common_x_coeff !== 0 || (b_common_x_coeff === 0 && d_rhs !== 0) ) {
-                     steps.push({state: `${sideToString(current_lhs)} = ${sideToString(current_rhs)}`, opForNext: op3});
-                } 
-            }
-            
-            if (current_lhs.c !== 0) {
-                current_rhs.c -= current_lhs.c;
-                current_lhs.c = 0;
-                let op4 = "";
-                if (current_lhs.x2 !==1 && current_lhs.x2 !==0) op4 = `| / ${formatNumber(current_lhs.x2)}`;
-
-                if ( (b_common_x_coeff !== 0 || current_rhs.x2 !== 0) || (b_common_x_coeff === 0 && d_rhs === 0 && c_lhs_const !== 0) ) {
-                     steps.push({state: `${sideToString(current_lhs)} = ${sideToString(current_rhs)}`, opForNext: op4});
-                }
-            }
-
-            let x_sq_val = current_rhs.c / current_lhs.x2;
-            if(current_lhs.x2 !== 1 && current_lhs.x2 !== 0) {
-                if (steps.length === 0 || steps[steps.length-1].opForNext !== `| / ${formatNumber(current_lhs.x2)}` || steps[steps.length-1].state !== `${sideToString(current_lhs)} = ${sideToString(current_rhs)}` ) {
-                    steps.push({state: `${VAR_NAME}² = ${formatNumber(x_sq_val)}`, opForNext: `| √ (Wurzel ziehen)`});
-                } else { 
-                     steps[steps.length-1].state = `${VAR_NAME}² = ${formatNumber(x_sq_val)}`;
-                     steps[steps.length-1].opForNext = `| √ (Wurzel ziehen)`;
-                }
-            } else if (current_lhs.x2 === 1 && (steps.length === 0 || steps[steps.length-1].state !== `${VAR_NAME}² = ${formatNumber(x_sq_val)}`)) {
-                 steps.push({state: `${VAR_NAME}² = ${formatNumber(x_sq_val)}`, opForNext: `| √ (Wurzel ziehen)`});
-            }
-
-
-            if (sol === 0) {
-                 steps.push({ state: `${VAR_NAME} = 0`, opForNext: "(Lösung)" });
-            } else {
-                 steps.push({ state: `${VAR_NAME} = ±${formatNumber(sol)}`, opForNext: "" });
-                 steps.push({ state: `${VAR_NAME}₁ = ${formatNumber(Math.min(...solutions))}, ${VAR_NAME}₂ = ${formatNumber(Math.max(...solutions))}`, opForNext: "(Lösungen)" });
-            }
-
-            let uniqueSteps = [];
-            let lastState = null;
-            for(const step of steps) {
-                if (step.state !== lastState || step.opForNext) {
-                    uniqueSteps.push(step);
-                    lastState = step.state;
-                } else if (uniqueSteps.length > 0 && !uniqueSteps[uniqueSteps.length-1].opForNext && step.opForNext) { 
-                    uniqueSteps[uniqueSteps.length-1].opForNext = step.opForNext;
-                }
-            }
-            if (uniqueSteps.length > 1 && uniqueSteps[0].state === uniqueSteps[1].state && uniqueSteps[0].opForNext === "") {
-                uniqueSteps.shift();
-            }
-
-
-            return { equationString, solutions, steps: uniqueSteps };
+        if ((userInput1 === '' || userInput2 === '') && !noSolutionChecked) {
+            feedback.textContent = 'Bitte gib beide Lösungen ein oder wähle "Keine reelle Lösung".';
+            feedback.className = 'incorrect';
+            return;
+        }
+        
+        if (isFirstTry) {
+            totalFirstTries++;
         }
 
-
-        function generateHardQuadraticEquation() {
-            if (Math.random() < 0.5) {
-                return genType1Hard();
-            } else {
-                return genType2Hard();
+        let isCorrect = false;
+        if (noSolutionChecked) {
+            isCorrect = correctSolution1 === 'none';
+        } else {
+            const userSol1 = parseFloat(userInput1);
+            const userSol2 = parseFloat(userInput2);
+            isCorrect = (Math.abs(userSol1 - correctSolution1) < 0.01 && Math.abs(userSol2 - correctSolution2) < 0.01) ||
+                        (Math.abs(userSol1 - correctSolution2) < 0.01 && Math.abs(userSol2 - correctSolution1) < 0.01);
+        }
+        
+        if (isCorrect) {
+            feedback.textContent = 'Richtig! Ausgezeichnet!';
+            feedback.className = 'correct';
+            showAnswerBtn.disabled = true;
+            if (isFirstTry) {
+                correctFirstTries++;
+                updateScore(1);
+                container.classList.add('correct-flash-animation');
+                setTimeout(() => {
+                    container.classList.remove('correct-flash-animation');
+                }, 700);
+            }
+            setTimeout(generateNewTask, 1200);
+        } else {
+            feedback.textContent = 'Leider nicht ganz richtig. Überprüfe deinen Rechenweg!';
+            feedback.className = 'incorrect';
+            showAnswerBtn.disabled = false;
+            if(isFirstTry) {
+                updateScore(-0.5);
             }
         }
+        isFirstTry = false;
+    }
 
-
-        // --- UI Update Function ---
-        function displayNewQuadraticEquation(level) {
-            switch (level) {
-                case 1: currentEquationData = generateEasyQuadraticEquation(); break;
-                case 2: currentEquationData = generateMediumQuadraticEquation(); break;
-                case 3: currentEquationData = generateHardQuadraticEquation(); break;
-                default: currentEquationData = generateMediumQuadraticEquation();
-            }
-            
-            equationDisplay.textContent = currentEquationData.equationString;
-            userSolutionInput1.value = '';
-            userSolutionInput2.value = '';
-            feedbackArea.textContent = '';
-            solutionArea.classList.add('hidden');
-            solutionStepsDiv.innerHTML = '';
-            userSolutionInput1.classList.remove('border-red-500', 'border-green-500', 'border-yellow-500');
-            userSolutionInput1.classList.add('border-slate-500'); // Changed to slate-500
-            userSolutionInput2.classList.remove('border-red-500', 'border-green-500', 'border-yellow-500');
-            userSolutionInput2.classList.add('border-slate-500'); // Changed to slate-500
-            userSolutionInput1.focus();
+    function showAnswer() {
+        const solutionDiv = document.getElementById('solution-output');
+        solutionDiv.innerHTML = solutionSteps;
+        solutionDiv.style.display = 'block';
+        document.getElementById('show-answer-btn').disabled = true;
+        if (isFirstTry) {
+             totalFirstTries++;
         }
+        isFirstTry = false;
+        if (window.MathJax && window.MathJax.typeset) {
+            MathJax.typesetPromise([document.getElementById('solution-output')]).catch((err) => console.log(err.message));
+        }
+    }
 
-        // --- Event Handlers ---
-        difficultyButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                displayNewQuadraticEquation(parseInt(button.dataset.level));
-            });
-        });
+    window.onload = function() {
+        setDifficulty('easy');
+        updateScoreDisplay();
+    };
 
-        checkSolutionBtn.addEventListener('click', () => {
-            if (!currentEquationData) return;
+</script>
 
-            const val1_raw = userSolutionInput1.value.trim().replace(',', '.');
-            const val2_raw = userSolutionInput2.value.trim().replace(',', '.');
-
-            let num1 = parseFloat(val1_raw);
-            let num2 = parseFloat(val2_raw);
-
-            // Reset borders first
-            userSolutionInput1.classList.remove('border-red-500', 'border-green-500', 'border-yellow-500', 'border-slate-500');
-            userSolutionInput1.classList.add('border-slate-500'); // Ensure default border is re-applied (slate-500)
-            userSolutionInput2.classList.remove('border-red-500', 'border-green-500', 'border-yellow-500', 'border-slate-500');
-            userSolutionInput2.classList.add('border-slate-500'); // Ensure default border is re-applied (slate-500)
-
-
-            if ((val1_raw === '' && val2_raw === '') || (isNaN(num1) && val1_raw !== '' && val2_raw === '') || (isNaN(num2) && val2_raw !== '' && val1_raw === '') || (isNaN(num1) && val1_raw !== '' && isNaN(num2) && val2_raw !== '')) {
-                feedbackArea.textContent = 'Bitte gib mindestens eine gültige Lösung ein.';
-                feedbackArea.className = 'mt-6 text-lg min-h-[2rem] text-yellow-600 font-semibold';
-                if (isNaN(num1) && val1_raw !== '') {
-                    userSolutionInput1.classList.remove('border-slate-500');
-                    userSolutionInput1.classList.add('border-yellow-500');
-                }
-                if (isNaN(num2) && val2_raw !== '') {
-                     userSolutionInput2.classList.remove('border-slate-500');
-                     userSolutionInput2.classList.add('border-yellow-500');
-                }
-                if (val1_raw === '' && val2_raw === '') {
-                    userSolutionInput1.classList.remove('border-slate-500');
-                    userSolutionInput1.classList.add('border-yellow-500');
-                    userSolutionInput2.classList.remove('border-slate-500');
-                    userSolutionInput2.classList.add('border-yellow-500');
-                }
-                return;
-            }
-            
-            let userAnswers = [];
-            if (!isNaN(num1)) userAnswers.push(num1);
-            if (!isNaN(num2)) userAnswers.push(num2);
-            userAnswers.sort((a, b) => a - b);
-
-            if (userAnswers.length === 2 && Math.abs(userAnswers[0] - userAnswers[1]) < 0.0001) {
-                userAnswers = [userAnswers[0]];
-            }
-
-
-            let correctSolutions = [...currentEquationData.solutions].sort((a, b) => a - b);
-            const epsilon = 0.001; 
-            let isCorrect = false;
-
-            if (correctSolutions.length === 1) {
-                isCorrect = userAnswers.length === 1 && Math.abs(userAnswers[0] - correctSolutions[0]) < epsilon;
-            } else if (correctSolutions.length === 2) {
-                if (userAnswers.length === 2) {
-                    isCorrect = ( (Math.abs(userAnswers[0] - correctSolutions[0]) < epsilon && Math.abs(userAnswers[1] - correctSolutions[1]) < epsilon) ||
-                                  (Math.abs(userAnswers[0] - correctSolutions[1]) < epsilon && Math.abs(userAnswers[1] - correctSolutions[0]) < epsilon) );
-                } else {
-                    isCorrect = false;
-                }
-            }
-
-
-            if (isCorrect) {
-                feedbackArea.textContent = 'Richtig! Sehr gut! 🎉';
-                feedbackArea.className = 'mt-6 text-lg min-h-[2rem] text-green-700 font-semibold';
-                userSolutionInput1.classList.remove('border-slate-500', 'border-red-500', 'border-yellow-500');
-                userSolutionInput1.classList.add('border-green-500');
-                userSolutionInput2.classList.remove('border-slate-500', 'border-red-500', 'border-yellow-500');
-                userSolutionInput2.classList.add('border-green-500');
-            } else {
-                const correctSolutionsFormatted = correctSolutions.map(s => formatNumber(s)).join(correctSolutions.length > 1 ? ', ' : '');
-                feedbackArea.textContent = `Leider falsch. Korrekt: ${correctSolutionsFormatted}.`;
-                feedbackArea.className = 'mt-6 text-lg min-h-[2rem] text-red-700 font-semibold';
-                userSolutionInput1.classList.remove('border-slate-500', 'border-green-500', 'border-yellow-500');
-                userSolutionInput1.classList.add('border-red-500');
-                userSolutionInput2.classList.remove('border-slate-500', 'border-green-500', 'border-yellow-500');
-                userSolutionInput2.classList.add('border-red-500');
-            }
-        });
-
-        showSolutionBtn.addEventListener('click', () => {
-            if (!currentEquationData) return;
-
-            solutionStepsDiv.innerHTML = ''; 
-            currentEquationData.steps.forEach((step) => {
-                const p = document.createElement('p');
-                p.classList.add('equation-container');
-
-                const eqSpan = document.createElement('span');
-                eqSpan.textContent = step.state;
-                eqSpan.classList.add('equation-text');
-                
-                const opSpan = document.createElement('span');
-                opSpan.className = 'operation-span'; 
-                opSpan.textContent = step.opForNext;
-
-                p.appendChild(eqSpan);
-                if (step.opForNext) { 
-                    p.appendChild(opSpan);
-                }
-                solutionStepsDiv.appendChild(p);
-            });
-            solutionArea.classList.remove('hidden');
-        });
-
-        // --- Initial Load ---
-        document.addEventListener('DOMContentLoaded', () => {
-            displayNewQuadraticEquation(2); 
-        });
-
-    </script>
 </body>
 </html>
+
